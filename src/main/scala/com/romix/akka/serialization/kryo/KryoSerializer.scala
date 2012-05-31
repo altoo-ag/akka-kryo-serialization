@@ -164,8 +164,7 @@ class KryoSerializer (val system: ExtendedActorSystem) extends Serializer {
 }
 
 /***
-   Protostuff serializer that supports object graphs with nodes sharing.
-   It produces smaller serialized representations, but introduces a bit more overhead.
+   Kryo-based serializer backend 
  */
 class KryoBasedSerializer(val kryo: Kryo, val bufferSize: Int, val bufferPoolSize: Int) extends Serializer {
 
