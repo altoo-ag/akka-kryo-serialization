@@ -20,7 +20,6 @@ import akka.serialization._
 import akka.actor.ExtendedActorSystem
 import akka.event.Logging
 import com.typesafe.config.ConfigFactory
-import java.util.Map
 import scala.collection.JavaConversions._
 import com.esotericsoftware.kryo.Kryo
 import com.esotericsoftware.kryo.io.Input
@@ -95,9 +94,6 @@ class KryoSerializer (val system: ExtendedActorSystem) extends Serializer {
 		new KryoBasedSerializer(getKryo(idStrategy, serializerType), bufferSize, serializerPoolSize)
 	})
 	
-	//private def getSerializer = serializer
-	// private def releaseSerializer = serializer
-
 	private def getSerializer = serializerPool.fetch
 	private def releaseSerializer(ser: Serializer) = serializerPool.release(ser)
 	
@@ -111,6 +107,7 @@ class KryoSerializer (val system: ExtendedActorSystem) extends Serializer {
 			case "default" => {}
 
 			case "incremental" => {
+				kryo.setRegistrationRequired(false);
 
 				for ((fqcn: String, idNum: String) <- mappings) {
 					val id = idNum.toInt
@@ -138,6 +135,7 @@ class KryoSerializer (val system: ExtendedActorSystem) extends Serializer {
 
 			case "explicit" => { 
 				kryo.setRegistrationRequired(true)
+
 				for ((fqcn: String, idNum: String) <- mappings) {
 					val id = idNum.toInt
 					// Load class
@@ -205,6 +203,8 @@ import java.util.concurrent.ArrayBlockingQueue
 import java.util.concurrent.atomic.AtomicInteger
 import java.util.concurrent.TimeUnit
 
+// Support pooling of objects. Useful if you want to reduce 
+// the GC overhead and memory pressure.
 class ObjectPool[T](number: Int, newInstance: ()=>T) {
 
   private val size = new AtomicInteger(0)
