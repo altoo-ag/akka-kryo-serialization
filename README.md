@@ -47,8 +47,8 @@ The following options are available for configuring this serializer:
 			# qualified class names (FQCNs) for each class  
 			#  
 			# explicit - fast and produces compact serialized representation. Requires that all  
-			# classes that will be serialized are pre-registered using the "mappings" section  
-			# To guarantee that both sender and receiver use the same numeric ids for the same  
+			# classes that will be serialized are pre-registered using the "mappings" and "classes"
+			# sections. To guarantee that both sender and receiver use the same numeric ids for the same  
 			# classes it is advised to provide exactly the same entries in the "mappings" section   
 			#  
 			# incremental - fast and produces compact serialized representation. Support optional  
@@ -59,6 +59,12 @@ The following options are available for configuring this serializer:
 			  
 			idstrategy = "incremental"  
 			  
+			# Define a default size for serializer pool
+			# Try to define the size to be at least as big as the max possible number
+			# of threads that may be used for serialization, i.e. max number
+			# of threads allowed for the scheduler
+			serializer-pool-size = 16
+			
 			# Define a default size for byte buffers used during serialization   
 			buffer-size = 4096  
 			  
@@ -76,11 +82,13 @@ The following options are available for configuring this serializer:
 			}  
 			  
 			# Define a set of fully qualified class names for   
-			# classes to be used for serialization.  
+			# classes to be used for serialization.
+			# The ids for those classes will be assigned automatically,
+			# but respecting the order of declaration in this section  
 			#  
 			# This section is optional  for idstartegy=incremental  
 			# This section is ignored   for idstartegy=default  
-			# This section is ignored   for idstartegy=explicit  
+			# This section is optional  for idstartegy=explicit  
 			classes = [  
 				"package3.name3.className3",  
 				"package4.name4.className4"  
