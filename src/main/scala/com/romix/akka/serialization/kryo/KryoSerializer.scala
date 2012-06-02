@@ -147,6 +147,17 @@ class KryoSerializer (val system: ExtendedActorSystem) extends Serializer {
 						}
 					}
 				}
+
+				for(classname <- classnames) {
+					// Load class
+					system.dynamicAccess.getClassFor[AnyRef](classname) match {
+					case Right(clazz) => kryo.register(clazz)
+					case Left(e) => { 
+							log.warning("Class could not be loaded and/or registered: {} ", classname) 
+							/* throw e */ 
+						}
+					}
+				}
 			}
 			}
 			
