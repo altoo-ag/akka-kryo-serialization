@@ -27,6 +27,7 @@ import com.esotericsoftware.kryo.io.Output
 import org.objenesis.strategy.StdInstantiatorStrategy
 
 import KryoSerialization._
+import com.esotericsoftware.minlog.{Log => MiniLog}
 
 class KryoSerializer (val system: ExtendedActorSystem) extends Serializer {
 
@@ -88,7 +89,12 @@ class KryoSerializer (val system: ExtendedActorSystem) extends Serializer {
 			bin
 	} 
 		
-	def fromBinary(bytes: Array[Byte], clazz: Option[Class[_]]): AnyRef = serializer.fromBinary(bytes, clazz)
+	def fromBinary(bytes: Array[Byte], clazz: Option[Class[_]]): AnyRef = {
+			val ser = getSerializer
+			val obj = ser.fromBinary(bytes, clazz)
+			releaseSerializer(ser)
+			obj
+	}
 	
 	val serializerPool = new ObjectPool[Serializer](serializerPoolSize, ()=> {
 		new KryoBasedSerializer(getKryo(idStrategy, serializerType), bufferSize, serializerPoolSize)
@@ -97,17 +103,26 @@ class KryoSerializer (val system: ExtendedActorSystem) extends Serializer {
 	private def getSerializer = serializerPool.fetch
 	private def releaseSerializer(ser: Serializer) = serializerPool.release(ser)
 	
-	private def getKryo(strategy: String, serailizerType: String): Kryo = {
+	private def getKryo(strategy: String, serializerType: String): Kryo = {
 			
 			val kryo = new Kryo()
 			// Support deserialization of classes without no-arg constructors
-			kryo.setInstantiatorStrategy(new StdInstantiatorStrategy());
+			kryo.setInstantiatorStrategy(new StdInstantiatorStrategy())
+			// Support serialization of Scala collections
+			kryo.addDefaultSerializer(classOf[scala.collection.Map[_,_]], classOf[ScalaMapSerializer])
+			kryo.addDefaultSerializer(classOf[scala.collection.Set[_]], classOf[ScalaSetSerializer])
+			kryo.addDefaultSerializer(classOf[scala.collection.generic.MapFactory[scala.collection.Map]], classOf[ScalaMapSerializer])
+			kryo.addDefaultSerializer(classOf[scala.collection.generic.SetFactory[scala.collection.Set]], classOf[ScalaSetSerializer])
+			kryo.addDefaultSerializer(classOf[scala.collection.Traversable[_]], classOf[ScalaCollectionSerializer])
+			
+//			kryo.addDefaultSerializer(classOf[scala.collection.Traversable[_]], new ScalaCollectionSerializer())
+//			MiniLog.TRACE();
 			
 			strategy match  {
 			case "default" => {}
 
 			case "incremental" => {
-				kryo.setRegistrationRequired(false);
+				kryo.setRegistrationRequired(false)
 
 				for ((fqcn: String, idNum: String) <- mappings) {
 					val id = idNum.toInt
@@ -134,7 +149,7 @@ class KryoSerializer (val system: ExtendedActorSystem) extends Serializer {
 			}
 
 			case "explicit" => { 
-				kryo.setRegistrationRequired(true)
+				kryo.setRegistrationRequired(false)
 
 				for ((fqcn: String, idNum: String) <- mappings) {
 					val id = idNum.toInt
@@ -158,6 +173,7 @@ class KryoSerializer (val system: ExtendedActorSystem) extends Serializer {
 						}
 					}
 				}
+				kryo.setRegistrationRequired(true)
 			}
 			}
 			
@@ -198,7 +214,9 @@ class KryoBasedSerializer(val kryo: Kryo, val bufferSize: Int, val bufferPoolSiz
 	// into the optionally provided classLoader.
 	def fromBinary(bytes: Array[Byte], clazz: Option[Class[_]]): AnyRef = {
 		clazz match {
-			case Some(c) => kryo.readObject(new Input(bytes), c).asInstanceOf[AnyRef]
+			case Some(c) => { 
+				kryo.readObject(new Input(bytes), c).asInstanceOf[AnyRef] 
+			}
 			case _ => throw new Exception("Cannot deserialize object of unknown class")
 		}		
 	}
