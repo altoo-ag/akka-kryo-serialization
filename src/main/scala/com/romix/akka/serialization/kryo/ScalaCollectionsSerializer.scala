@@ -19,6 +19,11 @@ package com.romix.akka.serialization.kryo
 import scala.collection.Traversable
 import scala.collection.Map
 import scala.collection.Set
+import scala.collection.SortedSet
+import scala.collection.SortedMap
+import scala.collection.generic.SortedSetFactory
+import scala.collection.immutable.TreeSet
+import scala.collection.immutable.TreeMap
 
 import com.esotericsoftware.kryo.Kryo
 import com.esotericsoftware.kryo.Serializer
@@ -159,7 +164,17 @@ class ScalaMapSerializer ( val kryo: Kryo ) extends Serializer[Map[_,_]] {
 	override def create(kryo: Kryo, input: Input, typ: Class[Map[_,_]]): Map[_,_]  = {
 		val len = if (length != 0) length else input.readInt(true)
 		
-		var coll = kryo.newInstance(typ).asInstanceOf[Map[Any,Any]].empty
+		var coll: Map[Any, Any] = 
+			if(classOf[SortedMap[_,_]].isAssignableFrom(typ)) {
+				// Read ordering and set it for this collection 
+				implicit val mapOrdering = kryo.readClassAndObject(input).asInstanceOf[scala.math.Ordering[Any]]
+				if(classOf[TreeMap[_,_]].isAssignableFrom(typ))
+					new TreeMap[Any, Any]
+				else 
+					kryo.newInstance(typ).asInstanceOf[Map[Any,Any]].empty
+			} else {
+				kryo.newInstance(typ).asInstanceOf[Map[Any,Any]].empty
+			}
 		
 		if (len != 0) {
 			if (keySerializer != null) {
@@ -182,6 +197,11 @@ class ScalaMapSerializer ( val kryo: Kryo ) extends Serializer[Map[_,_]] {
 			val size = collection.size
 			output.writeInt(size, true)
 			size
+		}
+		
+	    if(classOf[SortedMap[_,_]].isAssignableFrom(obj.getClass())) {
+			val ordering = obj.asInstanceOf[SortedMap[_,_]].ordering
+			kryo.writeClassAndObject(output, ordering)
 		}
 	
 		if (len != 0) { 
@@ -251,7 +271,17 @@ class ScalaSetSerializer ( val kryo: Kryo ) extends Serializer[Set[_]] {
 	override def create(kryo: Kryo, input: Input, typ: Class[Set[_]]): Set[_]  = {
 		val len = if (length != 0) length else input.readInt(true)
 		
-		var coll = kryo.newInstance(typ).asInstanceOf[Set[Any]].empty
+		var coll: Set[Any] = 
+			if(classOf[SortedSet[_]].isAssignableFrom(typ)) {
+				// Read ordering and set it for this collection 
+				implicit val setOrdering = kryo.readClassAndObject(input).asInstanceOf[scala.math.Ordering[Any]]
+				if(classOf[TreeSet[_]].isAssignableFrom(typ))
+					new TreeSet[Any]
+				else 
+					kryo.newInstance(typ).asInstanceOf[Set[Any]].empty
+			} else {
+				kryo.newInstance(typ).asInstanceOf[Set[Any]].empty
+			}
 
 		if (len != 0) {
 			if (serializer != null) {
@@ -274,6 +304,11 @@ class ScalaSetSerializer ( val kryo: Kryo ) extends Serializer[Set[_]] {
 			val size = collection.size
 			output.writeInt(size, true)
 			size
+		}
+		
+		if(classOf[SortedSet[_]].isAssignableFrom(obj.getClass())) {
+			val ordering = obj.asInstanceOf[SortedSet[_]].ordering
+			kryo.writeClassAndObject(output, ordering)
 		}
 	
 		if (len != 0) { 
