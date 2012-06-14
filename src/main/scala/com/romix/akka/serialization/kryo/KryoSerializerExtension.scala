@@ -49,6 +49,12 @@ object KryoSerialization {
 	
 	// Strategy: default, explicit, incremental
     val IdStrategy: String = config.getString("akka.actor.kryo.idstrategy")
+    
+    val ImplicitRegistrationLogging: Boolean = config.getBoolean("akka.actor.kryo.implicit-registration-logging")
+    
+    val KryoTrace: Boolean = config.getBoolean("akka.actor.kryo.kryo-trace")
+    
+    val KryoReferenceMap: Boolean = config.getBoolean("akka.actor.kryo.kryo-reference-map")
 
     private def configToMap(cfg: Config): Map[String, String] =
       cfg.root.unwrapped.asScala.toMap.map { case (k, v) => (k, v.toString) }

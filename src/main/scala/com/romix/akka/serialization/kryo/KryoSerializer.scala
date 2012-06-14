@@ -68,6 +68,11 @@ class KryoSerializer (val system: ExtendedActorSystem) extends Serializer {
 		log.debug("Got serializer type: {}", serializerType)
 	}
 
+	val implicitRegistrationLogging = settings.ImplicitRegistrationLogging
+	locally {
+		log.debug("Got implicit registration logging: {}", implicitRegistrationLogging)
+	}
+
 	val serializer = new KryoBasedSerializer(getKryo(idStrategy, serializerType), bufferSize, serializerPoolSize)
 
 	locally {
@@ -104,19 +109,21 @@ class KryoSerializer (val system: ExtendedActorSystem) extends Serializer {
 	private def releaseSerializer(ser: Serializer) = serializerPool.release(ser)
 	
 	private def getKryo(strategy: String, serializerType: String): Kryo = {
-			
-			val kryo = new Kryo()
+			val kryo = new Kryo(new KryoClassResolver(implicitRegistrationLogging))
 			// Support deserialization of classes without no-arg constructors
 			kryo.setInstantiatorStrategy(new StdInstantiatorStrategy())
 			// Support serialization of Scala collections
+			kryo.addDefaultSerializer(classOf[scala.Enumeration#Value], classOf[EnumerationSerializer])
 			kryo.addDefaultSerializer(classOf[scala.collection.Map[_,_]], classOf[ScalaMapSerializer])
 			kryo.addDefaultSerializer(classOf[scala.collection.Set[_]], classOf[ScalaSetSerializer])
 			kryo.addDefaultSerializer(classOf[scala.collection.generic.MapFactory[scala.collection.Map]], classOf[ScalaMapSerializer])
 			kryo.addDefaultSerializer(classOf[scala.collection.generic.SetFactory[scala.collection.Set]], classOf[ScalaSetSerializer])
 			kryo.addDefaultSerializer(classOf[scala.collection.Traversable[_]], classOf[ScalaCollectionSerializer])
 			
-//			kryo.addDefaultSerializer(classOf[scala.collection.Traversable[_]], new ScalaCollectionSerializer())
-//			MiniLog.TRACE();
+			kryo.setReferenceMap(settings.KryoReferenceMap)
+			
+			if(settings.KryoTrace)
+				MiniLog.TRACE()
 			
 			strategy match  {
 			case "default" => {}
