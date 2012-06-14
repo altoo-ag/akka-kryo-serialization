@@ -9,6 +9,7 @@ Features
 *   It is more efficient than Java serialization - both in size and speed 
 *   Does not require any additional build steps like compiling proto files, when using protobuf serialization
 *   Almost any Scala and Java class can be serialized using it without any additional configuration or code changes
+*   Efficient serialization of such Scala types like Option, Tuple, Enumeration, most of Scala's collection types
 *   Apache 2.0 license
 
 How to use this library in your project
@@ -67,6 +68,15 @@ The following options are available for configuring this serializer:
 			
 			# Define a default size for byte buffers used during serialization   
 			buffer-size = 4096  
+
+			# Log implicitly registered classes. Useful, if you want to know all classes
+			# which are serialized. You can then use this information in the mappings and/or 
+			# classes sections
+			implicit-registration-logging = false 
+			  
+			# If enabled, Kryo logs a lot of information about serialization process.
+			# Useful for debugging and lowl-level tweaking
+			kryo-trace = false 
 			  
 			# Define mappings from a fully qualified class name to a numeric id.  
 			# Smaller ids lead to smaller sizes of serialized representations.  
