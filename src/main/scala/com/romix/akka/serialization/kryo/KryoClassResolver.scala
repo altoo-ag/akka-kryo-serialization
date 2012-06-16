@@ -16,7 +16,7 @@
 
 package com.romix.akka.serialization.kryo
 
-import com.esotericsoftware.kryo.DefaultClassResolver
+import com.esotericsoftware.kryo.util.DefaultClassResolver
 import com.esotericsoftware.kryo.Registration;
 
 class KryoClassResolver(val logImplicits: Boolean) extends DefaultClassResolver {
@@ -37,7 +37,7 @@ class KryoClassResolver(val logImplicits: Boolean) extends DefaultClassResolver 
 		// and node that performs it. The disadvantage is: it takes more bytes to encode and it is still dependent
 		// on the order in which messages arrive on the deserializer side, because only the first message will contain
 		// the ID->FQCN mapping.
-		val implicitRegistration = registerInternal(new Registration(typ, kryo.getDefaultSerializer(typ), typ.getName.hashCode()>>>1))
+		val implicitRegistration = kryo.register(new Registration(typ, kryo.getDefaultSerializer(typ), typ.getName.hashCode()>>>1))
 		if(logImplicits) {
 			val registration = kryo.getRegistration(typ)
 			if(registration.getId == DefaultClassResolver.NAME)

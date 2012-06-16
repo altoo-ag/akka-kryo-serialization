@@ -34,6 +34,6 @@ object MinimalBuild extends Build {
     crossPaths := false,
     libraryDependencies += "com.typesafe.akka" % "akka-remote" % "2.0",
     libraryDependencies += "com.typesafe.akka" % "akka-kernel" % "2.0",
-    libraryDependencies += "com.esotericsoftware.kryo" % "kryo" % "2.15-SNAPSHOT"
+    libraryDependencies += "com.esotericsoftware.kryo" % "kryo" % "2.16-SNAPSHOT"
     )
 }

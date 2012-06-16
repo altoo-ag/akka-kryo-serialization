@@ -25,6 +25,7 @@ import com.esotericsoftware.kryo.Kryo
 import com.esotericsoftware.kryo.io.Input
 import com.esotericsoftware.kryo.io.Output
 import org.objenesis.strategy.StdInstantiatorStrategy
+import com.esotericsoftware.kryo.util._
 
 import KryoSerialization._
 import com.esotericsoftware.minlog.{Log => MiniLog}
@@ -109,7 +110,8 @@ class KryoSerializer (val system: ExtendedActorSystem) extends Serializer {
 	private def releaseSerializer(ser: Serializer) = serializerPool.release(ser)
 	
 	private def getKryo(strategy: String, serializerType: String): Kryo = {
-			val kryo = new Kryo(new KryoClassResolver(implicitRegistrationLogging))
+			val referenceResolver = if (settings.KryoReferenceMap) new MapReferenceResolver() else new ListReferenceResolver()  
+			val kryo = new Kryo(new KryoClassResolver(implicitRegistrationLogging), referenceResolver)
 			// Support deserialization of classes without no-arg constructors
 			kryo.setInstantiatorStrategy(new StdInstantiatorStrategy())
 			// Support serialization of Scala collections
@@ -119,9 +121,7 @@ class KryoSerializer (val system: ExtendedActorSystem) extends Serializer {
 			kryo.addDefaultSerializer(classOf[scala.collection.generic.MapFactory[scala.collection.Map]], classOf[ScalaMapSerializer])
 			kryo.addDefaultSerializer(classOf[scala.collection.generic.SetFactory[scala.collection.Set]], classOf[ScalaSetSerializer])
 			kryo.addDefaultSerializer(classOf[scala.collection.Traversable[_]], classOf[ScalaCollectionSerializer])
-			
-			kryo.setReferenceMap(settings.KryoReferenceMap)
-			
+						
 			if(settings.KryoTrace)
 				MiniLog.TRACE()
 			
