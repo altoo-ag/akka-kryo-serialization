@@ -101,7 +101,7 @@ class KryoSerializer (val system: ExtendedActorSystem) extends Serializer {
 			releaseSerializer(ser)
 			obj
 	}
-	
+
 	val serializerPool = new ObjectPool[Serializer](serializerPoolSize, ()=> {
 		new KryoBasedSerializer(getKryo(idStrategy, serializerType), bufferSize, serializerPoolSize)
 	})
@@ -210,7 +210,7 @@ class KryoBasedSerializer(val kryo: Kryo, val bufferSize: Int, val bufferPoolSiz
 	def toBinary(obj: AnyRef): Array[Byte] = {
 		val buffer = getBuffer
 		try {
-			kryo.writeObject(buffer, obj)
+			kryo.writeClassAndObject(buffer, obj)
 			buffer.toBytes()
 		} finally 
 			releaseBuffer(buffer)
@@ -220,12 +220,7 @@ class KryoBasedSerializer(val kryo: Kryo, val bufferSize: Int, val bufferPoolSiz
 	// using the type hint (if any, see "includeManifest" above)
 	// into the optionally provided classLoader.
 	def fromBinary(bytes: Array[Byte], clazz: Option[Class[_]]): AnyRef = {
-		clazz match {
-			case Some(c) => { 
-				kryo.readObject(new Input(bytes), c).asInstanceOf[AnyRef] 
-			}
-			case _ => throw new Exception("Cannot deserialize object of unknown class")
-		}		
+		kryo.readClassAndObject(new Input(bytes)).asInstanceOf[AnyRef] 
 	}
 	
 	val buf = new Output(1024, 1024 * 1024)
