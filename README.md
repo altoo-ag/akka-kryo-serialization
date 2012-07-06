@@ -124,7 +124,7 @@ How do you create mappings or classes sections with proper content?
 -------------------------------------------------------------------
 
 One of the easiest ways to understand which classes you need to register in those sections is to
-leave them first empty and set 			
+leave both sections first empty and then set 			
         `implicit-registration-logging = true` 
   
 As a result, you'll eventually see log messages about implicit registration of some classes. By default,
