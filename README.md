@@ -69,6 +69,10 @@ The following options are available for configuring this serializer:
 			# Define a default size for byte buffers used during serialization   
 			buffer-size = 4096  
 
+			# If set, akka uses manifests to put a class name
+			# of the top-level object into each message
+			use-manifests = false
+			
 			# Log implicitly registered classes. Useful, if you want to know all classes
 			# which are serialized. You can then use this information in the mappings and/or 
 			# classes sections

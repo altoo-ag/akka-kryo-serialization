@@ -74,7 +74,15 @@ class KryoSerializer (val system: ExtendedActorSystem) extends Serializer {
 		log.debug("Got implicit registration logging: {}", implicitRegistrationLogging)
 	}
 
-	val serializer = new KryoBasedSerializer(getKryo(idStrategy, serializerType), bufferSize, serializerPoolSize)
+	val useManifests = settings.UseManifests
+	locally {
+		log.debug("Got use manifests: {}", useManifests)
+	}
+	
+	val serializer = new KryoBasedSerializer(getKryo(idStrategy, serializerType), 
+											 bufferSize, 
+											 serializerPoolSize, 
+											 useManifests)
 
 	locally {
 		log.debug("Got serializer: {}", serializer)
@@ -82,7 +90,7 @@ class KryoSerializer (val system: ExtendedActorSystem) extends Serializer {
 
 
 	// This is whether "fromBinary" requires a "clazz" or not
-	def includeManifest: Boolean = false
+	def includeManifest: Boolean = useManifests
 
 	// A unique identifier for this Serializer
 	def identifier = 123454323
@@ -101,9 +109,12 @@ class KryoSerializer (val system: ExtendedActorSystem) extends Serializer {
 			releaseSerializer(ser)
 			obj
 	}
-
+	
 	val serializerPool = new ObjectPool[Serializer](serializerPoolSize, ()=> {
-		new KryoBasedSerializer(getKryo(idStrategy, serializerType), bufferSize, serializerPoolSize)
+		new KryoBasedSerializer(getKryo(idStrategy, serializerType), 
+								bufferSize, 
+								serializerPoolSize,
+								useManifests)
 	})
 	
 	private def getSerializer = serializerPool.fetch
@@ -198,10 +209,10 @@ class KryoSerializer (val system: ExtendedActorSystem) extends Serializer {
 /***
    Kryo-based serializer backend 
  */
-class KryoBasedSerializer(val kryo: Kryo, val bufferSize: Int, val bufferPoolSize: Int) extends Serializer {
+class KryoBasedSerializer(val kryo: Kryo, val bufferSize: Int, val bufferPoolSize: Int, val useManifests:Boolean) extends Serializer {
 
 	// This is whether "fromBinary" requires a "clazz" or not
-	def includeManifest: Boolean = false
+	def includeManifest: Boolean = useManifests
 
 	// A unique identifier for this Serializer
 	def identifier = 12454323
@@ -210,7 +221,10 @@ class KryoBasedSerializer(val kryo: Kryo, val bufferSize: Int, val bufferPoolSiz
 	def toBinary(obj: AnyRef): Array[Byte] = {
 		val buffer = getBuffer
 		try {
-			kryo.writeClassAndObject(buffer, obj)
+			if(!useManifests)
+				kryo.writeClassAndObject(buffer, obj)
+			else	
+				kryo.writeObject(buffer, obj)
 			buffer.toBytes()
 		} finally 
 			releaseBuffer(buffer)
@@ -220,10 +234,17 @@ class KryoBasedSerializer(val kryo: Kryo, val bufferSize: Int, val bufferPoolSiz
 	// using the type hint (if any, see "includeManifest" above)
 	// into the optionally provided classLoader.
 	def fromBinary(bytes: Array[Byte], clazz: Option[Class[_]]): AnyRef = {
-		kryo.readClassAndObject(new Input(bytes)).asInstanceOf[AnyRef] 
+		if(!useManifests)
+			kryo.readClassAndObject(new Input(bytes)).asInstanceOf[AnyRef]
+		else {
+			clazz match { 
+				case Some(c) => kryo.readObject(new Input(bytes), c).asInstanceOf[AnyRef]
+				case _ => throw new RuntimeException("Object of unknown class cannot be deserialized")
+			}
+		}
 	}
 	
-	val buf = new Output(1024, 1024 * 1024)
+	val buf = new Output(bufferSize, 1024 * 1024)
 	private def getBuffer = buf
 	private def releaseBuffer(buffer: Output) = { buffer.clear() } 
 		
