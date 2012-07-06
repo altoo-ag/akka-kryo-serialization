@@ -119,3 +119,19 @@ The following options are available for configuring this serializer:
 		}    
      
 *    As usual, you should declare in the Akka `serialization-bindings` section which classes should use kryo serialization
+
+How do you create mappings or classes sections with proper content? 
+-------------------------------------------------------------------
+
+One of the easiest ways to understand which classes you need to register in those sections is to
+leave them first empty and set 			
+        `implicit-registration-logging = true` 
+  
+As a result, you'll eventually see log messages about implicit registration of some classes. By default,
+they will receive some random default ids. Once you see the names of implicitly registered classes,
+you can copy them into your mappings or classes sections and assign an id of your choice to each of those
+classes.
+
+You may need to repeat the process several times until you see no further log messages about implicitly
+registered classes.
+ 
