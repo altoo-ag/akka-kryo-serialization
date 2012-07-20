@@ -79,10 +79,16 @@ class KryoSerializer (val system: ExtendedActorSystem) extends Serializer {
 		log.debug("Got use manifests: {}", useManifests)
 	}
 	
-	val serializer = new KryoBasedSerializer(getKryo(idStrategy, serializerType), 
+	val serializer = try new KryoBasedSerializer(getKryo(idStrategy, serializerType), 
 											 bufferSize, 
 											 serializerPoolSize, 
 											 useManifests)
+					catch {
+						case e: Exception => {
+							log.error("exception caught during akka-kryo-serialization startup: {}", e)
+							throw e
+						}
+					} 
 
 	locally {
 		log.debug("Got serializer: {}", serializer)
