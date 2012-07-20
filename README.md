@@ -12,6 +12,7 @@ Features
 *   Efficient serialization of such Scala types like Option, Tuple, Enumeration, most of Scala's collection types
 *   Apache 2.0 license
 
+
 How to use this library in your project
 ----------------------------------------
 
@@ -22,6 +23,12 @@ To use this serializer, you need to do two things:
     
 *   Add some new elements to your Akka configuration file, e.g. `application.conf`
 
+Which Maven repository contains this library?
+---------------------------------------------
+
+Currently, this library is not available on the Maven Central or the like, but it is planned.
+For the time being, if you intend to use it in your project, you need to check out the project from Github and do
+    `sbt compile publish-local`
 
 Configuration of akka-kryo-serialization
 ----------------------------------------------
@@ -89,10 +96,12 @@ The following options are available for configuring this serializer:
 			# This section is optional  for idstartegy=incremental  
 			# This section is ignored   for idstartegy=default  
 			#   
-			# The smallest possible id is 2   
+			# The smallest possible id should start at 20 (or even higher), because
+			# ids below it are used by Kryo internally e.g. for built-in Java and 
+			# Scala types   
 			mappings {  
-				"package1.name1.className1" = 2,  
-				"package2.name2.className2" = 3  
+				"package1.name1.className1" = 20,  
+				"package2.name2.className2" = 21  
 			}  
 			  
 			# Define a set of fully qualified class names for   
