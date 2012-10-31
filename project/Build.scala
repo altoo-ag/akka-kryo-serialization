@@ -16,10 +16,11 @@
 
 import sbt._
 import Keys._
+import com.typesafe.sbt.osgi.SbtOsgi.{ OsgiKeys, osgiSettings, defaultOsgiSettings }
 
 object MinimalBuild extends Build {
 
-  lazy val buildVersion = "0.1-SNAPSHOT"
+  lazy val buildVersion = "0.1.0.vivo_1"
 
   lazy val typesafe = "Typesafe Repository" at "http://repo.typesafe.com/typesafe/releases/"
   lazy val typesafeSnapshot = "Typesafe Snapshots Repository" at "http://repo.typesafe.com/typesafe/snapshots/"
@@ -36,5 +37,14 @@ object MinimalBuild extends Build {
     libraryDependencies += "com.typesafe.akka" % "akka-kernel" % "2.0",
     libraryDependencies += "com.esotericsoftware.kryo" % "kryo" % "2.18-SNAPSHOT",
     libraryDependencies += "com.novocode" % "junit-interface" % "0.8" % "test"
+    )
+    .settings(defaultOsgiSettings: _*)
+    .settings(
+      OsgiKeys.exportPackage := Seq("com.romix.akka.serialization.kryo;version=\"0.1.0.vivo_1\""),
+      OsgiKeys.importPackage := Seq("com.esotericsoftware*;version=\"[2.20,3.0)\"",
+        "com.typesafe.config;version=\"[0.4.1,1.0.0)\"",
+        "akka*;version=\"[2.1.0,3.0.0)\"",
+        "scala*;version=\"[2.9.2,2.11.0)\"",
+        "*")
     )
 }
