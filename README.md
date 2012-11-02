@@ -30,6 +30,13 @@ Currently, this library is not available on the Maven Central or the like, but i
 For the time being, if you intend to use it in your project, you need to check out the project from Github and do
     `sbt compile publish-local`
 
+If you wish to use it within an OSGi environment, you can add OSGi headers to the build by executing:
+    `sbt osgi-bundle publish-local`
+
+Note that the OSGi build uses the sbt-osgi plugin, which may not be available from Maven Central or the
+Typesafe repo, so it may require a local build as well. sbt-osgi can be found at 
+https://github.com/sbt/sbt-osgi.
+
 Configuration of akka-kryo-serialization
 ----------------------------------------------
 
