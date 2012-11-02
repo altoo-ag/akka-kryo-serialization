@@ -96,6 +96,12 @@ class ScalaCollectionSerializer ( val kryo: Kryo ) extends Serializer[Traversabl
 		val len = if (length != 0) length else input.readInt(true)
 		val inst = kryo.newInstance(typ)
 		val coll = inst.asInstanceOf[Traversable[Any]].genericBuilder[Any]
+		// FIXME: Currently there is no easy way to get the reference ID of the object being read
+		val ref = coll
+		val refResolver = kryo.getReferenceResolver
+		kryo.reference(ref)
+		val refId = refResolver.nextReadId(typ) - 1
+		
 		if (len != 0) {
 			if (serializer != null) {
 				if (elementsCanBeNull) {
@@ -108,7 +114,9 @@ class ScalaCollectionSerializer ( val kryo: Kryo ) extends Serializer[Traversabl
 			}
 		} 
 		
-		coll.result
+		val c = coll.result 
+		refResolver.addReadObject(refId, c)
+		c
 	}
 
 	override def write (kryo : Kryo, output: Output, obj: Traversable[_]) = {
