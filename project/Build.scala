@@ -40,7 +40,7 @@ object MinimalBuild extends Build {
     )
     .settings(defaultOsgiSettings: _*)
     .settings(
-      OsgiKeys.exportPackage := Seq("com.romix.akka.serialization.kryo;version=\"0.1.0.1\""),
+      OsgiKeys.exportPackage := Seq("com.romix.akka.serialization.kryo;version\"0.2.0.1\""),
       OsgiKeys.importPackage := Seq("com.esotericsoftware*;version=\"[2.20,3.0)\"",
         "com.typesafe.config;version=\"[0.4.1,1.0.0)\"",
         "akka*;version=\"[2.1.0,3.0.0)\"",
