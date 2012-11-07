@@ -132,8 +132,16 @@ class KryoSerializer (val system: ExtendedActorSystem) extends Serializer {
 			val kryo = new Kryo(new KryoClassResolver(implicitRegistrationLogging), referenceResolver)
 			// Support deserialization of classes without no-arg constructors
 			kryo.setInstantiatorStrategy(new StdInstantiatorStrategy())
-			// Support serialization of Scala collections
+			// Support serialization of some standard or often used Scala classes 
 			kryo.addDefaultSerializer(classOf[scala.Enumeration#Value], classOf[EnumerationSerializer])
+			system.dynamicAccess.getClassFor[AnyRef]("scala.Enumeration$Val") match {
+					case Right(clazz) => kryo.register(clazz)
+					case Left(e) => {  
+							log.error("Class could not be loaded and/or registered: {} ", "scala.Enumeration$Val") 
+							throw e 
+						}
+					}
+			kryo.register(classOf[scala.Enumeration#Value])
 			kryo.addDefaultSerializer(classOf[scala.collection.Map[_,_]], classOf[ScalaMapSerializer])
 			kryo.addDefaultSerializer(classOf[scala.collection.Set[_]], classOf[ScalaSetSerializer])
 			kryo.addDefaultSerializer(classOf[scala.collection.generic.MapFactory[scala.collection.Map]], classOf[ScalaMapSerializer])
