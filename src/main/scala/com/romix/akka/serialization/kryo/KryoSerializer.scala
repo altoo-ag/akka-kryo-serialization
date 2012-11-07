@@ -18,6 +18,7 @@ package com.romix.akka.serialization.kryo
 
 import akka.serialization._
 import akka.actor.ExtendedActorSystem
+import akka.actor.ActorRef
 import akka.event.Logging
 import com.typesafe.config.ConfigFactory
 import scala.collection.JavaConversions._
@@ -138,6 +139,7 @@ class KryoSerializer (val system: ExtendedActorSystem) extends Serializer {
 			kryo.addDefaultSerializer(classOf[scala.collection.generic.MapFactory[scala.collection.Map]], classOf[ScalaMapSerializer])
 			kryo.addDefaultSerializer(classOf[scala.collection.generic.SetFactory[scala.collection.Set]], classOf[ScalaSetSerializer])
 			kryo.addDefaultSerializer(classOf[scala.collection.Traversable[_]], classOf[ScalaCollectionSerializer])
+			kryo.addDefaultSerializer(classOf[ActorRef], new ActorRefSerializer(system))
 						
 			if(settings.KryoTrace)
 				MiniLog.TRACE()
