@@ -1,5 +1,5 @@
 
-package com.romix.akka.serialization.kryo
+package com.romix.scala.serialization.kryo
 
 import java.lang.reflect.TypeVariable;
 import java.util.Arrays;
@@ -20,6 +20,9 @@ import com.esotericsoftware.kryo.Serializer
 import com.esotericsoftware.kryo.io.Input
 import com.esotericsoftware.kryo.io.Output
 import com.esotericsoftware.kryo.serializers.MapSerializer
+import com.romix.scala.serialization.kryo._
+
+
 //import com.romix.akka.serialization.kryo.KryoTestCase
 abstract class CalculatorMessage 
 
@@ -368,7 +371,7 @@ abstract class KeyThatIsntComparable {
 //		)
 //	}
 //}
-case class ScalaClass1(    var opt: Option[Integer] = Some(3), 
+case class ScalaClass1(    var opt: Option[java.lang.Integer] = Some(3), 
 		                   var vector11: Vector[String] = Vector("LL", "ee", "oo"), 
 		                   var list11: List[String] = List("LL", "ee", "oo"),
 		                   var map11: Map[String, String] = Map("Leo"->"John", "Luke"->"Lea")

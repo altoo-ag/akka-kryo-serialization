@@ -1,5 +1,5 @@
 
-package com.romix.akka.serialization.kryo
+package com.romix.scala.serialization.kryo
 
 import java.lang.reflect.TypeVariable;
 import java.util.Arrays;
@@ -13,6 +13,8 @@ import com.esotericsoftware.kryo.Serializer
 import com.esotericsoftware.kryo.io.Input
 import com.esotericsoftware.kryo.io.Output
 import com.esotericsoftware.kryo.serializers.MapSerializer
+import com.romix.scala.serialization.kryo._
+
 //import com.romix.akka.serialization.kryo.KryoTestCase
 
 
@@ -83,8 +85,8 @@ class MyTuple3[T1,T2,T3](__1:T1, __2:T2, __3:T3) extends Product3[T1,T2,T3] {
 
 object IntTuple10 {
 //	type IntTuple10 = MyTuple3[Int, Int, Int]
-	type IntTuple3 = Tuple3[Integer, Integer, Integer]
-    type IntTuple2 = Tuple2[Integer, Int]
+	type IntTuple3 = Tuple3[java.lang.Integer, java.lang.Integer, java.lang.Integer]
+    type IntTuple2 = Tuple2[java.lang.Integer, Int]
 //	type StringMap = java.util.HashMap[String, String]                          
 //    type StringTuple10 = Tuple10[String, String, String, String, String, String, String, String, String, String]
                                  

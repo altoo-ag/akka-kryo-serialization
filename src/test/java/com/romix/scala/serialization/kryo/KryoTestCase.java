@@ -1,5 +1,5 @@
 
-package com.romix.akka.serialization.kryo;
+package com.romix.scala.serialization.kryo;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -33,7 +33,8 @@ abstract public class KryoTestCase extends TestCase {
 		Log.TRACE();
 
 		ReferenceResolver referenceResolver = new MapReferenceResolver();
-		kryo = new Kryo(new KryoClassResolver(true), referenceResolver);
+//		kryo = new Kryo(new KryoClassResolver(true), referenceResolver);
+		kryo = new Kryo(referenceResolver);
 		kryo.setReferences(true);
 //		kryo.setRegistrationRequired(true);
 		kryo.setAutoReset(false);

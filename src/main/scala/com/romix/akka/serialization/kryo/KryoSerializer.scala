@@ -27,6 +27,7 @@ import com.esotericsoftware.kryo.io.Input
 import com.esotericsoftware.kryo.io.Output
 import org.objenesis.strategy.StdInstantiatorStrategy
 import com.esotericsoftware.kryo.util._
+import com.romix.scala.serialization.kryo._
 
 import KryoSerialization._
 import com.esotericsoftware.minlog.{Log => MiniLog}

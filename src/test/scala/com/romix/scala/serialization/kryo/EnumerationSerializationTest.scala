@@ -1,5 +1,5 @@
 
-package com.romix.akka.serialization.kryo
+package com.romix.scala.serialization.kryo
 
 //import java.util.Map
 
@@ -10,6 +10,7 @@ import com.esotericsoftware.kryo.Kryo
 import com.esotericsoftware.kryo.Serializer
 import com.esotericsoftware.kryo.io.Input
 import com.esotericsoftware.kryo.io.Output
+import com.romix.scala.serialization.kryo._
 //import com.romix.akka.serialization.kryo.KryoTestCase
 
 
