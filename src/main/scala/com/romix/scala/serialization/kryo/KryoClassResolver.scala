@@ -14,7 +14,7 @@
  * limitations under the License.
  ******************************************************************************/
 
-package com.romix.akka.serialization.kryo
+package com.romix.scala.serialization.kryo
 
 import com.esotericsoftware.kryo.util.DefaultClassResolver
 import com.esotericsoftware.kryo.Registration;
