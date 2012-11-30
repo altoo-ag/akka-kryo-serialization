@@ -1,8 +1,9 @@
-akka-kryo-serialization - kryo-based serializers for Akka
+akka-kryo-serialization - kryo-based serializers for Scala and Akka
 =====================================================================
 
-This library provides custom Kryo-based serializers for Akka. It can be used for more efficient akka actor's remoting.
-Alternatively, it can be used for a general purpose Kryo-based serialization of such Scala types like Option, Tuple, Enumeration and most of Scala's collection types   
+This library provides custom Kryo-based serializers for Scala and Akka. It can be used for more efficient akka actor's remoting.
+
+It can also be used for a general purpose and very efficient Kryo-based serialization of such Scala types like Option, Tuple, Enumeration and most of Scala's collection types.   
 
 Features
 --------
