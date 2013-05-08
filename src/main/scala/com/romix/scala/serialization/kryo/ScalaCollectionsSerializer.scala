@@ -116,7 +116,7 @@ class ScalaCollectionSerializer ( val kryo: Kryo ) extends Serializer[Traversabl
 		} 
 		
 		val c = coll.result 
-		refResolver.addReadObject(refId, c)
+		refResolver.setReadObject(refId, c)
 		c
 	}
 
@@ -261,7 +261,7 @@ class ScalaMapSerializer ( val kryo: Kryo ) extends Serializer[Map[_,_]] {
 			}
 		} 
 		
-		refResolver.addReadObject(refId, coll)
+		refResolver.setReadObject(refId, coll)
 		coll
 	}
 
@@ -418,7 +418,7 @@ class ScalaSetSerializer ( val kryo: Kryo ) extends Serializer[Set[_]] {
 			}
 		} 
 		
-		refResolver.addReadObject(refId, coll)
+		refResolver.setReadObject(refId, coll)
 		coll
 	}
 
