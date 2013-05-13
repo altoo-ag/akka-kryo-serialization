@@ -131,12 +131,12 @@ class ScalaCollectionSerializer ( val kryo: Kryo ) extends Serializer[Traversabl
 		if (len != 0) { 
 			if (serializer != null) {
 				if (elementsCanBeNull) {
-					collection.foreach {element => kryo.writeObjectOrNull(output, element, serializer) }
+					collection.foreach {element: Any => kryo.writeObjectOrNull(output, element, serializer) }
 				} else {
-					collection.foreach {element => kryo.writeObject(output, element, serializer) }
+					collection.foreach {element: Any => kryo.writeObject(output, element, serializer) }
 				}
 			} else {
-				collection.foreach {element => kryo.writeClassAndObject(output, element) }
+				collection.foreach {element: Any => kryo.writeClassAndObject(output, element) }
 			}
 		}
 	}
@@ -202,7 +202,7 @@ class ScalaMapSerializer ( val kryo: Kryo ) extends Serializer[Map[_,_]] {
 				// Read ordering and set it for this collection 
 				implicit val mapOrdering = kryo.readClassAndObject(input).asInstanceOf[scala.math.Ordering[Any]]
 				try typ.getDeclaredConstructor(classOf[scala.math.Ordering[_]]).newInstance(mapOrdering).asInstanceOf[Map[Any,Any]].empty 
-				catch { case _ => kryo.newInstance(typ).asInstanceOf[Map[Any,Any]].empty }
+				catch { case _: Throwable => kryo.newInstance(typ).asInstanceOf[Map[Any,Any]].empty }
 			} else {
 				kryo.newInstance(typ).asInstanceOf[Map[Any,Any]].empty
 			}
@@ -236,7 +236,7 @@ class ScalaMapSerializer ( val kryo: Kryo ) extends Serializer[Map[_,_]] {
 				       constr
 				   } 
 				   constructor.newInstance(mapOrdering).asInstanceOf[Map[Any,Any]].empty 
-				} catch { case _ => kryo.newInstance(typ).asInstanceOf[Map[Any,Any]].empty }
+				} catch { case _: Throwable => kryo.newInstance(typ).asInstanceOf[Map[Any,Any]].empty }
 //				try typ.getDeclaredConstructor(classOf[scala.math.Ordering[_]]).newInstance(mapOrdering).asInstanceOf[Map[Any,Any]].empty 
 //				catch { case _ => kryo.newInstance(typ).asInstanceOf[Map[Any,Any]].empty }
 			} else {
@@ -282,24 +282,24 @@ class ScalaMapSerializer ( val kryo: Kryo ) extends Serializer[Map[_,_]] {
 			if (keySerializer != null) {
 				if (elementsCanBeNull) {
 					collection.foreach { 
-						case (k,v) => { 
-							kryo.writeObjectOrNull(output, k, keySerializer)
-							kryo.writeObjectOrNull(output, v, valueSerializer) 
+						t: (Any, Any) => { 
+							kryo.writeObjectOrNull(output, t._1, keySerializer)
+							kryo.writeObjectOrNull(output, t._2, valueSerializer) 
 						}
 					}
 				} else {
 					collection.foreach { 
-						case (k,v) => { 
-							kryo.writeObject(output, k, keySerializer)
-							kryo.writeObject(output, v, valueSerializer) 
+						t: (Any, Any) => { 
+							kryo.writeObject(output, t._1, keySerializer)
+							kryo.writeObject(output, t._2, valueSerializer) 
 						}
 					}
 				}
 			} else {
 				collection.foreach { 
-					case (k,v) => { 
-						kryo.writeClassAndObject(output, k)
-						kryo.writeClassAndObject(output, v) 
+					t: (Any, Any) => { 
+						kryo.writeClassAndObject(output, t._1)
+						kryo.writeClassAndObject(output, t._2) 
 					}
 				}
 			}
@@ -359,7 +359,7 @@ class ScalaSetSerializer ( val kryo: Kryo ) extends Serializer[Set[_]] {
 					   constr
 					} 
 				constructor.newInstance(setOrdering).asInstanceOf[Set[Any]].empty 
-				} catch { case _ => kryo.newInstance(typ).asInstanceOf[Set[Any]].empty }
+				} catch { case _: Throwable => kryo.newInstance(typ).asInstanceOf[Set[Any]].empty }
 			} else {
 				kryo.newInstance(typ).asInstanceOf[Set[Any]].empty
 			}
@@ -395,7 +395,7 @@ class ScalaSetSerializer ( val kryo: Kryo ) extends Serializer[Set[_]] {
 					   constr
 					} 
 				constructor.newInstance(setOrdering).asInstanceOf[Set[Any]].empty 
-				} catch { case _ => kryo.newInstance(typ).asInstanceOf[Set[Any]].empty }
+				} catch { case _: Throwable => kryo.newInstance(typ).asInstanceOf[Set[Any]].empty }
 			} else {
 				kryo.newInstance(typ).asInstanceOf[Set[Any]].empty
 			}
@@ -438,12 +438,12 @@ class ScalaSetSerializer ( val kryo: Kryo ) extends Serializer[Set[_]] {
 		if (len != 0) { 
 			if (serializer != null) {
 				if (elementsCanBeNull) {
-					collection foreach { e => kryo.writeObjectOrNull(output, e, serializer) }
+					collection foreach { e: Any => kryo.writeObjectOrNull(output, e, serializer) }
 				} else {
-					collection foreach { e => kryo.writeObject(output, e, serializer) }
+					collection foreach { e: Any => kryo.writeObject(output, e, serializer) }
 				}
 			} else {
-				collection foreach { e => kryo.writeClassAndObject(output, e) }
+				collection foreach { e: Any => kryo.writeClassAndObject(output, e) }
 			}
 		}
 	}

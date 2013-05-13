@@ -24,7 +24,6 @@ import com.esotericsoftware.kryo.io.Input
 import com.esotericsoftware.kryo.io.Output
 import scala.collection.immutable
 import scala.collection.mutable.ArrayBuffer
-import scala.Tuple
 import scala.Option
 import scala.Enumeration
 /***

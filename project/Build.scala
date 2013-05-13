@@ -31,8 +31,7 @@ object MinimalBuild extends Build {
     resolvers += typesafe,
     resolvers += typesafeSnapshot,
     publishArtifact in packageDoc := false,
-    // disable using the Scala version in output paths and artifacts
-    crossPaths := false,
+    crossScalaVersions := Seq("2.9.2", "2.9.3", "2.10.1"),
     libraryDependencies += "com.typesafe.akka" % "akka-remote" % "2.0",
     libraryDependencies += "com.typesafe.akka" % "akka-kernel" % "2.0",
     libraryDependencies += "com.esotericsoftware.kryo" % "kryo" % "2.21",
