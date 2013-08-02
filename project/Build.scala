@@ -20,7 +20,7 @@ import com.typesafe.sbt.osgi.SbtOsgi.{ OsgiKeys, osgiSettings, defaultOsgiSettin
 
 object MinimalBuild extends Build {
 
-  lazy val buildVersion = "0.2-SNAPSHOT"
+  lazy val buildVersion = "0.3"
 
   lazy val typesafe = "Typesafe Repository" at "http://repo.typesafe.com/typesafe/releases/"
   lazy val typesafeSnapshot = "Typesafe Snapshots Repository" at "http://repo.typesafe.com/typesafe/snapshots/"
@@ -31,11 +31,10 @@ object MinimalBuild extends Build {
     resolvers += typesafe,
     resolvers += typesafeSnapshot,
     publishArtifact in packageDoc := false,
-    // disable using the Scala version in output paths and artifacts
-    crossPaths := false,
+    crossScalaVersions := Seq("2.9.2", "2.9.3", "2.10.1"),
     libraryDependencies += "com.typesafe.akka" % "akka-remote" % "2.0",
     libraryDependencies += "com.typesafe.akka" % "akka-kernel" % "2.0",
-    libraryDependencies += "com.esotericsoftware.kryo" % "kryo" % "2.18-SNAPSHOT",
+    libraryDependencies += "com.esotericsoftware.kryo" % "kryo" % "2.21",
     libraryDependencies += "com.novocode" % "junit-interface" % "0.8" % "test"
     )
     .settings(defaultOsgiSettings: _*)
