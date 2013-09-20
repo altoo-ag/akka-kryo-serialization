@@ -58,6 +58,8 @@ object KryoSerialization {
 
     val UseManifests: Boolean = config.getBoolean("akka.actor.kryo.use-manifests")
     
+    val KryoCustomSerializerInit: String = config.getString("akka.actor.kryo.kryo-custom-serializer-init")
+    
     private def configToMap(cfg: Config): Map[String, String] =
       cfg.root.unwrapped.asScala.toMap.map { case (k, v) => (k, v.toString) }
   }  

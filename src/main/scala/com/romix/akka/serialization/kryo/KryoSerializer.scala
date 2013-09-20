@@ -81,6 +81,25 @@ class KryoSerializer (val system: ExtendedActorSystem) extends Serializer {
 		log.debug("Got use manifests: {}", useManifests)
 	}
 	
+	val customSerializerInitClassName = settings.KryoCustomSerializerInit
+    locally {
+        log.debug("Got custom serializer init class: {}", customSerializerInitClassName)
+    }
+
+    val customSerializerInitClass = 
+        if (customSerializerInitClassName == null) null else 
+            system.dynamicAccess.getClassFor[AnyRef](customSerializerInitClassName) match {
+                    case Right(clazz) => Some(clazz)
+                    case Left(e) => {  
+                            log.error("Class could not be loaded and/or registered: {} ", customSerializerInitClassName) 
+                            throw e 
+                        }
+                    }
+
+    val customizerInstance = customSerializerInitClass.map(_.newInstance)
+    
+    val customizerMethod = customSerializerInitClass.map(_.getMethod("customize"))
+    	
 	val serializer = try new KryoBasedSerializer(getKryo(idStrategy, serializerType), 
 											 bufferSize, 
 											 serializerPoolSize, 
@@ -130,7 +149,7 @@ class KryoSerializer (val system: ExtendedActorSystem) extends Serializer {
 	
 	private def getKryo(strategy: String, serializerType: String): Kryo = {
 			val referenceResolver = if (settings.KryoReferenceMap) new MapReferenceResolver() else new ListReferenceResolver()  
-			val kryo = new Kryo(new KryoClassResolver(implicitRegistrationLogging), referenceResolver)
+			val kryo = new Kryo(new KryoClassResolver(implicitRegistrationLogging), referenceResolver, new DefaultStreamFactory())
 			// Support deserialization of classes without no-arg constructors
 			kryo.setInstantiatorStrategy(new StdInstantiatorStrategy())
 			// Support serialization of some standard or often used Scala classes 
@@ -217,6 +236,8 @@ class KryoSerializer (val system: ExtendedActorSystem) extends Serializer {
 				case _ => kryo.setReferences(false)
 			}
 			
+		    customizerMethod.map(_.invoke(customizerInstance.get, kryo))
+			
 			kryo 
 		}
 
@@ -281,7 +302,7 @@ class ObjectPool[T](number: Int, newInstance: ()=>T) {
 
   def fetch(): T = {
     pool.poll() match {
-      case o: T => o
+      case o if o != null => o
       case null => createOrBlock
     }
   }
@@ -311,7 +332,7 @@ class ObjectPool[T](number: Int, newInstance: ()=>T) {
   private def block: T = {
     val timeout = 5000
     pool.poll(timeout, TimeUnit.MILLISECONDS) match {
-      case o: T => o
+      case o if o != null => o
       case _ => throw new Exception("Couldn't acquire object in %d milliseconds.".format(timeout))
     }
   }
