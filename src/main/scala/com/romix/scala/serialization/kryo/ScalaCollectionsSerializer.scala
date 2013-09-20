@@ -97,12 +97,6 @@ class ScalaCollectionSerializer ( val kryo: Kryo ) extends Serializer[Traversabl
 		val inst = kryo.newInstance(typ)
 		val coll = inst.asInstanceOf[Traversable[Any]].genericBuilder[Any]
 
-		// FIXME: Currently there is no easy way to get the reference ID of the object being read
-		val ref = coll
-		val refResolver = kryo.getReferenceResolver
-		kryo.reference(ref)
-		val refId = refResolver.nextReadId(typ) - 1
-		
 		if (len != 0) {
 			if (serializer != null) {
 				if (elementsCanBeNull) {
@@ -116,7 +110,6 @@ class ScalaCollectionSerializer ( val kryo: Kryo ) extends Serializer[Traversabl
 		} 
 		
 		val c = coll.result 
-		refResolver.setReadObject(refId, c)
 		c
 	}
 
@@ -243,11 +236,6 @@ class ScalaMapSerializer ( val kryo: Kryo ) extends Serializer[Map[_,_]] {
 				kryo.newInstance(typ).asInstanceOf[Map[Any,Any]].empty
 			}
 		
-		// FIXME: Currently there is no easy way to get the reference ID of the object being read
-		val ref = coll
-		val refResolver = kryo.getReferenceResolver
-		kryo.reference(ref)
-		val refId = refResolver.nextReadId(typ) - 1
 		
 		if (len != 0) {
 			if (keySerializer != null) {
@@ -261,7 +249,6 @@ class ScalaMapSerializer ( val kryo: Kryo ) extends Serializer[Map[_,_]] {
 			}
 		} 
 		
-		refResolver.setReadObject(refId, coll)
 		coll
 	}
 
@@ -400,11 +387,6 @@ class ScalaSetSerializer ( val kryo: Kryo ) extends Serializer[Set[_]] {
 				kryo.newInstance(typ).asInstanceOf[Set[Any]].empty
 			}
 
-		// FIXME: Currently there is no easy way to get the reference ID of the object being read
-		val ref = coll
-		val refResolver = kryo.getReferenceResolver
-		kryo.reference(ref)
-		val refId = refResolver.nextReadId(typ) - 1
 		
 		if (len != 0) {
 			if (serializer != null) {
@@ -418,7 +400,6 @@ class ScalaSetSerializer ( val kryo: Kryo ) extends Serializer[Set[_]] {
 			}
 		} 
 		
-		refResolver.setReadObject(refId, coll)
 		coll
 	}
 

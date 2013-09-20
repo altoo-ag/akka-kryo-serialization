@@ -69,8 +69,6 @@ class ScalaProductSerializer ( val kryo: Kryo ) extends Serializer[Product] {
 
 	override def read(kryo: Kryo, input: Input, typ: Class[Product]): Product  = {
 		val len = if (length != 0) length else input.readInt(true)
-		val ref = new Object
-		kryo.reference(ref)
 		
 		val elems: Array[Any] = new Array(len)
 		
