@@ -28,7 +28,7 @@ import com.esotericsoftware.kryo.io.Output
 import org.objenesis.strategy.StdInstantiatorStrategy
 import com.esotericsoftware.kryo.util._
 import com.romix.scala.serialization.kryo._
-
+import scala.util.{Try, Success, Failure}
 import KryoSerialization._
 import com.esotericsoftware.minlog.{Log => MiniLog}
 
@@ -89,16 +89,16 @@ class KryoSerializer (val system: ExtendedActorSystem) extends Serializer {
     val customSerializerInitClass = 
         if (customSerializerInitClassName == null) null else 
             system.dynamicAccess.getClassFor[AnyRef](customSerializerInitClassName) match {
-                    case Right(clazz) => Some(clazz)
-                    case Left(e) => {  
+                    case Success(clazz) => Some(clazz)
+                    case Failure(e) => {  
                             log.error("Class could not be loaded and/or registered: {} ", customSerializerInitClassName) 
                             throw e 
                         }
                     }
 
-    val customizerInstance = customSerializerInitClass.map(_.newInstance)
+    val customizerInstance = Try(customSerializerInitClass.map(_.newInstance))
     
-    val customizerMethod = customSerializerInitClass.map(_.getMethod("customize"))
+    val customizerMethod = Try(customSerializerInitClass.map(_.getMethod("customize")))
     	
 	val serializer = try new KryoBasedSerializer(getKryo(idStrategy, serializerType), 
 											 bufferSize, 
@@ -155,8 +155,8 @@ class KryoSerializer (val system: ExtendedActorSystem) extends Serializer {
 			// Support serialization of some standard or often used Scala classes 
 			kryo.addDefaultSerializer(classOf[scala.Enumeration#Value], classOf[EnumerationSerializer])
 			system.dynamicAccess.getClassFor[AnyRef]("scala.Enumeration$Val") match {
-					case Right(clazz) => kryo.register(clazz)
-					case Left(e) => {  
+					case Success(clazz) => kryo.register(clazz)
+					case Failure(e) => {  
 							log.error("Class could not be loaded and/or registered: {} ", "scala.Enumeration$Val") 
 							throw e 
 						}
@@ -182,8 +182,8 @@ class KryoSerializer (val system: ExtendedActorSystem) extends Serializer {
 					val id = idNum.toInt
 					// Load class
 					system.dynamicAccess.getClassFor[AnyRef](fqcn) match {
-					case Right(clazz) => kryo.register(clazz, id)
-					case Left(e) => {  
+					case Success(clazz) => kryo.register(clazz, id)
+					case Failure(e) => {  
 							log.error("Class could not be loaded and/or registered: {} ", fqcn) 
 							throw e 
 						}
@@ -193,8 +193,8 @@ class KryoSerializer (val system: ExtendedActorSystem) extends Serializer {
 				for(classname <- classnames) {
 					// Load class
 					system.dynamicAccess.getClassFor[AnyRef](classname) match {
-					case Right(clazz) => kryo.register(clazz)
-					case Left(e) => { 
+					case Success(clazz) => kryo.register(clazz)
+					case Failure(e) => { 
 							log.warning("Class could not be loaded and/or registered: {} ", classname) 
 							/* throw e */ 
 						}
@@ -209,8 +209,8 @@ class KryoSerializer (val system: ExtendedActorSystem) extends Serializer {
 					val id = idNum.toInt
 					// Load class
 					system.dynamicAccess.getClassFor[AnyRef](fqcn) match {
-					case Right(clazz) => kryo.register(clazz, id)
-					case Left(e) => { 
+					case Success(clazz) => kryo.register(clazz, id)
+					case Failure(e) => { 
 							log.error("Class could not be loaded and/or registered: {} ", fqcn) 
 							throw e
 						}
@@ -220,8 +220,8 @@ class KryoSerializer (val system: ExtendedActorSystem) extends Serializer {
 				for(classname <- classnames) {
 					// Load class
 					system.dynamicAccess.getClassFor[AnyRef](classname) match {
-					case Right(clazz) => kryo.register(clazz)
-					case Left(e) => { 
+					case Success(clazz) => kryo.register(clazz)
+					case Failure(e) => { 
 							log.warning("Class could not be loaded and/or registered: {} ", classname) 
 							/* throw e */ 
 						}
@@ -236,7 +236,7 @@ class KryoSerializer (val system: ExtendedActorSystem) extends Serializer {
 				case _ => kryo.setReferences(false)
 			}
 			
-		    customizerMethod.map(_.invoke(customizerInstance.get, kryo))
+		    customizerMethod.map(_.get.invoke(customizerInstance.get, kryo))
 			
 			kryo 
 		}
