@@ -33,13 +33,22 @@ object MinimalBuild extends Build {
     resolvers += typesafeSnapshot,
     resolvers += sonatypeSnapshot,
     publishArtifact in packageDoc := false,
-    crossScalaVersions := Seq("2.9.2", "2.9.3", "2.10.1"),
+    crossScalaVersions := Seq("2.9.2", "2.9.3", "2.10.2"),
     // crossScalaVersions := Seq("2.10.1"),
-    scalaVersion := "2.10.1",
-    libraryDependencies += "com.typesafe.akka" % "akka-remote" % "2.0",
-    libraryDependencies += "com.typesafe.akka" % "akka-kernel" % "2.0",
+    scalaVersion := "2.10.2",
+    libraryDependencies += "com.typesafe.akka" %% "akka-remote" % "2.2.1",
+    libraryDependencies += "com.typesafe.akka" %% "akka-kernel" % "2.2.1",
     libraryDependencies += "com.esotericsoftware.kryo" % "kryo" % "2.22-SNAPSHOT",
-    libraryDependencies += "com.novocode" % "junit-interface" % "0.8" % "test"
+    libraryDependencies += "com.novocode" % "junit-interface" % "0.8" % "test",
+    scalacOptions         := Seq(
+      "-encoding", "utf8",
+      "-feature",
+      "-unchecked",
+      "-deprecation",
+      "-target:jvm-1.6",
+      "-language:_",
+      "-Xlog-reflective-calls"
+    )
     )
     .settings(defaultOsgiSettings: _*)
     .settings(
