@@ -81,8 +81,8 @@ class MapSerializerTest extends KryoTestCase {
 		kryo.addDefaultSerializer(classOf[scala.Product], classOf[ScalaProductSerializer])
 //		kryo.addDefaultSerializer(classOf[scala.collection.Map[_,_]], classOf[ScalaMapSerializer])
 	    println("Test custom class")
-		val pimped = new PimpedClass[List[Int]](classOf[List[Int]])
-		println(pimped.getTypeArgumentsOf(List(1,2,3).getClass))
+//		val pimped = new PimpedClass[List[Int]](classOf[List[Int]])
+//		println(pimped.getTypeArgumentsOf(List(1,2,3).getClass))
 		val scl1 = new ScalaClass1()
 		var map1:Map[String, String] = Map.empty[String, String]
 		
