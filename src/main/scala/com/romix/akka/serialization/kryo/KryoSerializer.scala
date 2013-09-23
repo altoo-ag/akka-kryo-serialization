@@ -96,9 +96,20 @@ class KryoSerializer (val system: ExtendedActorSystem) extends Serializer {
                         }
                     }
 
+    locally {
+        log.debug("Got serializer init class: {}", customSerializerInitClass)
+    }
+
     val customizerInstance = Try(customSerializerInitClass.map(_.newInstance))
+    locally {
+        log.debug("Got customizer instance: {}", customizerInstance)
+    }
     
-    val customizerMethod = Try(customSerializerInitClass.map(_.getMethod("customize")))
+    val customizerMethod = Try(customSerializerInitClass.map(_.getMethod("customize", classOf[Kryo])))
+
+    locally {
+        log.debug("Got customizer method: {}", customizerMethod)
+    }
     	
 	val serializer = try new KryoBasedSerializer(getKryo(idStrategy, serializerType), 
 											 bufferSize, 
@@ -236,7 +247,7 @@ class KryoSerializer (val system: ExtendedActorSystem) extends Serializer {
 				case _ => kryo.setReferences(false)
 			}
 			
-		    customizerMethod.map(_.get.invoke(customizerInstance.get, kryo))
+			Try(customizerMethod.get.get.invoke( customizerInstance.get.get, kryo))
 			
 			kryo 
 		}
