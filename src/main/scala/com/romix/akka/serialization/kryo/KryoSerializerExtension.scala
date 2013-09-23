@@ -26,6 +26,7 @@ import akka.actor.{ ActorSystem, Extension, ExtendedActorSystem, Address, Dynami
 import akka.event.Logging
 import java.util.concurrent.ConcurrentHashMap
 import scala.collection.mutable.ArrayBuffer
+import scala.util.{Try, Success, Failure}
 import java.io.NotSerializableException
 
 object KryoSerialization {
@@ -58,7 +59,7 @@ object KryoSerialization {
 
     val UseManifests: Boolean = config.getBoolean("akka.actor.kryo.use-manifests")
     
-    val KryoCustomSerializerInit: String = configToMap(getConfig("akka.actor.kryo")).get("kryo-custom-serializer-init").getOrElse(null)
+    val KryoCustomSerializerInit: String = Try(config.getString("akka.actor.kryo.kryo-custom-serializer-init")).getOrElse(null)
     
     private def configToMap(cfg: Config): Map[String, String] =
       cfg.root.unwrapped.asScala.toMap.map { case (k, v) => (k, v.toString) }
