@@ -161,11 +161,13 @@ registered classes.
 
 Another useful trick is to provide your own custom initializer for Kryo (see below) and inside it you register 
 classes of a few objects that are typically used by your application, for example:
-    kryo.register(myObj1.getClass);
-    kryo.register(myObj2.getClass);    
+
+			kryo.register(myObj1.getClass);
+			kryo.register(myObj2.getClass);    
     
 Obviously, you can also explicitly assign IDs to your classes in the initializer, if you wish:
-    kryo.register(myObj3.getClass, 123);
+
+			kryo.register(myObj3.getClass, 123);
 
 If you use this library as an alternative serialization method when sending messages between actors, it is extremely
 important that the order of class registration and the assigned class IDs are the same for senders and for receivers!
@@ -177,21 +179,23 @@ How to create a custom initializer for Kryo
 Sometimes you need to customize Kryo beyond what is possible by means of the configuration parameters in the config file.
 Typically, you may want to register very specific serializers for certain classes or tweak some settings of the Kryo instance.
 This is possible by providing the following optional parameter in the config file:
-    kryo-custom-serializer-init = "CustomKryoSerializerInitFQCN"
+			`kryo-custom-serializer-init = "CustomKryoSerializerInitFQCN"`
 
-Where *CustomKryoSerializerInitFQCN* is a fully qualified class name of your custom serializer class. And custom serializer class can be
-just any class with a default no-arg constructor and a method called *customize*, which takes one parameter of type Kryo and has a void 
+Where `CustomKryoSerializerInitFQCN` is a fully qualified class name of your custom serializer class. And custom serializer class can be
+just any class with a default no-arg constructor and a method called `customize`, which takes one parameter of type Kryo and has a void 
 return type, i.e.
-    public void customize(Kryo kryo); // for Java
-    def customize(kryo:Kryo):Unit // for Scala
+
+			public void customize(Kryo kryo); // for Java
+			def customize(kryo:Kryo):Unit // for Scala
 
 An example of such a custom Kryo serializer initialization class could be something like this:
-    class KryoInit {
-      def customize(kryo: Kryo): Unit  = {
-        kryo.register(classOf[DateTime], new JodaDateTimeSerializer)
-        kryo.setReferences(false)
-      }
-    }    
+
+			class KryoInit {
+				def customize(kryo: Kryo): Unit  = {
+					kryo.register(classOf[DateTime], new JodaDateTimeSerializer)
+					kryo.setReferences(false)
+				}
+			}    
     
 Usage as a general purpose Scala serialization library 
 -------------------------------------------------------------------
