@@ -18,7 +18,7 @@ import com.esotericsoftware.minlog.Log;
 
 import com.esotericsoftware.kryo.ReferenceResolver;
 import com.esotericsoftware.kryo.util.MapReferenceResolver;
-import org.objenesis.strategy.StdInstantiatorStrategy;
+import com.esotericsoftware.shaded.org.objenesis.strategy.StdInstantiatorStrategy;
 
 /** Convenience methods for round tripping objects.
  * @author Nathan Sweet <misc@n4te.com> */

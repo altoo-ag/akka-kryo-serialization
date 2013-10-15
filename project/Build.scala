@@ -38,7 +38,7 @@ object MinimalBuild extends Build {
     scalaVersion := "2.10.2",
     libraryDependencies += "com.typesafe.akka" %% "akka-remote" % "2.2.1",
     libraryDependencies += "com.typesafe.akka" %% "akka-kernel" % "2.2.1",
-    libraryDependencies += "com.esotericsoftware.kryo" % "kryo" % "2.22-SNAPSHOT",
+    libraryDependencies += "com.esotericsoftware.kryo" % "kryo" % "2.22",
     libraryDependencies += "com.novocode" % "junit-interface" % "0.8" % "test",
     scalacOptions         := Seq(
       "-encoding", "utf8",
