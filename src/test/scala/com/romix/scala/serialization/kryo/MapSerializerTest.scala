@@ -40,7 +40,7 @@ class MapSerializerTest extends KryoTestCase {
 		supportsCopy = false;
 	}
 
-	val hugeCollectionSize = 10
+	val hugeCollectionSize = 100
 	 def testCalculatorClasses():Unit = {
 				kryo.setRegistrationRequired(false)
 				// Support serialization of Scala collections
@@ -49,7 +49,7 @@ class MapSerializerTest extends KryoTestCase {
 				kryo.addDefaultSerializer(classOf[scala.collection.generic.SetFactory[scala.collection.Set]], classOf[ScalaSetSerializer])
 	 }
 	 
-	 def xtestImmutableMaps():Unit = {
+	 def testImmutableMaps():Unit = {
 		kryo.setRegistrationRequired(false)
 		// Support serialization of Scala collections
 		kryo.addDefaultSerializer(classOf[scala.Enumeration#Value], classOf[EnumerationSerializer])
@@ -68,6 +68,7 @@ class MapSerializerTest extends KryoTestCase {
 		roundTrip(35, map3)		
 		roundTrip(35, map4)		
 	 }
+
 	 
 	 def testPimpedClass(): Unit = {
 		kryo.addDefaultSerializer(classOf[scala.Enumeration#Value], classOf[EnumerationSerializer])
@@ -80,16 +81,17 @@ class MapSerializerTest extends KryoTestCase {
 		kryo.addDefaultSerializer(classOf[scala.Product], classOf[ScalaProductSerializer])
 //		kryo.addDefaultSerializer(classOf[scala.collection.Map[_,_]], classOf[ScalaMapSerializer])
 	    println("Test custom class")
-		val pimped = new PimpedClass[List[Int]](classOf[List[Int]])
-		println(pimped.getTypeArgumentsOf(List(1,2,3).getClass))
+//		val pimped = new PimpedClass[List[Int]](classOf[List[Int]])
+//		println(pimped.getTypeArgumentsOf(List(1,2,3).getClass))
 		val scl1 = new ScalaClass1()
-		var map1:Map[String, String] = Map[String, String]()
+		var map1:Map[String, String] = Map.empty[String, String]
 		
 		0 until hugeCollectionSize foreach {case i => map1 += ("k"+i)->("v"+i)}
 		
-		scl1.map11 = map1
+        scl1.map11 = map1
 		scl1.vector11 = Vector("LL", "ee", "oo")
-		scl1.list11 = List("LL", "ee", "oo", "nn")
+        scl1.vector11 = null
+		scl1.list11 = List("LL", "ee", "oo", "nn", "ii", "dd", "aa", "ss")
 		println("Class of map1: " + scl1.getClass.getName)
 		val typeParams = scl1.getClass.getTypeParameters
 		println("Type params of map1: " + java.util.Arrays.toString(typeParams.asInstanceOf[Array[java.lang.Object]]))
@@ -97,6 +99,7 @@ class MapSerializerTest extends KryoTestCase {
 			println("Type parameter variable: name=" + typeVar.getName() + " type bounds=" + Arrays.toString(typeVar.getBounds().asInstanceOf[Array[java.lang.Object]])+ " declaration="+typeVar.getGenericDeclaration())
 		}
 		roundTrip(35, scl1)		
+		
 		val scl2 = new ScalaClass1()
 		scl2.map11 = map1
 		scl2.vector11 = Vector("LL", "ee", "oo")
@@ -127,7 +130,7 @@ class MapSerializerTest extends KryoTestCase {
 //				kryo.addDefaultSerializer(classOf[scala.collection.generic.MapFactory[scala.collection.Map]], classOf[ScalaMapSerializer])
 //				kryo.addDefaultSerializer(classOf[scala.collection.Traversable[_]], classOf[ScalaCollectionSerializer])
 				
-				var map1:Map[String, String] = Map[String, String]()
+				var map1:Map[String, String] = Map.empty[String, String]
 				
 				0 until hugeCollectionSize foreach {case i => map1 += ("k"+i)->("v"+i)}
 //				println("Class of map1: " + map1.getClass.getName)
@@ -147,7 +150,9 @@ class MapSerializerTest extends KryoTestCase {
 				roundTrip(35, map4)		
 				roundTrip(35, List(Map("Leo"->"Romanoff")))		
 	 }
-	 
+
+
+
 	 def xtestBigImmutableSets():Unit = {
 			    println("Test big immutable sets")
 				kryo.setRegistrationRequired(false)
@@ -170,10 +175,11 @@ class MapSerializerTest extends KryoTestCase {
 //				kryo.addDefaultSerializer(classOf[scala.collection.Map[_,_]], classOf[ScalaMapSerializer])
 //				kryo.addDefaultSerializer(classOf[scala.collection.generic.MapFactory[scala.collection.Map]], classOf[ScalaMapSerializer])
 //				kryo.addDefaultSerializer(classOf[scala.collection.Traversable[_]], classOf[ScalaCollectionSerializer])
-				
-				var map1 = Set[String]()
+
+				var map1 = Set.empty[String]
 				
 				0 until hugeCollectionSize foreach {case i => map1 += ("k"+i)}
+              
 				
 //				val map1 = Map("Rome"->"Italy", "London"->"England", "Paris"->"France", "New York"->"USA", "Tokio"->"Japan", "Peking"->"China", "Brussels"->"Belgium")
 				val map2 = map1 + ("Moscow")
@@ -183,8 +189,11 @@ class MapSerializerTest extends KryoTestCase {
 				roundTrip(35, map2)		
 				roundTrip(35, map3)		
 				roundTrip(35, map4)		
+
 	 }
 	 
+
+
 	 def xtestImmutableLists():Unit = {
 			    println("Test big immutable lists")
 				kryo.setRegistrationRequired(false)
@@ -198,7 +207,7 @@ class MapSerializerTest extends KryoTestCase {
 //				kryo.addDefaultSerializer(classOf[scala.collection.generic.MapFactory[scala.collection.Map]], classOf[ScalaMapSerializer])
 //				kryo.addDefaultSerializer(classOf[scala.collection.Traversable[_]], classOf[ScalaCollectionSerializer])
 				
-				var map1 = List[String]()
+				var map1 = List.empty[String]
 				
 				0 until 1000 foreach {case i => map1 = ("k"+i) :: map1}
 			    

@@ -22,15 +22,53 @@ How to use this library in your project
 To use this serializer, you need to do two things:
 *   Include a dependency on this library into your project:
 
-	`libraryDependencies += "com.romix.akka" % "akka-kryo-serialization" % "0.2-SNAPSHOT"`
+	`libraryDependencies += "com.github.romix.akka" % "akka-kryo-serialization" % "0.3.0"`
     
 *   Add some new elements to your Akka configuration file, e.g. `application.conf`
 
 Which Maven repository contains this library?
 ---------------------------------------------
 
-Currently, this library is not available on the Maven Central or the like, but it is planned.
-For the time being, if you intend to use it in your project, you need to check out the project from Github and do
+You can find the JARs on Sonatype Maven repository.
+
+Please use the following fragment in your pom.xml:
+
+
+To use the official release of akka-kryo-serialization, please use the following snippet in your pom.xml
+
+    <repository>
+        <snapshots>
+            <enabled>false</enabled>
+        </snapshots>
+        <id>central</id>
+        <name>Maven Central Repository</name>
+        <url>http://repo1.maven.org/maven2</url>
+    </repository>
+    
+    <dependency>
+        <groupId>com.github.romix.akka</groupId>
+        <artifactId>akka-kryo-serialization</artifactId>
+        <version>0.3.0</version>
+    </dependency>
+
+If you want to test the latest snapshot of this library, please use the following snippet in your pom.xml
+
+    <repository>
+       <id>sonatype-snapshots</id>
+       <name>sonatype snapshots repo</name>
+       <url>https://oss.sonatype.org/content/repositories/snapshots</url>
+    </repository>
+    
+    <dependency>
+       <groupId>com.github.romix.akka</groupId>
+       <artifactId>akka-kryo-serialization</artifactId>
+        <version>0.4.0-SNAPSHOT</version>
+    </dependency>
+
+
+How do I build this library on my own?
+--------------------------------------------
+If you wish to build the library on your own, you need to check out the project from Github and do
     `sbt compile publish-local`
 
 If you wish to use it within an OSGi environment, you can add OSGi headers to the build by executing:
@@ -99,6 +137,11 @@ The following options are available for configuring this serializer:
 			# Useful for debugging and lowl-level tweaking
 			kryo-trace = false 
 			  
+			# If proviced, Kryo uses the class specified by a fully qualified class name
+			# to perform a custom initialization of Kryo instances in addition to what
+			# is done automatically based on the config file.
+			kryo-custom-serializer-init = "CustomKryoSerializerInitFQCN"
+			  
 			# Define mappings from a fully qualified class name to a numeric id.  
 			# Smaller ids lead to smaller sizes of serialized representations.  
 			#  
@@ -154,6 +197,44 @@ classes.
 You may need to repeat the process several times until you see no further log messages about implicitly
 registered classes.
 
+Another useful trick is to provide your own custom initializer for Kryo (see below) and inside it you register 
+classes of a few objects that are typically used by your application, for example:
+
+			kryo.register(myObj1.getClass);
+			kryo.register(myObj2.getClass);    
+    
+Obviously, you can also explicitly assign IDs to your classes in the initializer, if you wish:
+
+			kryo.register(myObj3.getClass, 123);
+
+If you use this library as an alternative serialization method when sending messages between actors, it is extremely
+important that the order of class registration and the assigned class IDs are the same for senders and for receivers!
+
+
+How to create a custom initializer for Kryo
+-------------------------------------------------------------------
+
+Sometimes you need to customize Kryo beyond what is possible by means of the configuration parameters in the config file.
+Typically, you may want to register very specific serializers for certain classes or tweak some settings of the Kryo instance.
+This is possible by providing the following optional parameter in the config file:
+			`kryo-custom-serializer-init = "CustomKryoSerializerInitFQCN"`
+
+Where `CustomKryoSerializerInitFQCN` is a fully qualified class name of your custom serializer class. And custom serializer class can be
+just any class with a default no-arg constructor and a method called `customize`, which takes one parameter of type Kryo and has a void 
+return type, i.e.
+
+			public void customize(Kryo kryo); // for Java
+			def customize(kryo:Kryo):Unit // for Scala
+
+An example of such a custom Kryo serializer initialization class could be something like this:
+
+			class KryoInit {
+				def customize(kryo: Kryo): Unit  = {
+					kryo.register(classOf[DateTime], new JodaDateTimeSerializer)
+					kryo.setReferences(false)
+				}
+			}    
+    
 Usage as a general purpose Scala serialization library 
 -------------------------------------------------------------------
 

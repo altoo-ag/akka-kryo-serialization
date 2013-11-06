@@ -35,13 +35,14 @@ class ActorRefSerializer(val system: ExtendedActorSystem) extends Serializer[Act
 
 	override def read(kryo: Kryo, input: Input, typ: Class[ActorRef]): ActorRef = {
 		val path = input.readString()
-		system.actorFor(path)
+		system.provider.resolveActorRef(path)
 	}
 
 	override def write(kryo: Kryo, output: Output, obj: ActorRef) = {
-		Serialization.currentTransportAddress.value match {
-			case null => output.writeString(obj.path.toString)
-			case addr => output.writeString(obj.path.toStringWithAddress(addr))
-		}
+	    output.writeString(Serialization.serializedActorPath(obj))
+//		Serialization.currentTransportAddress.value match {
+//			case null => output.writeString(obj.path.toString)
+//			case addr => output.writeString(obj.path.toStringWithAddress(addr))
+//		}
 	}
 }
