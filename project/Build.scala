@@ -32,7 +32,7 @@ object MinimalBuild extends Build {
     resolvers += typesafe,
     resolvers += typesafeSnapshot,
     resolvers += sonatypeSnapshot,
-    publishArtifact in packageDoc := false,
+    // publishArtifact in packageDoc := false,
     crossScalaVersions := Seq("2.9.2", "2.9.3", "2.10.2"),
     // crossScalaVersions := Seq("2.10.1"),
     scalaVersion := "2.10.2",
