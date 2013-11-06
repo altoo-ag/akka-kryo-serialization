@@ -22,15 +22,53 @@ How to use this library in your project
 To use this serializer, you need to do two things:
 *   Include a dependency on this library into your project:
 
-	`libraryDependencies += "com.romix.akka" % "akka-kryo-serialization" % "0.2-SNAPSHOT"`
+	`libraryDependencies += "com.github.romix.akka" % "akka-kryo-serialization" % "0.3.0"`
     
 *   Add some new elements to your Akka configuration file, e.g. `application.conf`
 
 Which Maven repository contains this library?
 ---------------------------------------------
 
-Currently, this library is not available on the Maven Central or the like, but it is planned.
-For the time being, if you intend to use it in your project, you need to check out the project from Github and do
+You can find the JARs on Sonatype Maven repository.
+
+Please use the following fragment in your pom.xml:
+
+
+To use the official release of akka-kryo-serialization, please use the following snippet in your pom.xml
+
+    <repository>
+        <snapshots>
+            <enabled>false</enabled>
+        </snapshots>
+        <id>central</id>
+        <name>Maven Central Repository</name>
+        <url>http://repo1.maven.org/maven2</url>
+    </repository>
+    
+    <dependency>
+        <groupId>com.github.romix.akka</groupId>
+        <artifactId>akka-kryo-serialization</artifactId>
+        <version>0.3.0</version>
+    </dependency>
+
+If you want to test the latest snapshot of this library, please use the following snippet in your pom.xml
+
+    <repository>
+       <id>sonatype-snapshots</id>
+       <name>sonatype snapshots repo</name>
+       <url>https://oss.sonatype.org/content/repositories/snapshots</url>
+    </repository>
+    
+    <dependency>
+       <groupId>com.github.romix.akka</groupId>
+       <artifactId>akka-kryo-serialization</artifactId>
+        <version>0.4.0-SNAPSHOT</version>
+    </dependency>
+
+
+How do I build this library on my own?
+--------------------------------------------
+If you wish to build the library on your own, you need to check out the project from Github and do
     `sbt compile publish-local`
 
 If you wish to use it within an OSGi environment, you can add OSGi headers to the build by executing:
