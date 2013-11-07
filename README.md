@@ -47,7 +47,7 @@ To use the official release of akka-kryo-serialization, please use the following
     
     <dependency>
         <groupId>com.github.romix.akka</groupId>
-        <artifactId>akka-kryo-serialization</artifactId>
+        <artifactId>akka-kryo-serialization_2.10</artifactId>
         <version>0.3.0</version>
     </dependency>
 
@@ -61,10 +61,15 @@ If you want to test the latest snapshot of this library, please use the followin
     
     <dependency>
        <groupId>com.github.romix.akka</groupId>
-       <artifactId>akka-kryo-serialization</artifactId>
+       <artifactId>akka-kryo-serialization_2.10</artifactId>
         <version>0.4.0-SNAPSHOT</version>
     </dependency>
 
+
+For your SBT project files, you can use the following coordinates:
+
+    "com.github.romix.akka" %% "akka-kryo-serialization" % "0.3.0"
+    
 
 How do I build this library on my own?
 --------------------------------------------
