@@ -185,7 +185,7 @@ The following options are available for configuring this serializer:
 			kryo = "com.romix.akka.serialization.kryo.KryoSerializer"  
 		}    
      
-*    As usual, you should declare in the Akka `serialization-bindings` section which classes should use kryo serialization
+*    As usual, you should declare in the Akka `serialization-bindings` section which classes should use kryo serialization. One thing to keep in mind is that classes that you register in this section are supposed to be *TOP-LEVEL* classes that you wish to serialize. I.e. this is a class of object that you send over the wire. It should not be a class that is used internally by a top-level class. The reason for it: Akka sees only an object of a top-level class to be sent. It picks a matching serializer for this top-level class, e.g. a default Java serializer, and then it serializes the whole object graph with this object as a root using this Java serializer.
 
 How do you create mappings or classes sections with proper content? 
 -------------------------------------------------------------------
