@@ -68,7 +68,7 @@ If you want to test the latest snapshot of this library, please use the followin
 
 For your SBT project files, you can use the following coordinates:
 
-    "com.github.romix.akka" %% "akka-kryo-serialization" % "0.3.0"
+    "com.github.romix.akka" %% "akka-kryo-serialization" % "0.3.1"
     
 
 How do I build this library on my own?
