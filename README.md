@@ -48,7 +48,7 @@ To use the official release of akka-kryo-serialization, please use the following
     <dependency>
         <groupId>com.github.romix.akka</groupId>
         <artifactId>akka-kryo-serialization_2.10</artifactId>
-        <version>0.3.0</version>
+        <version>0.3.1</version>
     </dependency>
 
 If you want to test the latest snapshot of this library, please use the following snippet in your pom.xml
