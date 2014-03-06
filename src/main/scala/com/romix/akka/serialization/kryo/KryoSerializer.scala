@@ -31,6 +31,7 @@ import com.romix.scala.serialization.kryo._
 import scala.util.{Try, Success, Failure}
 import KryoSerialization._
 import com.esotericsoftware.minlog.{Log => MiniLog}
+import com.romix.scala.serialization.kryo.ScalaKryo
 
 class KryoSerializer (val system: ExtendedActorSystem) extends Serializer {
 
@@ -160,7 +161,7 @@ class KryoSerializer (val system: ExtendedActorSystem) extends Serializer {
 	
 	private def getKryo(strategy: String, serializerType: String): Kryo = {
 			val referenceResolver = if (settings.KryoReferenceMap) new MapReferenceResolver() else new ListReferenceResolver()  
-			val kryo = new Kryo(new KryoClassResolver(implicitRegistrationLogging), referenceResolver, new DefaultStreamFactory())
+			val kryo = new ScalaKryo(new KryoClassResolver(implicitRegistrationLogging), referenceResolver, new DefaultStreamFactory())
 			// Support deserialization of classes without no-arg constructors
 			kryo.setInstantiatorStrategy(new StdInstantiatorStrategy())
 			// Support serialization of some standard or often used Scala classes 
