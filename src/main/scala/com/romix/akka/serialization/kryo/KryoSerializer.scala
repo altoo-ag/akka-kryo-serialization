@@ -25,7 +25,7 @@ import scala.collection.JavaConversions._
 import com.esotericsoftware.kryo.Kryo
 import com.esotericsoftware.kryo.io.Input
 import com.esotericsoftware.kryo.io.Output
-import com.esotericsoftware.shaded.org.objenesis.strategy.StdInstantiatorStrategy
+import org.objenesis.strategy.StdInstantiatorStrategy
 import com.esotericsoftware.kryo.util._
 import com.romix.scala.serialization.kryo._
 import scala.util.{Try, Success, Failure}

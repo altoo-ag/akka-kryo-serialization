@@ -36,9 +36,9 @@ object MinimalBuild extends Build {
     crossScalaVersions := Seq("2.9.2", "2.9.3", "2.10.2"),
     // crossScalaVersions := Seq("2.10.1"),
     scalaVersion := "2.10.2",
-    libraryDependencies += "com.typesafe.akka" %% "akka-remote" % "2.2.1",
-    libraryDependencies += "com.typesafe.akka" %% "akka-kernel" % "2.2.1",
-    libraryDependencies += "com.esotericsoftware.kryo" % "kryo" % "2.22",
+    libraryDependencies += "com.typesafe.akka" %% "akka-remote" % "2.3.1",
+    libraryDependencies += "com.typesafe.akka" %% "akka-kernel" % "2.3.1",
+    libraryDependencies += "com.esotericsoftware.kryo" % "kryo" % "2.23.0",
     libraryDependencies += "com.novocode" % "junit-interface" % "0.8" % "test",
     scalacOptions         := Seq(
       "-encoding", "utf8",
@@ -87,9 +87,9 @@ object MinimalBuild extends Build {
     ))
     .settings(defaultOsgiSettings: _*)
     .settings(
-      OsgiKeys.exportPackage := Seq("com.romix.akka.serialization.kryo;version\"0.3.0.1\""),
+      OsgiKeys.exportPackage := Seq("com.romix.akka.serialization.kryo;version\"0.3.0.1\"", "com.romix.scala.serialization.kryo;version\"0.3.0.1\""),
       OsgiKeys.importPackage := Seq("com.esotericsoftware*;version=\"[2.20,3.0)\"",
-        "com.typesafe.config;version=\"[0.4.1,1.0.0)\"",
+        "com.typesafe.config;version=\"[1.2.0, 2.0.0)\"",
         "akka*;version=\"[2.1.0,3.0.0)\"",
         "scala*;version=\"[2.9.2,2.11.0)\"",
         "*")
