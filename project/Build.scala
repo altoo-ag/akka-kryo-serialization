@@ -87,7 +87,6 @@ object MinimalBuild extends Build {
     ))
     .settings(defaultOsgiSettings: _*)
     .settings(
-      OsgiKeys.privatePackage := Seq("com.romix.scala.serialization.kryo\""),
       OsgiKeys.exportPackage := Seq("com.romix.akka.serialization.kryo;version\"0.3.0.1\"", "com.romix.scala.serialization.kryo;version\"0.3.0.1\""),
       OsgiKeys.importPackage := Seq("com.esotericsoftware*;version=\"[2.20,3.0)\"",
         "com.typesafe.config;version=\"[1.2.0, 2.0.0)\"",
