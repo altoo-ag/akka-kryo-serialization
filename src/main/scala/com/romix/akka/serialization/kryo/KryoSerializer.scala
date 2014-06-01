@@ -141,7 +141,7 @@ class KryoSerializer (val system: ExtendedActorSystem) extends Serializer {
 	// A unique identifier for this Serializer
 	def identifier = 123454323
 
-	val lz4factory = LZ4Factory.fastestInstance
+	lazy val lz4factory = LZ4Factory.fastestInstance
 
 	def compress(inputBuff: Array[Byte]): Array[Byte] = {
 		val inputSize = inputBuff.length
