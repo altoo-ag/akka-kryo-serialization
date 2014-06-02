@@ -36,6 +36,7 @@ Please use the following fragment in your pom.xml:
 
 To use the official release of akka-kryo-serialization, please use the following snippet in your pom.xml
 
+```xml
     <repository>
         <snapshots>
             <enabled>false</enabled>
@@ -50,9 +51,11 @@ To use the official release of akka-kryo-serialization, please use the following
         <artifactId>akka-kryo-serialization_2.10</artifactId>
         <version>0.3.1</version>
     </dependency>
+```
 
 If you want to test the latest snapshot of this library, please use the following snippet in your pom.xml
 
+```xml
     <repository>
        <id>sonatype-snapshots</id>
        <name>sonatype snapshots repo</name>
@@ -64,7 +67,7 @@ If you want to test the latest snapshot of this library, please use the followin
        <artifactId>akka-kryo-serialization_2.10</artifactId>
         <version>0.4.0-SNAPSHOT</version>
     </dependency>
-
+```
 
 For your SBT project files, you can use the following coordinates:
 
@@ -208,12 +211,16 @@ registered classes.
 Another useful trick is to provide your own custom initializer for Kryo (see below) and inside it you register 
 classes of a few objects that are typically used by your application, for example:
 
+```scala
 			kryo.register(myObj1.getClass);
-			kryo.register(myObj2.getClass);    
+			kryo.register(myObj2.getClass);
+```
     
 Obviously, you can also explicitly assign IDs to your classes in the initializer, if you wish:
 
+```scala
 			kryo.register(myObj3.getClass, 123);
+```
 
 If you use this library as an alternative serialization method when sending messages between actors, it is extremely
 important that the order of class registration and the assigned class IDs are the same for senders and for receivers!
@@ -236,12 +243,14 @@ return type, i.e.
 
 An example of such a custom Kryo serializer initialization class could be something like this:
 
+```scala
 			class KryoInit {
 				def customize(kryo: Kryo): Unit  = {
 					kryo.register(classOf[DateTime], new JodaDateTimeSerializer)
 					kryo.setReferences(false)
 				}
-			}    
+			}
+```
     
 Usage as a general purpose Scala serialization library 
 -------------------------------------------------------------------
@@ -251,6 +260,7 @@ All serializers for Scala classes can be found in the package `com.romix.scala.s
 
 If you want to use any of those serializers in your code, add some of the following lines to your code as required:
 
+```scala
 			// Serialization of Scala enumerations
 			kryo.addDefaultSerializer(classOf[scala.Enumeration#Value], classOf[EnumerationSerializer])
 			kryo.register(Class.forName("scala.Enumeration$Val"))
@@ -266,5 +276,6 @@ If you want to use any of those serializers in your code, add some of the follow
 
 			// Serialization of all Traversable Scala collections like Lists, Vectors, etc
 			kryo.addDefaultSerializer(classOf[scala.collection.Traversable[_]], classOf[ScalaCollectionSerializer])
-      
+```
+
  
