@@ -159,30 +159,30 @@ class KryoSerializer (val system: ExtendedActorSystem) extends Serializer {
 	}
 
 	def decompress(inputBuff: Array[Byte]): Array[Byte] = {
-		// the first 4 bytes are the original size
-		val size: Int = (inputBuff(0).asInstanceOf[Int] & 0xff)       |
-										(inputBuff(1).asInstanceOf[Int] & 0xff) << 8  |
-										(inputBuff(2).asInstanceOf[Int] & 0xff) << 16 |
-										(inputBuff(3).asInstanceOf[Int] & 0xff) << 24
-		val lz4 = lz4factory.fastDecompressor()
-		val outputBuff = new Array[Byte](size)
-		lz4.decompress(inputBuff, 4, outputBuff, 0, size)
-		outputBuff
+	    // the first 4 bytes are the original size
+	    val size: Int = (inputBuff(0).asInstanceOf[Int] & 0xff) |
+	    				(inputBuff(1).asInstanceOf[Int] & 0xff) << 8 |
+	    				(inputBuff(2).asInstanceOf[Int] & 0xff) << 16 |
+	    				(inputBuff(3).asInstanceOf[Int] & 0xff) << 24
+	    val lz4 = lz4factory.fastDecompressor()
+	    val outputBuff = new Array[Byte](size)
+	    lz4.decompress(inputBuff, 4, outputBuff, 0, size)
+	    outputBuff
 	}
 
 	// Delegate to a real serializer
-	def toBinary(obj: AnyRef): Array[Byte] = { 
-			val ser = getSerializer
-			val bin = ser.toBinary(obj)
-			releaseSerializer(ser)
-			if (enableCompression) compress(bin) else bin
+	def toBinary(obj: AnyRef): Array[Byte] = {
+	    val ser = getSerializer
+	    val bin = ser.toBinary(obj)
+	    releaseSerializer(ser)
+	    if (enableCompression) compress(bin) else bin
 	} 
 		
 	def fromBinary(bytes: Array[Byte], clazz: Option[Class[_]]): AnyRef = {
-			val ser = getSerializer
-			val obj = ser.fromBinary(if (enableCompression) decompress(bytes) else bytes, clazz)
-			releaseSerializer(ser)
-			obj
+	    val ser = getSerializer
+	    val obj = ser.fromBinary(if (enableCompression) decompress(bytes) else bytes, clazz)
+	    releaseSerializer(ser)
+	    obj
 	}
 	
 	val serializerPool = new ObjectPool[Serializer](serializerPoolSize, ()=> {

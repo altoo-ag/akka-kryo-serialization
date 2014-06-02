@@ -58,8 +58,8 @@ object KryoSerialization {
     val KryoReferenceMap: Boolean = config.getBoolean("akka.actor.kryo.kryo-reference-map")
 
     val UseManifests: Boolean = config.getBoolean("akka.actor.kryo.use-manifests")
-
-		val EnableCompression: Boolean = config.getBoolean("akka.actor.kryo.enable-compression")
+    
+    val EnableCompression: Boolean = config.getBoolean("akka.actor.kryo.enable-compression")
     
     val KryoCustomSerializerInit: String = Try(config.getString("akka.actor.kryo.kryo-custom-serializer-init")).getOrElse(null)
     
