@@ -133,6 +133,9 @@ The following options are available for configuring this serializer:
 			# of the top-level object into each message
 			use-manifests = false
 			
+			# Enable transparent LZ4 compression of serialized messages
+			enable-compression = false
+			
 			# Log implicitly registered classes. Useful, if you want to know all classes
 			# which are serialized. You can then use this information in the mappings and/or 
 			# classes sections
