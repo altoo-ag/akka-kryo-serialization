@@ -40,6 +40,10 @@ object MinimalBuild extends Build {
     libraryDependencies += "com.esotericsoftware.kryo" % "kryo" % "2.24.0",
     libraryDependencies += "net.jpountz.lz4" % "lz4" % "1.2.0",
     libraryDependencies += "com.novocode" % "junit-interface" % "0.8" % "test",
+    libraryDependencies += "org.scala-tools.testing" %% "specs" % "1.6.9" % "test",
+
+    parallelExecution in Test := false,
+    
     scalacOptions         := Seq(
       "-encoding", "utf8",
       "-feature",

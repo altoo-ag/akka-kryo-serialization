@@ -30,7 +30,7 @@ abstract public class KryoTestCase extends TestCase {
 	protected boolean supportsCopy;
 
 	protected void setUp () throws Exception {
-		Log.TRACE();
+//		Log.TRACE();
 
 		ReferenceResolver referenceResolver = new MapReferenceResolver();
 //		kryo = new Kryo(new KryoClassResolver(true), referenceResolver);
