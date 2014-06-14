@@ -19,7 +19,7 @@ class AkkaKryoCompressionTests extends FlatSpec {
           idstrategy = "incremental"
           kryo-reference-map = false
           buffer-size = 65536
-          enable-compression = false
+          enable-compression = true
           implicit-registration-logging = true
           mappings {
             "akka.actor.ActorRef" = 20
