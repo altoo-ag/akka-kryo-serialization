@@ -105,11 +105,18 @@ object MinimalBuild extends Build {
     ))
     .settings(defaultOsgiSettings: _*)
     .settings(
-      OsgiKeys.exportPackage := Seq("com.romix.akka.serialization.kryo;version\"0.3.0.1\"", "com.romix.scala.serialization.kryo;version\"0.3.0.1\""),
-      OsgiKeys.importPackage := Seq("com.esotericsoftware*;version=\"[2.20,3.0)\"",
-        "com.typesafe.config;version=\"[1.2.0, 2.0.0)\"",
-        "akka*;version=\"[2.1.0,3.0.0)\"",
-        "scala*;version=\"[2.9.2,2.11.0)\"",
-        "*")
+      OsgiKeys.privatePackage := Seq(
+        "com.romix.akka.serialization.kryo",
+        "com.romix.scala.serialization.kryo"),
+      OsgiKeys.exportPackage := Seq(
+        "com.romix.akka.serialization.kryo;version=\"0.3.2\"",
+        "com.romix.scala.serialization.kryo;version=\"0.3.2\""),
+      OsgiKeys.importPackage := Seq(
+        "com.esotericsoftware.*;version=\"[2.24.0,3.0.0)\"",
+        "com.typesafe.config;version=\"[1.2.0,1.3.0)\"",
+        "akka*;version=\"[2.3.0,3.4.0)\"",
+        "scala*;version=\"[2.10.0,2.12)\"",
+        "net.jpountz.lz4;resolution:=optional"
+        )
     )
 }
