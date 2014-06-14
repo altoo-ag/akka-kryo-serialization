@@ -33,17 +33,30 @@ object MinimalBuild extends Build {
     resolvers += typesafeSnapshot,
     resolvers += sonatypeSnapshot,
     // publishArtifact in packageDoc := false,
-    crossScalaVersions := Seq("2.9.2", "2.9.3", "2.10.4"),
-    scalaVersion := "2.10.4",
+    crossScalaVersions := Seq("2.10.4","2.11.1"),
+    scalaVersion := "2.11.1",
     libraryDependencies += "com.typesafe.akka" %% "akka-remote" % "2.3.3",
     libraryDependencies += "com.typesafe.akka" %% "akka-kernel" % "2.3.3",
     libraryDependencies += "com.esotericsoftware.kryo" % "kryo" % "2.24.0",
     libraryDependencies += "net.jpountz.lz4" % "lz4" % "1.2.0",
-    libraryDependencies += "com.novocode" % "junit-interface" % "0.8" % "test",
-    libraryDependencies += "org.scala-tools.testing" %% "specs" % "1.6.9" % "test",
+    libraryDependencies += "com.novocode" % "junit-interface" % "0.10" % "test",
+
+    libraryDependencies ++= {
+      val sv = scalaVersion.value
+      CrossVersion.partialVersion(sv) match {
+        case Some((2, scalaMajor)) if scalaMajor >= 11 =>
+          Seq(
+            "org.scalatest"  % "scalatest_2.11" % "2.2.0" % "test"
+          )
+        case Some((2, scalaMajor)) if scalaMajor >= 10 =>
+          Seq(
+            "org.scalatest" % "scalatest_2.10" % "2.2.0" % "test"
+          )
+      }
+    },
 
     parallelExecution in Test := false,
-    
+
     scalacOptions         := Seq(
       "-encoding", "utf8",
       "-feature",
@@ -53,7 +66,7 @@ object MinimalBuild extends Build {
       "-language:_",
       "-Xlog-reflective-calls"
     ),
-    
+
     publishTo := {
 	val nexus = "https://oss.sonatype.org/"
 	if (buildVersion.trim.endsWith("SNAPSHOT"))
