@@ -199,7 +199,7 @@ class MapSerializerTest extends KryoTestCase {
 				kryo.setRegistrationRequired(false)
 				// Support serialization of Scala collections
 				kryo.register(classOf[scala.collection.immutable.$colon$colon[_]],60)
-				kryo.register(classOf[scala.collection.immutable.Nil$],61)
+//				kryo.register(classOf[scala.collection.immutable.Nil$],61)
 				kryo.addDefaultSerializer(classOf[scala.Enumeration#Value], classOf[EnumerationSerializer])
 //				kryo.addDefaultSerializer(classOf[scala.collection.Set[_]], classOf[ScalaSetSerializer])
 //				kryo.addDefaultSerializer(classOf[scala.collection.generic.SetFactory[scala.collection.Set]], classOf[ScalaSetSerializer])
@@ -225,7 +225,7 @@ class MapSerializerTest extends KryoTestCase {
 				kryo.setRegistrationRequired(false)
 				// Support serialization of Scala collections
 				kryo.register(classOf[scala.collection.immutable.$colon$colon[_]],40)
-				kryo.register(classOf[scala.collection.immutable.Nil$],41)
+//				kryo.register(classOf[scala.collection.immutable.Nil$],41)
 				kryo.addDefaultSerializer(classOf[scala.Enumeration#Value], classOf[EnumerationSerializer])
 				kryo.addDefaultSerializer(classOf[scala.collection.Set[_]], classOf[ScalaSetSerializer])
 				kryo.addDefaultSerializer(classOf[scala.collection.generic.SetFactory[scala.collection.Set]], classOf[ScalaSetSerializer])
