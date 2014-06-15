@@ -86,7 +86,7 @@ class AkkaKryoCompressionTests extends FlatSpec {
   }
 
   it should "serialize and deserialize Array[TreeMap[String,Any]] timings (with compression)" in {
-    val iterations = 1000
+    val iterations = 500
     val listLength = 500
 
     val r  = new scala.util.Random(0L)

@@ -116,6 +116,7 @@ object MinimalBuild extends Build {
         "com.typesafe.config;version=\"[1.2.0,1.3.0)\"",
         "akka*;version=\"[2.3.0,3.4.0)\"",
         "scala*;version=\"[2.10.0,2.12)\"",
+        "scala*;version=\"[2.10.0,2.12)\"",
         "net.jpountz.lz4;resolution:=optional"
         )
     )
