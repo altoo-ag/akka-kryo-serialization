@@ -51,21 +51,8 @@ abstract public class SpecCase extends FlatSpec  {
         input = new Input(new ByteArrayInputStream(outStream.toByteArray()), 4096);
         object2 = kryo.readClassAndObject(input);
 
+        assert(object1.equals(object2));
+
         return (T)object2;
-    }
-
-    static public Object arrayToList (Object array) {
-        if (array == null || !array.getClass().isArray()) return array;
-        ArrayList list = new ArrayList(Array.getLength(array));
-        for (int i = 0, n = Array.getLength(array); i < n; i++)
-            list.add(arrayToList(Array.get(array, i)));
-        return list;
-    }
-
-    static public ArrayList list (Object... items) {
-        ArrayList list = new ArrayList();
-        for (Object item : items)
-            list.add(item);
-        return list;
     }
 }
