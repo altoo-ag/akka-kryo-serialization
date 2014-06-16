@@ -1,26 +1,16 @@
 
 package com.romix.scala.serialization.kryo
 
-//import java.util.Map
-
-import junit.framework.Assert
-import org.junit.Ignore
-
 import com.esotericsoftware.kryo.Kryo
 import com.esotericsoftware.kryo.Serializer
 import com.esotericsoftware.kryo.io.Input
 import com.esotericsoftware.kryo.io.Output
 import com.romix.scala.serialization.kryo._
-//import com.romix.akka.serialization.kryo.KryoTestCase
 
 
 /** @author romix */
 // @Ignore
 class EnumarationSerializationTest extends SpecCase {
-
-  supportsCopy = false
-
-  setUp()
 
   "Enumerations" should "serialize and deseialize" in {
     import WeekDay._

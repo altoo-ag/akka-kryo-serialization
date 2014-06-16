@@ -17,8 +17,6 @@ import com.romix.scala.serialization.kryo._
 /** @author romix */
 // @Ignore
 class TupleSerializationTest extends SpecCase {
-  supportsCopy = false;
-  setUp()
 
   type IntTuple6 = (Int, Int, Int, Int, Int, Int)
 

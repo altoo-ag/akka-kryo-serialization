@@ -21,9 +21,6 @@ import com.romix.scala.serialization.kryo._
 
 class MapSerializerTest extends SpecCase {
 
-  supportsCopy = false
-  setUp()
-
   val hugeCollectionSize = 100
 
   "Kryo" should "roundtrip immutable maps " in {
@@ -126,7 +123,6 @@ class MapSerializerTest extends SpecCase {
     kryo.setRegistrationRequired(false)
     // Support serialization of Scala collections
     kryo.register(classOf[scala.collection.immutable.$colon$colon[_]],60)
-    //kryo.register(classOf[scala.collection.immutable.Nil$],61)
     kryo.addDefaultSerializer(classOf[scala.Enumeration#Value], classOf[EnumerationSerializer])
 
     var map1 = List.empty[String]

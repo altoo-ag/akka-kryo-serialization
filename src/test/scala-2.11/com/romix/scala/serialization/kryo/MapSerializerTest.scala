@@ -12,9 +12,6 @@ import com.romix.scala.serialization.kryo._
 
 class MapSerializerTest211 extends SpecCase {
 
-  supportsCopy = false
-  setUp()
-
   val hugeCollectionSize = 100
 
   "Kryo_2.11" should "roundtrip muttable AnyRefMap" in {
