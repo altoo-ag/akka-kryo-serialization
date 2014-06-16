@@ -39,7 +39,6 @@ object MinimalBuild extends Build {
     libraryDependencies += "com.typesafe.akka" %% "akka-kernel" % "2.3.3",
     libraryDependencies += "com.esotericsoftware.kryo" % "kryo" % "2.24.0",
     libraryDependencies += "net.jpountz.lz4" % "lz4" % "1.2.0",
-    libraryDependencies += "com.novocode" % "junit-interface" % "0.10" % "test",
 
     libraryDependencies ++= {
       val sv = scalaVersion.value
