@@ -55,6 +55,14 @@ object MinimalBuild extends Build {
       }
     },
 
+    // Conditional compilation depening on scala version
+    unmanagedSourceDirectories in Compile <++= (scalaBinaryVersion, baseDirectory) {
+      (sv, bd) => Seq(bd / "src" / "main" / ("scala-"+sv)) },
+
+    unmanagedSourceDirectories in Test <++= (scalaBinaryVersion, baseDirectory) {
+      (sv, bd) => Seq(bd / "src" / "test" / ("scala-"+sv)) },
+
+
     parallelExecution in Test := false,
 
     scalacOptions         := Seq(

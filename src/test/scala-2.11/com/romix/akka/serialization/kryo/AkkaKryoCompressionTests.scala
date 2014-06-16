@@ -7,8 +7,9 @@ import akka.serialization._
 import com.typesafe.config.ConfigFactory
 import scala.collection.immutable.HashMap
 import scala.collection.immutable.TreeMap
+import scala.collection.mutable.AnyRefMap
 
-class AkkaKryoCompressionTests extends FlatSpec {
+class AkkaKryoCompressionTests211 extends FlatSpec {
 
   val system = ActorSystem("example", ConfigFactory.parseString("""
     akka {
@@ -28,6 +29,8 @@ class AkkaKryoCompressionTests extends FlatSpec {
             "[Lscala.collection.immutable.HashMap$HashTrieMap;" = 31
             "scala.collection.immutable.TreeMap"                = 32
             "[Lscala.collection.immutable.TreeMap;"             = 33
+            "scala.collection.mutable.AnyRefMap"                = 34
+            "[Lscala.collection.mutable.AnyRefMap;"             = 35
             "[J" = 50
             "[D" = 51
             "[Z" = 52
@@ -46,6 +49,8 @@ class AkkaKryoCompressionTests extends FlatSpec {
           "akka.actor.ActorRef" = kryo
           "scala.collection.immutable.TreeMap" = kryo
           "[Lscala.collection.immutable.TreeMap;" = kryo
+          "scala.collection.mutable.AnyRefMap" = kryo
+          "[Lscala.collection.mutable.AnyRefMap;" = kryo
         }
       }
     }
@@ -65,8 +70,8 @@ class AkkaKryoCompressionTests extends FlatSpec {
   // Get the Serialization Extension
   val serialization = SerializationExtension(system)
 
-  "KryoSerializer" should "serialize and deserialize TreeMap[String,Any] successfully" in {
-    val tm = TreeMap[String,Any](
+  "Kryo_2.11" should "serialize and deserialize AnyRefMap[String,Any] successfully" in {
+    val tm = AnyRefMap[String,Any](
         "foo" -> 123.3,
         "bar" -> "something as a text",
         "baz" -> 23L,
@@ -75,21 +80,21 @@ class AkkaKryoCompressionTests extends FlatSpec {
       )
 
     assert(serialization.findSerializerFor(tm).getClass == classOf[KryoSerializer])
-
     val serialized = serialization.serialize(tm)
     assert(serialized.isSuccess)
 
-    val deserialized = serialization.deserialize(serialized.get, classOf[TreeMap[String,Any]])
+    val deserialized = serialization.deserialize(serialized.get, classOf[AnyRefMap[String,Any]])
     assert(deserialized.isSuccess)
     assert(deserialized.get == tm)
   }
 
-  it should "serialize and deserialize Array[TreeMap[String,Any]] timings (with compression)" in {
+
+  it should "serialize and deserialize Array[AnyRefMap[String,Any]] timings (with compression)" in {
     val iterations = 500
     val listLength = 500
 
     val r  = new scala.util.Random(0L)
-    val atm = (List.fill(listLength){ TreeMap[String,Any](
+    val atm = (List.fill(listLength){ AnyRefMap[String,Any](
             "foo" -> r.nextDouble,
             "bar" -> "foo,bar,baz",
             "baz" -> 124L,
@@ -101,7 +106,7 @@ class AkkaKryoCompressionTests extends FlatSpec {
     val serialized = serialization.serialize(atm)
     assert(serialized.isSuccess)
 
-    val deserialized = serialization.deserialize(serialized.get, classOf[Array[TreeMap[String,Any]]])
+    val deserialized = serialization.deserialize(serialized.get, classOf[Array[AnyRefMap[String,Any]]])
     assert(deserialized.isSuccess)
 
     val bytes = serialized.get
@@ -111,8 +116,8 @@ class AkkaKryoCompressionTests extends FlatSpec {
     timeIt("Serialize:   ", iterations){serialization.serialize( atm )}
     timeIt("Serialize:   ", iterations){serialization.serialize( atm )}
 
-    timeIt("Deserialize: ", iterations)(serialization.deserialize(bytes, classOf[Array[TreeMap[String,Any]]]))
-    timeIt("Deserialize: ", iterations)(serialization.deserialize(bytes, classOf[Array[TreeMap[String,Any]]]))
-    timeIt("Deserialize: ", iterations)(serialization.deserialize(bytes, classOf[Array[TreeMap[String,Any]]]))
+    timeIt("Deserialize: ", iterations)(serialization.deserialize(bytes, classOf[Array[AnyRefMap[String,Any]]]))
+    timeIt("Deserialize: ", iterations)(serialization.deserialize(bytes, classOf[Array[AnyRefMap[String,Any]]]))
+    timeIt("Deserialize: ", iterations)(serialization.deserialize(bytes, classOf[Array[AnyRefMap[String,Any]]]))
   }
 }
