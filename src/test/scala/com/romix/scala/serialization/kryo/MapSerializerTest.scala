@@ -8,6 +8,7 @@ import java.util.TreeMap
 import java.util.concurrent.ConcurrentHashMap
 
 import scala.collection.immutable.Map
+import scala.collection.immutable.Set
 import scala.collection.immutable.Vector
 
 import com.esotericsoftware.kryo.Kryo
@@ -24,10 +25,9 @@ class MapSerializerTest extends SpecCase {
   val hugeCollectionSize = 100
 
   "Kryo" should "roundtrip immutable maps " in {
-    kryo.setRegistrationRequired(false)
-    kryo.addDefaultSerializer(classOf[scala.Enumeration#Value], classOf[EnumerationSerializer])
-    kryo.addDefaultSerializer(classOf[scala.collection.Set[_]], classOf[ScalaSetSerializer])
-    kryo.addDefaultSerializer(classOf[scala.collection.generic.SetFactory[scala.collection.Set]], classOf[ScalaSetSerializer])
+    kryo.setRegistrationRequired(true)
+    kryo.addDefaultSerializer(classOf[scala.collection.Map[_,_]], classOf[ScalaMapSerializer])
+    kryo.register(classOf[scala.collection.immutable.HashMap$HashTrieMap],40)
     val map1 = Map("Rome"->"Italy", "London"->"England", "Paris"->"France", "New York"->"USA", "Tokio"->"Japan", "Peking"->"China", "Brussels"->"Belgium")
     val map2 = map1 + ("Moscow"->"Russia")
     val map3 = map2 + ("Berlin"->"Germany")
@@ -38,7 +38,40 @@ class MapSerializerTest extends SpecCase {
     roundTrip(35, map4)
   }
 
+  it should "roundtrip immutable sets " in {
+    kryo.setRegistrationRequired(true)
+    kryo.addDefaultSerializer(classOf[scala.collection.Set[_]], classOf[ScalaSetSerializer])
+    kryo.register(classOf[scala.collection.immutable.HashSet$HashTrieSet],41)
+
+    val set1 = Set("Rome", "Italy", "London", "England", "Paris", "France", "New York", "USA", "Tokio", "Japan", "Peking", "China", "Brussels", "Belgium")
+    val set2 = set1 + ("Moscow", "Russia")
+    val set3 = set2 + ("Berlin", "Germany")
+    val set4 = set3 + ("Germany", "Berlin", "Russia", "Moscow")
+    roundTrip(52, set1)
+    roundTrip(35, set2)
+    roundTrip(35, set3)
+    roundTrip(35, set4)
+  }
+
+  "Kryo" should "roundtrip mutable maps " in {
+    kryo.setRegistrationRequired(true)
+    kryo.addDefaultSerializer(classOf[scala.collection.mutable.HashMap[_,_]],
+      classOf[ScalaMutableMapSerializer[_,_,scala.collection.mutable.HashMap[_,_]]])
+    kryo.register(classOf[scala.collection.mutable.HashMap[_,_]],42)
+    val map1 = scala.collection.mutable.Map("Rome"->"Italy", "London"->"England", "Paris"->"France",
+      "New York"->"USA", "Tokio"->"Japan", "Peking"->"China", "Brussels"->"Belgium")
+    val map2 = map1 + ("Moscow"->"Russia")
+    val map3 = map2 + ("Berlin"->"Germany")
+    val map4 = map3 + ("Germany"->"Berlin", "Russia"->"Moscow")
+    roundTrip(52, map1)
+    roundTrip(35, map2)
+    roundTrip(35, map3)
+    roundTrip(35, map4)
+  }
+
+
   it should "roundtrip custom classes and maps/vectors/lists of them" in {
+    kryo.setRegistrationRequired(false)
     kryo.addDefaultSerializer(classOf[scala.Enumeration#Value], classOf[EnumerationSerializer])
     kryo.addDefaultSerializer(classOf[scala.collection.Set[_]], classOf[ScalaSetSerializer])
     kryo.addDefaultSerializer(classOf[scala.collection.generic.SetFactory[scala.collection.Set]], classOf[ScalaSetSerializer])

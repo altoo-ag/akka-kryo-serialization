@@ -210,7 +210,43 @@ class KryoSerializer (val system: ExtendedActorSystem) extends Serializer {
 						}
 					}
 			kryo.register(classOf[scala.Enumeration#Value])
-			kryo.addDefaultSerializer(classOf[scala.collection.mutable.AnyRefMap[_,_]], classOf[ScalaAnyRefMapSerializer])
+
+			// mutable LongMap
+			kryo.addDefaultSerializer(classOf[scala.collection.mutable.LongMap[_]],
+							classOf[ScalaMutableMapSerializer[Long,_,scala.collection.mutable.LongMap[_]]])
+
+			// mutable AnyRefMap
+			kryo.addDefaultSerializer(classOf[scala.collection.mutable.AnyRefMap[_,_]],
+							classOf[ScalaMutableMapSerializer[_,_,scala.collection.mutable.AnyRefMap[_,_]]])
+
+			// mutable HashMap
+			kryo.addDefaultSerializer(classOf[scala.collection.mutable.HashMap[_,_]],
+							classOf[ScalaMutableMapSerializer[_,_,scala.collection.mutable.HashMap[_,_]]])
+
+			// mutable LinkedHashMap
+			kryo.addDefaultSerializer(classOf[scala.collection.mutable.LinkedHashMap[_,_]],
+							classOf[ScalaMutableMapSerializer[_,_,scala.collection.mutable.LinkedHashMap[_,_]]])
+
+			// mutable OpenHashMap
+			kryo.addDefaultSerializer(classOf[scala.collection.mutable.OpenHashMap[_,_]],
+							classOf[ScalaMutableMapSerializer[_,_,scala.collection.mutable.OpenHashMap[_,_]]])
+
+			// mutable ListMap
+			kryo.addDefaultSerializer(classOf[scala.collection.mutable.ListMap[_,_]],
+							classOf[ScalaMutableMapSerializer[_,_,scala.collection.mutable.ListMap[_,_]]])
+
+			// mutable SynchronizedMap
+			kryo.addDefaultSerializer(classOf[scala.collection.mutable.SynchronizedMap[_,_]],
+							classOf[ScalaMutableMapSerializer[_,_,scala.collection.mutable.SynchronizedMap[_,_]]])
+
+			// default concurent Map is a TrieMap
+			kryo.addDefaultSerializer(classOf[scala.collection.concurrent.Map[_,_]],
+							classOf[ScalaMutableMapSerializer[_,_,scala.collection.concurrent.TrieMap[_,_]]])
+
+			// default mutable Map is a HashMap
+			kryo.addDefaultSerializer(classOf[scala.collection.mutable.Map[_,_]],
+							classOf[ScalaMutableMapSerializer[_,_,scala.collection.mutable.HashMap[_,_]]])
+
 			kryo.addDefaultSerializer(classOf[scala.collection.Map[_,_]], classOf[ScalaMapSerializer])
 			kryo.addDefaultSerializer(classOf[scala.collection.Set[_]], classOf[ScalaSetSerializer])
 			kryo.addDefaultSerializer(classOf[scala.collection.generic.MapFactory[scala.collection.Map]], classOf[ScalaMapSerializer])
