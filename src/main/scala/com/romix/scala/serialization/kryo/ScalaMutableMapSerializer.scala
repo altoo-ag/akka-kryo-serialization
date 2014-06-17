@@ -32,8 +32,8 @@ class ScalaMutableMapSerializer[K,V,T <: Map[K,V]](val kryo: Kryo) extends Seria
   var valueClass: Class[V]  = null
   var length:Int = 0
 
-
-  def setElementsCanBeNull (_elementsCanBeNull: Boolean) = elementsCanBeNull = _elementsCanBeNull
+  def setElementsCanBeNull (_elementsCanBeNull: Boolean) =
+    elementsCanBeNull = _elementsCanBeNull
 
   def setKeyClass (_keyClass: Class[K]) = {
     keyClass = _keyClass

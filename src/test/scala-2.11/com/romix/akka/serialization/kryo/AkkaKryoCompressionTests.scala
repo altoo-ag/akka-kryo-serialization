@@ -5,9 +5,9 @@ import org.scalatest.FlatSpec
 import akka.actor.{ ActorRef, ActorSystem }
 import akka.serialization._
 import com.typesafe.config.ConfigFactory
-import scala.collection.immutable.HashMap
-import scala.collection.immutable.TreeMap
 import scala.collection.mutable.AnyRefMap
+import scala.collection.immutable.LongMap
+
 
 class AkkaKryoCompressionTests211 extends FlatSpec {
 
@@ -23,14 +23,11 @@ class AkkaKryoCompressionTests211 extends FlatSpec {
           enable-compression = true
           implicit-registration-logging = true
           mappings {
-            "akka.actor.ActorRef" = 20
-            "akka.actor.DeadLetterActorRef" = 21
-            "scala.collection.immutable.HashMap$HashTrieMap" = 30
+            "scala.collection.immutable.HashMap$HashTrieMap"    = 30
             "[Lscala.collection.immutable.HashMap$HashTrieMap;" = 31
-            "scala.collection.immutable.TreeMap"                = 32
-            "[Lscala.collection.immutable.TreeMap;"             = 33
             "scala.collection.mutable.AnyRefMap"                = 34
             "[Lscala.collection.mutable.AnyRefMap;"             = 35
+            "scala.collection.immutable.LongMap$Bin"            = 36
             "[J" = 50
             "[D" = 51
             "[Z" = 52
@@ -45,10 +42,6 @@ class AkkaKryoCompressionTests211 extends FlatSpec {
         }
 
         serialization-bindings {
-          "scala.Product" = kryo
-          "akka.actor.ActorRef" = kryo
-          "scala.collection.immutable.TreeMap" = kryo
-          "[Lscala.collection.immutable.TreeMap;" = kryo
           "scala.collection.mutable.AnyRefMap" = kryo
           "[Lscala.collection.mutable.AnyRefMap;" = kryo
         }
@@ -76,7 +69,7 @@ class AkkaKryoCompressionTests211 extends FlatSpec {
         "bar" -> "something as a text",
         "baz" -> 23L,
         "boom"-> true,
-        "hash"-> HashMap[Int,Int](1->200,2->300,500->3)
+        "hash"-> LongMap[Int](1L->200,2L->300,500L->3)
       )
 
     assert(serialization.findSerializerFor(tm).getClass == classOf[KryoSerializer])
@@ -98,7 +91,7 @@ class AkkaKryoCompressionTests211 extends FlatSpec {
             "foo" -> r.nextDouble,
             "bar" -> "foo,bar,baz",
             "baz" -> 124L,
-            "hash"-> HashMap[Int,Int](r.nextInt->r.nextInt,5->500, 10->r.nextInt)
+            "hash"-> LongMap[Int](r.nextLong->r.nextInt,5L->500, 10L->r.nextInt)
         ) }).toArray
 
     assert(serialization.findSerializerFor(atm).getClass === classOf[KryoSerializer])
@@ -112,12 +105,11 @@ class AkkaKryoCompressionTests211 extends FlatSpec {
     val bytes = serialized.get
     println(s"Serialized to ${bytes.length} bytes")
 
-    timeIt("Serialize:   ", iterations){serialization.serialize( atm )}
-    timeIt("Serialize:   ", iterations){serialization.serialize( atm )}
-    timeIt("Serialize:   ", iterations){serialization.serialize( atm )}
-
-    timeIt("Deserialize: ", iterations)(serialization.deserialize(bytes, classOf[Array[AnyRefMap[String,Any]]]))
-    timeIt("Deserialize: ", iterations)(serialization.deserialize(bytes, classOf[Array[AnyRefMap[String,Any]]]))
-    timeIt("Deserialize: ", iterations)(serialization.deserialize(bytes, classOf[Array[AnyRefMap[String,Any]]]))
+    timeIt("AnyRefMap Serialize:   ", iterations){serialization.serialize( atm )}
+    timeIt("AnyRefMap Serialize:   ", iterations){serialization.serialize( atm )}
+    timeIt("AnyRefMap Serialize:   ", iterations){serialization.serialize( atm )}
+    timeIt("AnyRefMap Deserialize: ", iterations)(serialization.deserialize(bytes, classOf[Array[AnyRefMap[String,Any]]]))
+    timeIt("AnyRefMap Deserialize: ", iterations)(serialization.deserialize(bytes, classOf[Array[AnyRefMap[String,Any]]]))
+    timeIt("AnyRefMap Deserialize: ", iterations)(serialization.deserialize(bytes, classOf[Array[AnyRefMap[String,Any]]]))
   }
 }
