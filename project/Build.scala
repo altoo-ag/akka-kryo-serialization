@@ -39,7 +39,6 @@ object MinimalBuild extends Build {
     libraryDependencies += "com.typesafe.akka" %% "akka-kernel" % "2.3.3",
     libraryDependencies += "com.esotericsoftware.kryo" % "kryo" % "2.24.0",
     libraryDependencies += "net.jpountz.lz4" % "lz4" % "1.2.0",
-    libraryDependencies += "com.novocode" % "junit-interface" % "0.10" % "test",
 
     libraryDependencies ++= {
       val sv = scalaVersion.value
@@ -54,6 +53,14 @@ object MinimalBuild extends Build {
           )
       }
     },
+
+    // Conditional compilation depening on scala version
+    unmanagedSourceDirectories in Compile <++= (scalaBinaryVersion, baseDirectory) {
+      (sv, bd) => Seq(bd / "src" / "main" / ("scala-"+sv)) },
+
+    unmanagedSourceDirectories in Test <++= (scalaBinaryVersion, baseDirectory) {
+      (sv, bd) => Seq(bd / "src" / "test" / ("scala-"+sv)) },
+
 
     parallelExecution in Test := false,
 
@@ -115,6 +122,7 @@ object MinimalBuild extends Build {
         "com.esotericsoftware.*;version=\"[2.24.0,3.0.0)\"",
         "com.typesafe.config;version=\"[1.2.0,1.3.0)\"",
         "akka*;version=\"[2.3.0,3.4.0)\"",
+        "scala*;version=\"[2.10.0,2.12)\"",
         "scala*;version=\"[2.10.0,2.12)\"",
         "net.jpountz.lz4;resolution:=optional"
         )
