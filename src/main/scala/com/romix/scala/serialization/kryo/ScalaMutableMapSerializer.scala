@@ -59,38 +59,32 @@ class ScalaMutableMapSerializer[K,V,T <: Map[K,V]](val kryo: Kryo) extends Seria
     valueSerializer = _serializer
   }
 
-  private def read_map(kryo: Kryo, coll: T, input: Input, len: Int) : T = {
-    if (len != 0) {
-      if (keySerializer != null)
-        if (elementsCanBeNull)
-          0 until len foreach { _=>
-            coll(kryo.readObjectOrNull(input, keyClass, keySerializer).asInstanceOf[K]) =
-                kryo.readObjectOrNull(input, valueClass, valueSerializer).asInstanceOf[V]
-          }
-        else
-          0 until len foreach { _=>
-            coll(kryo.readObject(input, keyClass, keySerializer).asInstanceOf[K]) =
-                kryo.readObject(input, valueClass,valueSerializer).asInstanceOf[V]
-          }
-      else
-        0 until len foreach { _=>
-          coll(kryo.readClassAndObject(input).asInstanceOf[K]) =
-              kryo.readClassAndObject(input).asInstanceOf[V]
-        }
-    }
-    coll
-  }
-
-  def create(kryo: Kryo, input: Input, typ: Class[T]): T  = {
-    val len = if (length != 0) length else input.readInt(true)
-    val coll: T = kryo.newInstance(typ).empty.asInstanceOf[T]
-    read_map(kryo,coll, input, len)
-  }
-
   override def read(kryo: Kryo, input: Input, typ: Class[T]): T  = {
     val len = if (length != 0) length else input.readInt(true)
     val coll: T = kryo.newInstance(typ).empty.asInstanceOf[T]
-    read_map(kryo,coll, input, len)
+    if (len != 0) {
+      var i = 0
+      if (keySerializer != null)
+        if (elementsCanBeNull)
+          while(i < len) {
+            coll(kryo.readObjectOrNull(input, keyClass, keySerializer).asInstanceOf[K]) =
+                kryo.readObjectOrNull(input, valueClass, valueSerializer).asInstanceOf[V]
+            i += 1
+          }
+        else
+          while(i < len) {
+            coll(kryo.readObject(input, keyClass, keySerializer).asInstanceOf[K]) =
+                kryo.readObject(input, valueClass,valueSerializer).asInstanceOf[V]
+            i += 1
+          }
+      else
+        while(i < len) {
+          coll(kryo.readClassAndObject(input).asInstanceOf[K]) =
+              kryo.readClassAndObject(input).asInstanceOf[V]
+          i += 1
+        }
+    }
+    coll
   }
 
   override def write (kryo : Kryo, output: Output, obj: T) = {
