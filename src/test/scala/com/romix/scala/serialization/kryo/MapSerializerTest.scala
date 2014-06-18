@@ -55,7 +55,7 @@ class MapSerializerTest extends SpecCase {
   "Kryo" should "roundtrip mutable maps " in {
     kryo.setRegistrationRequired(true)
     kryo.addDefaultSerializer(classOf[scala.collection.mutable.HashMap[_,_]],
-      classOf[ScalaMutableMapSerializer[_,_,scala.collection.mutable.HashMap[_,_]]])
+      classOf[ScalaMutableMapSerializer])
     kryo.register(classOf[scala.collection.mutable.HashMap[_,_]],42)
     val map1 = scala.collection.mutable.Map("Rome"->"Italy", "London"->"England", "Paris"->"France",
       "New York"->"USA", "Tokio"->"Japan", "Peking"->"China", "Brussels"->"Belgium")

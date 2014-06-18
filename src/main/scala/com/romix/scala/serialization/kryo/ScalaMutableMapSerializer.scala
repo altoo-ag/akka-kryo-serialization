@@ -24,71 +24,69 @@ import com.esotericsoftware.kryo.Serializer
 import com.esotericsoftware.kryo.io.Input
 import com.esotericsoftware.kryo.io.Output
 
-class ScalaMutableMapSerializer[K,V,T <: Map[K,V]](val kryo: Kryo) extends Serializer[T] {
+class ScalaMutableMapSerializer(val kryo: Kryo) extends Serializer[Map[_,_]] {
   var elementsCanBeNull = true
-  var keySerializer: Serializer[K] = null
-  var valueSerializer: Serializer[V] = null
-  var keyClass: Class[K]  = null
-  var valueClass: Class[V]  = null
+  var keySerializer: Serializer[_] = null
+  var valueSerializer: Serializer[_] = null
+  var keyClass: Class[_]  = null
+  var valueClass: Class[_]  = null
   var length:Int = 0
 
   def setElementsCanBeNull (_elementsCanBeNull: Boolean) =
     elementsCanBeNull = _elementsCanBeNull
 
-  def setKeyClass (_keyClass: Class[K]) = {
+  def setKeyClass (_keyClass: Class[_]) = {
     keyClass = _keyClass
     keySerializer = if(keyClass == null) null
-      else kryo.getRegistration(keyClass).getSerializer().asInstanceOf[Serializer[K]]
+      else kryo.getRegistration(keyClass).getSerializer().asInstanceOf[Serializer[_]]
   }
 
-  def setValueClass (_valueClass: Class[V]) = {
+  def setValueClass (_valueClass: Class[_]) = {
     valueClass = _valueClass
     valueSerializer = if (valueClass == null) null
-      else kryo.getRegistration(valueClass).getSerializer().asInstanceOf[Serializer[V]]
+      else kryo.getRegistration(valueClass).getSerializer().asInstanceOf[Serializer[_]]
   }
 
   def setLength (_length: Int) = length = _length
 
-  def setKeyClass (_keyClass: Class[K], _serializer: Serializer[K]) = {
+  def setKeyClass (_keyClass: Class[_], _serializer: Serializer[_]) = {
     keyClass = _keyClass
     keySerializer = _serializer
   }
 
-  def setValueClass (_valueClass: Class[V], _serializer: Serializer[V]) = {
+  def setValueClass (_valueClass: Class[_], _serializer: Serializer[_]) = {
     valueClass = _valueClass
     valueSerializer = _serializer
   }
 
-  override def read(kryo: Kryo, input: Input, typ: Class[T]): T  = {
+  override def read(kryo: Kryo, input: Input, typ: Class[Map[_,_]]): Map[_,_]  = {
     val len = if (length != 0) length else input.readInt(true)
-    val coll: T = kryo.newInstance(typ).empty.asInstanceOf[T]
+    val coll = kryo.newInstance(typ).empty.asInstanceOf[Map[Any,Any]]
     if (len != 0) {
       var i = 0
       if (keySerializer != null)
         if (elementsCanBeNull)
           while(i < len) {
-            coll(kryo.readObjectOrNull(input, keyClass, keySerializer).asInstanceOf[K]) =
-                kryo.readObjectOrNull(input, valueClass, valueSerializer).asInstanceOf[V]
+            coll(kryo.readObjectOrNull(input, keyClass, keySerializer)) =
+                kryo.readObjectOrNull(input, valueClass, valueSerializer)
             i += 1
           }
         else
           while(i < len) {
-            coll(kryo.readObject(input, keyClass, keySerializer).asInstanceOf[K]) =
-                kryo.readObject(input, valueClass,valueSerializer).asInstanceOf[V]
+            coll(kryo.readObject(input, keyClass, keySerializer)) =
+                kryo.readObject(input, valueClass,valueSerializer)
             i += 1
           }
       else
         while(i < len) {
-          coll(kryo.readClassAndObject(input).asInstanceOf[K]) =
-              kryo.readClassAndObject(input).asInstanceOf[V]
+          coll(kryo.readClassAndObject(input)) = kryo.readClassAndObject(input)
           i += 1
         }
     }
     coll
   }
 
-  override def write (kryo : Kryo, output: Output, obj: T) = {
-    val collection: T = obj
+  override def write (kryo : Kryo, output: Output, collection: Map[_,_]) = {
     val len = if (length != 0) length else {
       val size = collection.size
       output.writeInt(size, true)
@@ -99,14 +97,14 @@ class ScalaMutableMapSerializer[K,V,T <: Map[K,V]](val kryo: Kryo) extends Seria
       if (keySerializer != null) {
         if (elementsCanBeNull) {
           collection.foreach {
-            t: (K, V) => {
+            t: (Any, Any) => {
               kryo.writeObjectOrNull(output, t._1, keySerializer)
               kryo.writeObjectOrNull(output, t._2, valueSerializer)
             }
           }
         } else {
           collection.foreach {
-            t: (K, V) => {
+            t: (Any, Any) => {
               kryo.writeObject(output, t._1, keySerializer)
               kryo.writeObject(output, t._2, valueSerializer)
             }
@@ -114,7 +112,7 @@ class ScalaMutableMapSerializer[K,V,T <: Map[K,V]](val kryo: Kryo) extends Seria
         }
       } else {
         collection.foreach {
-          t: (K, V) => {
+          t: (Any, Any) => {
             kryo.writeClassAndObject(output, t._1)
             kryo.writeClassAndObject(output, t._2)
           }
