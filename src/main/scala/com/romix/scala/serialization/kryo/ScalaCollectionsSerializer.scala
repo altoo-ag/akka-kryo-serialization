@@ -35,7 +35,7 @@ import com.esotericsoftware.kryo.io.Output
 /***
  * This module provides helper classes for serialization of Scala collections.
  * Currently it supports Maps, Sets and any Traversable collections.
- * 
+ *
  * @author eedrls
  *
  */
@@ -72,7 +72,7 @@ class ScalaCollectionSerializer ( val kryo: Kryo ) extends Serializer[Traversabl
 		serializer = _serializer
 	}
 
-	//override 
+	//override
 	def create(kryo: Kryo, input: Input, typ: Class[Traversable[_]]): Traversable[_]  = {
 		val len = if (length != 0) length else input.readInt(true)
 		val inst = kryo.newInstance(typ)
@@ -87,11 +87,11 @@ class ScalaCollectionSerializer ( val kryo: Kryo ) extends Serializer[Traversabl
 			} else {
 				0 until len foreach {_ => coll += kryo.readClassAndObject(input) }
 			}
-		} 
-		
+		}
+
 		coll.result
 	}
-	
+
 	override def read(kryo: Kryo, input: Input, typ: Class[Traversable[_]]): Traversable[_]  = {
 		val len = if (length != 0) length else input.readInt(true)
 		val inst = kryo.newInstance(typ)
@@ -107,9 +107,9 @@ class ScalaCollectionSerializer ( val kryo: Kryo ) extends Serializer[Traversabl
 			} else {
 				0 until len foreach {_ => coll += kryo.readClassAndObject(input) }
 			}
-		} 
-		
-		val c = coll.result 
+		}
+
+		val c = coll.result
 		c
 	}
 
@@ -120,8 +120,8 @@ class ScalaCollectionSerializer ( val kryo: Kryo ) extends Serializer[Traversabl
 			output.writeInt(size, true)
 			size
 		}
-	
-		if (len != 0) { 
+
+		if (len != 0) {
 			if (serializer != null) {
 				if (elementsCanBeNull) {
 					collection.foreach {element: Any => kryo.writeObjectOrNull(output, element, serializer) }
@@ -164,7 +164,7 @@ class ScalaMapSerializer ( val kryo: Kryo ) extends Serializer[Map[_,_]] {
 		valueClass = _valueClass
 		valueSerializer = if(valueClass == null) null else kryo.getRegistration(valueClass).getSerializer()
 	}
-	
+
 	/** Sets the number of objects in the collection. Saves 1-2 bytes. */
 	def setLength (_length: Int) = {
 		length = _length
@@ -185,21 +185,21 @@ class ScalaMapSerializer ( val kryo: Kryo ) extends Serializer[Map[_,_]] {
 		valueClass = _valueClass
 		valueSerializer = _serializer
 	}
-	
-	//override 
+
+	//override
 	def create(kryo: Kryo, input: Input, typ: Class[Map[_,_]]): Map[_,_]  = {
 		val len = if (length != 0) length else input.readInt(true)
-		
-		var coll: Map[Any, Any] = 
+
+		var coll: Map[Any, Any] =
 			if(classOf[SortedMap[_,_]].isAssignableFrom(typ)) {
-				// Read ordering and set it for this collection 
+				// Read ordering and set it for this collection
 				implicit val mapOrdering = kryo.readClassAndObject(input).asInstanceOf[scala.math.Ordering[Any]]
-				try typ.getDeclaredConstructor(classOf[scala.math.Ordering[_]]).newInstance(mapOrdering).asInstanceOf[Map[Any,Any]].empty 
+				try typ.getDeclaredConstructor(classOf[scala.math.Ordering[_]]).newInstance(mapOrdering).asInstanceOf[Map[Any,Any]].empty
 				catch { case _: Throwable => kryo.newInstance(typ).asInstanceOf[Map[Any,Any]].empty }
 			} else {
 				kryo.newInstance(typ).asInstanceOf[Map[Any,Any]].empty
 			}
-		
+
 		if (len != 0) {
 			if (keySerializer != null) {
 				if (elementsCanBeNull) {
@@ -210,45 +210,55 @@ class ScalaMapSerializer ( val kryo: Kryo ) extends Serializer[Map[_,_]] {
 			} else {
 				0 until len foreach {_ => coll += kryo.readClassAndObject(input) -> kryo.readClassAndObject(input) }
 			}
-		} 
-		
+		}
+
 		coll
 	}
-	
+
 	override def read(kryo: Kryo, input: Input, typ: Class[Map[_,_]]): Map[_,_]  = {
 		val len = if (length != 0) length else input.readInt(true)
-		
-		var coll: Map[Any, Any] = 
+
+		var coll: Map[Any, Any] =
 			if(classOf[SortedMap[_,_]].isAssignableFrom(typ)) {
-				// Read ordering and set it for this collection 
+				// Read ordering and set it for this collection
 				implicit val mapOrdering = kryo.readClassAndObject(input).asInstanceOf[scala.math.Ordering[Any]]
 				try {
-				   val constructor = class2constuctor.get(typ) getOrElse {  
+				   val constructor = class2constuctor.get(typ) getOrElse {
 				       val constr = typ.getDeclaredConstructor(classOf[scala.math.Ordering[_]])
 				       class2constuctor += typ->constr
 				       constr
-				   } 
-				   constructor.newInstance(mapOrdering).asInstanceOf[Map[Any,Any]].empty 
-				} catch { case _: Throwable => kryo.newInstance(typ).asInstanceOf[Map[Any,Any]].empty }
-//				try typ.getDeclaredConstructor(classOf[scala.math.Ordering[_]]).newInstance(mapOrdering).asInstanceOf[Map[Any,Any]].empty 
-//				catch { case _ => kryo.newInstance(typ).asInstanceOf[Map[Any,Any]].empty }
+				   }
+				   constructor.newInstance(mapOrdering).asInstanceOf[Map[Any,Any]].empty
+				} catch {
+					case _: Throwable => kryo.newInstance(typ).asInstanceOf[Map[Any,Any]].empty
+				}
 			} else {
 				kryo.newInstance(typ).asInstanceOf[Map[Any,Any]].empty
 			}
-		
-		
+
+
 		if (len != 0) {
+			var i = 0
 			if (keySerializer != null) {
 				if (elementsCanBeNull) {
-					0 until len foreach {_ => coll += kryo.readObjectOrNull(input, keyClass, keySerializer) -> kryo.readObjectOrNull(input, valueClass, valueSerializer)}
+					while(i < len) {
+						coll += kryo.readObjectOrNull(input, keyClass, keySerializer) -> kryo.readObjectOrNull(input, valueClass, valueSerializer)
+						i += 1
+					}
 				} else {
-					0 until len foreach {_ => coll += kryo.readObject(input, keyClass, keySerializer) -> kryo.readObject(input, valueClass, valueSerializer) }
+					while(i < len) {
+						coll += kryo.readObject(input, keyClass, keySerializer) -> kryo.readObject(input, valueClass, valueSerializer)
+						i += 1
+					}
 				}
 			} else {
-				0 until len foreach {_ => coll += kryo.readClassAndObject(input) -> kryo.readClassAndObject(input) }
+				while(i < len) {
+					coll += kryo.readClassAndObject(input) -> kryo.readClassAndObject(input)
+					i += 1
+				}
 			}
-		} 
-		
+		}
+
 		coll
 	}
 
@@ -259,34 +269,34 @@ class ScalaMapSerializer ( val kryo: Kryo ) extends Serializer[Map[_,_]] {
 			output.writeInt(size, true)
 			size
 		}
-		
+
 	    if(classOf[SortedMap[_,_]].isAssignableFrom(obj.getClass())) {
 			val ordering = obj.asInstanceOf[SortedMap[_,_]].ordering
 			kryo.writeClassAndObject(output, ordering)
 		}
-	
-		if (len != 0) { 
+
+		if (len != 0) {
 			if (keySerializer != null) {
 				if (elementsCanBeNull) {
-					collection.foreach { 
-						t: (Any, Any) => { 
+					collection.foreach {
+						t: (Any, Any) => {
 							kryo.writeObjectOrNull(output, t._1, keySerializer)
-							kryo.writeObjectOrNull(output, t._2, valueSerializer) 
+							kryo.writeObjectOrNull(output, t._2, valueSerializer)
 						}
 					}
 				} else {
-					collection.foreach { 
-						t: (Any, Any) => { 
+					collection.foreach {
+						t: (Any, Any) => {
 							kryo.writeObject(output, t._1, keySerializer)
-							kryo.writeObject(output, t._2, valueSerializer) 
+							kryo.writeObject(output, t._2, valueSerializer)
 						}
 					}
 				}
 			} else {
-				collection.foreach { 
-					t: (Any, Any) => { 
+				collection.foreach {
+					t: (Any, Any) => {
 						kryo.writeClassAndObject(output, t._1)
-						kryo.writeClassAndObject(output, t._2) 
+						kryo.writeClassAndObject(output, t._2)
 					}
 				}
 			}
@@ -329,23 +339,23 @@ class ScalaSetSerializer ( val kryo: Kryo ) extends Serializer[Set[_]] {
 		serializer = _serializer
 	}
 
-	//override 
+	//override
 	def create(kryo: Kryo, input: Input, typ: Class[Set[_]]): Set[_]  = {
 		val len = if (length != 0) length else input.readInt(true)
-		
-		var coll: Set[Any] = 
+
+		var coll: Set[Any] =
 			if(classOf[SortedSet[_]].isAssignableFrom(typ)) {
-				// Read ordering and set it for this collection 
+				// Read ordering and set it for this collection
 				implicit val setOrdering = kryo.readClassAndObject(input).asInstanceOf[scala.math.Ordering[Any]]
 				try {
-				val constructor = 
-					class2constuctor.get(typ) getOrElse 
-					{  
+				val constructor =
+					class2constuctor.get(typ) getOrElse
+					{
 					   val constr = typ.getDeclaredConstructor(classOf[scala.math.Ordering[_]])
 					   class2constuctor += typ->constr
 					   constr
-					} 
-				constructor.newInstance(setOrdering).asInstanceOf[Set[Any]].empty 
+					}
+				constructor.newInstance(setOrdering).asInstanceOf[Set[Any]].empty
 				} catch { case _: Throwable => kryo.newInstance(typ).asInstanceOf[Set[Any]].empty }
 			} else {
 				kryo.newInstance(typ).asInstanceOf[Set[Any]].empty
@@ -361,33 +371,33 @@ class ScalaSetSerializer ( val kryo: Kryo ) extends Serializer[Set[_]] {
 			} else {
 				0 until len foreach {_ => coll += kryo.readClassAndObject(input)}
 			}
-		} 
-		
+		}
+
 		coll
 	}
-	
+
 	override def read(kryo: Kryo, input: Input, typ: Class[Set[_]]): Set[_]  = {
 		val len = if (length != 0) length else input.readInt(true)
-		
-		var coll: Set[Any] = 
+
+		var coll: Set[Any] =
 			if(classOf[SortedSet[_]].isAssignableFrom(typ)) {
-				// Read ordering and set it for this collection 
+				// Read ordering and set it for this collection
 				implicit val setOrdering = kryo.readClassAndObject(input).asInstanceOf[scala.math.Ordering[Any]]
 				try {
-				val constructor = 
-					class2constuctor.get(typ) getOrElse 
-					{  
+				val constructor =
+					class2constuctor.get(typ) getOrElse
+					{
 					   val constr = typ.getDeclaredConstructor(classOf[scala.math.Ordering[_]])
 					   class2constuctor += typ->constr
 					   constr
-					} 
-				constructor.newInstance(setOrdering).asInstanceOf[Set[Any]].empty 
+					}
+				constructor.newInstance(setOrdering).asInstanceOf[Set[Any]].empty
 				} catch { case _: Throwable => kryo.newInstance(typ).asInstanceOf[Set[Any]].empty }
 			} else {
 				kryo.newInstance(typ).asInstanceOf[Set[Any]].empty
 			}
 
-		
+
 		if (len != 0) {
 			if (serializer != null) {
 				if (elementsCanBeNull) {
@@ -398,8 +408,8 @@ class ScalaSetSerializer ( val kryo: Kryo ) extends Serializer[Set[_]] {
 			} else {
 				0 until len foreach {_ => coll += kryo.readClassAndObject(input)}
 			}
-		} 
-		
+		}
+
 		coll
 	}
 
@@ -410,13 +420,13 @@ class ScalaSetSerializer ( val kryo: Kryo ) extends Serializer[Set[_]] {
 			output.writeInt(size, true)
 			size
 		}
-		
+
 		if(classOf[SortedSet[_]].isAssignableFrom(obj.getClass())) {
 			val ordering = obj.asInstanceOf[SortedSet[_]].ordering
 			kryo.writeClassAndObject(output, ordering)
 		}
-	
-		if (len != 0) { 
+
+		if (len != 0) {
 			if (serializer != null) {
 				if (elementsCanBeNull) {
 					collection foreach { e: Any => kryo.writeObjectOrNull(output, e, serializer) }
