@@ -210,10 +210,18 @@ class KryoSerializer (val system: ExtendedActorSystem) extends Serializer {
 						}
 					}
 			kryo.register(classOf[scala.Enumeration#Value])
+                        // mutable maps
 			kryo.addDefaultSerializer(classOf[scala.collection.mutable.Map[_,_]], classOf[ScalaMutableMapSerializer])
-			kryo.addDefaultSerializer(classOf[scala.collection.immutable.Map[_,_]], classOf[ScalaMapSerializer])
+
+                        // immutable maps - specialized by mutable, immutable and sortable
+	                kryo.addDefaultSerializer(classOf[scala.collection.immutable.SortedMap[_,_]], classOf[ScalaSortedMapSerializer])
+	                kryo.addDefaultSerializer(classOf[scala.collection.immutable.Map[_,_]], classOf[ScalaImmutableMapSerializer])
+			kryo.addDefaultSerializer(classOf[scala.collection.generic.MapFactory[scala.collection.Map]], classOf[ScalaImmutableMapSerializer])
+                        //  or with  runtime dispatch (reflection) of sortable.unsortable maps
+			//kryo.addDefaultSerializer(classOf[scala.collection.immutable.Map[_,_]], classOf[ScalaMapSerializer])
+			//kryo.addDefaultSerializer(classOf[scala.collection.generic.MapFactory[scala.collection.Map]], classOf[ScalaMapSerializer])
+
 			kryo.addDefaultSerializer(classOf[scala.collection.Set[_]], classOf[ScalaSetSerializer])
-			kryo.addDefaultSerializer(classOf[scala.collection.generic.MapFactory[scala.collection.Map]], classOf[ScalaMapSerializer])
 			kryo.addDefaultSerializer(classOf[scala.collection.generic.SetFactory[scala.collection.Set]], classOf[ScalaSetSerializer])
 			kryo.addDefaultSerializer(classOf[scala.collection.Traversable[_]], classOf[ScalaCollectionSerializer])
 			kryo.addDefaultSerializer(classOf[ActorRef], new ActorRefSerializer(system))

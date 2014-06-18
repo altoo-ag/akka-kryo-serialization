@@ -26,10 +26,12 @@ class AkkaKryoCompressionTests extends FlatSpec {
             "akka.actor.DeadLetterActorRef" = 21
             "scala.collection.immutable.HashMap$HashTrieMap"    = 30
             "[Lscala.collection.immutable.HashMap$HashTrieMap;" = 31
-            "scala.collection.immutable.TreeMap"                = 32
-            "[Lscala.collection.immutable.TreeMap;"             = 33
-            "scala.collection.mutable.HashMap"                  = 34
-            "[Lscala.collection.mutable.HashMap;"               = 35
+            "scala.collection.immutable.HashMap"                = 32
+            "[Lscala.collection.immutable.HashMap;"             = 33
+            "scala.collection.immutable.TreeMap"                = 34
+            "[Lscala.collection.immutable.TreeMap;"             = 35
+            "scala.collection.mutable.HashMap"                  = 36
+            "[Lscala.collection.mutable.HashMap;"               = 37
             "[J" = 50
             "[D" = 51
             "[Z" = 52
@@ -50,6 +52,8 @@ class AkkaKryoCompressionTests extends FlatSpec {
           "[Lscala.collection.immutable.TreeMap;" = kryo
           "scala.collection.mutable.HashMap" = kryo
           "[Lscala.collection.mutable.HashMap;" = kryo
+          "scala.collection.immutable.HashMap" = kryo
+          "[Lscala.collection.immutable.HashMap;" = kryo
         }
       }
     }
@@ -107,6 +111,38 @@ class AkkaKryoCompressionTests extends FlatSpec {
     assert(deserialized.get == tm)
   }
 
+  it should "serialize and deserialize Array[HashMap[String,Any]] timings (with compression)" in {
+    val iterations = 500
+    val listLength = 500
+
+    val r  = new scala.util.Random(0L)
+    val atm = (List.fill(listLength){ HashMap[String,Any](
+            "foo" -> r.nextDouble,
+            "bar" -> "foo,bar,baz",
+            "baz" -> 124L,
+            "hash"-> HashMap[Int,Int](r.nextInt->r.nextInt,5->500, 10->r.nextInt)
+        ) }).toArray
+
+    assert(serialization.findSerializerFor(atm).getClass === classOf[KryoSerializer])
+
+    val serialized = serialization.serialize(atm)
+    assert(serialized.isSuccess)
+
+    val deserialized = serialization.deserialize(serialized.get, classOf[Array[HashMap[String,Any]]])
+    assert(deserialized.isSuccess)
+
+    val bytes = serialized.get
+    println(s"Serialized to ${bytes.length} bytes")
+
+    timeIt("HashMap Serialize:   ", iterations){serialization.serialize( atm )}
+    timeIt("HashMap Serialize:   ", iterations){serialization.serialize( atm )}
+    timeIt("HashMap Serialize:   ", iterations){serialization.serialize( atm )}
+
+    timeIt("HashMap Deserialize: ", iterations)(serialization.deserialize(bytes, classOf[Array[TreeMap[String,Any]]]))
+    timeIt("HashMap Deserialize: ", iterations)(serialization.deserialize(bytes, classOf[Array[TreeMap[String,Any]]]))
+    timeIt("HashMap Deserialize: ", iterations)(serialization.deserialize(bytes, classOf[Array[TreeMap[String,Any]]]))
+  }
+
 
   it should "serialize and deserialize Array[TreeMap[String,Any]] timings (with compression)" in {
     val iterations = 500
@@ -131,13 +167,13 @@ class AkkaKryoCompressionTests extends FlatSpec {
     val bytes = serialized.get
     println(s"Serialized to ${bytes.length} bytes")
 
-    timeIt("Serialize:   ", iterations){serialization.serialize( atm )}
-    timeIt("Serialize:   ", iterations){serialization.serialize( atm )}
-    timeIt("Serialize:   ", iterations){serialization.serialize( atm )}
+    timeIt("TreeMap Serialize:   ", iterations){serialization.serialize( atm )}
+    timeIt("TreeMap Serialize:   ", iterations){serialization.serialize( atm )}
+    timeIt("TreeMap Serialize:   ", iterations){serialization.serialize( atm )}
 
-    timeIt("Deserialize: ", iterations)(serialization.deserialize(bytes, classOf[Array[TreeMap[String,Any]]]))
-    timeIt("Deserialize: ", iterations)(serialization.deserialize(bytes, classOf[Array[TreeMap[String,Any]]]))
-    timeIt("Deserialize: ", iterations)(serialization.deserialize(bytes, classOf[Array[TreeMap[String,Any]]]))
+    timeIt("TreeMap Deserialize: ", iterations)(serialization.deserialize(bytes, classOf[Array[TreeMap[String,Any]]]))
+    timeIt("TreeMap Deserialize: ", iterations)(serialization.deserialize(bytes, classOf[Array[TreeMap[String,Any]]]))
+    timeIt("TreeMap Deserialize: ", iterations)(serialization.deserialize(bytes, classOf[Array[TreeMap[String,Any]]]))
   }
 
   it should "serialize and deserialize Array[mutable.HashMap[String,Any]] timings (with compression)" in {
