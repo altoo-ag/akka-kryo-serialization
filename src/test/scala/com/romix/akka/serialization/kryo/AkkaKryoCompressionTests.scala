@@ -80,7 +80,7 @@ class AkkaKryoCompressionTests extends FlatSpec {
     val tm = TreeMap[String,Any](
         "foo" -> 123.3,
         "bar" -> "something as a text",
-        "baz" -> 23L,
+        "baz" -> null,
         "boom"-> true,
         "hash"-> HashMap[Int,Int](1->200,2->300,500->3)
       )
@@ -99,7 +99,7 @@ class AkkaKryoCompressionTests extends FlatSpec {
     val tm = scala.collection.mutable.HashMap[String,Any](
         "foo" -> 123.3,
         "bar" -> "something as a text",
-        "baz" -> 23L,
+        "baz" -> null,
         "boom"-> true,
         "hash"-> HashMap[Int,Int](1->200,2->300,500->3)
       )
