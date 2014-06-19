@@ -217,9 +217,6 @@ class KryoSerializer (val system: ExtendedActorSystem) extends Serializer {
 	                kryo.addDefaultSerializer(classOf[scala.collection.immutable.SortedMap[_,_]], classOf[ScalaSortedMapSerializer])
 	                kryo.addDefaultSerializer(classOf[scala.collection.immutable.Map[_,_]], classOf[ScalaImmutableMapSerializer])
 			kryo.addDefaultSerializer(classOf[scala.collection.generic.MapFactory[scala.collection.Map]], classOf[ScalaImmutableMapSerializer])
-                        //  or with  runtime dispatch (reflection) of sortable.unsortable maps
-			//kryo.addDefaultSerializer(classOf[scala.collection.immutable.Map[_,_]], classOf[ScalaMapSerializer])
-			//kryo.addDefaultSerializer(classOf[scala.collection.generic.MapFactory[scala.collection.Map]], classOf[ScalaMapSerializer])
 
 			kryo.addDefaultSerializer(classOf[scala.collection.Set[_]], classOf[ScalaSetSerializer])
 			kryo.addDefaultSerializer(classOf[scala.collection.generic.SetFactory[scala.collection.Set]], classOf[ScalaSetSerializer])

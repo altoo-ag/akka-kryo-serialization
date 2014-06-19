@@ -25,7 +25,7 @@ class MapSerializerTest extends SpecCase {
 
   "Kryo" should "roundtrip immutable maps " in {
     kryo.setRegistrationRequired(true)
-    kryo.addDefaultSerializer(classOf[scala.collection.Map[_,_]], classOf[ScalaMapSerializer])
+    kryo.addDefaultSerializer(classOf[scala.collection.Map[_,_]], classOf[ScalaImmutableMapSerializer])
     kryo.register(classOf[scala.collection.immutable.HashMap$HashTrieMap],40)
     val map1 = Map("Rome"->"Italy", "London"->"England", "Paris"->"France", "New York"->"USA", "Tokio"->"Japan", "Peking"->"China", "Brussels"->"Belgium")
     val map2 = map1 + ("Moscow"->"Russia")
@@ -74,8 +74,8 @@ class MapSerializerTest extends SpecCase {
     kryo.addDefaultSerializer(classOf[scala.Enumeration#Value], classOf[EnumerationSerializer])
     kryo.addDefaultSerializer(classOf[scala.collection.Set[_]], classOf[ScalaSetSerializer])
     kryo.addDefaultSerializer(classOf[scala.collection.generic.SetFactory[scala.collection.Set]], classOf[ScalaSetSerializer])
-    kryo.addDefaultSerializer(classOf[scala.collection.Map[_,_]], classOf[ScalaMapSerializer])
-    kryo.addDefaultSerializer(classOf[scala.collection.generic.MapFactory[scala.collection.Map]], classOf[ScalaMapSerializer])
+    kryo.addDefaultSerializer(classOf[scala.collection.Map[_,_]], classOf[ScalaImmutableMapSerializer])
+    kryo.addDefaultSerializer(classOf[scala.collection.generic.MapFactory[scala.collection.Map]], classOf[ScalaImmutableMapSerializer])
     kryo.addDefaultSerializer(classOf[scala.collection.Traversable[_]], classOf[ScalaCollectionSerializer])
     kryo.addDefaultSerializer(classOf[scala.Product], classOf[ScalaProductSerializer])
     val scl1 = new ScalaClass1()

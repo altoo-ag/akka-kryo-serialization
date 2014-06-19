@@ -59,6 +59,9 @@ class AkkaKryoCompressionTests extends FlatSpec {
     }
 """))
 
+  val iterations = 500
+  val listLength = 500
+
   def timeIt[A](name: String, loops: Int)(a: => A) = {
     val now = System.nanoTime
     var i = 0
@@ -112,9 +115,6 @@ class AkkaKryoCompressionTests extends FlatSpec {
   }
 
   it should "serialize and deserialize Array[HashMap[String,Any]] timings (with compression)" in {
-    val iterations = 500
-    val listLength = 500
-
     val r  = new scala.util.Random(0L)
     val atm = (List.fill(listLength){ HashMap[String,Any](
             "foo" -> r.nextDouble,
@@ -145,9 +145,6 @@ class AkkaKryoCompressionTests extends FlatSpec {
 
 
   it should "serialize and deserialize Array[TreeMap[String,Any]] timings (with compression)" in {
-    val iterations = 500
-    val listLength = 500
-
     val r  = new scala.util.Random(0L)
     val atm = (List.fill(listLength){ TreeMap[String,Any](
             "foo" -> r.nextDouble,
@@ -177,9 +174,6 @@ class AkkaKryoCompressionTests extends FlatSpec {
   }
 
   it should "serialize and deserialize Array[mutable.HashMap[String,Any]] timings (with compression)" in {
-    val iterations = 500
-    val listLength = 500
-
     val r  = new scala.util.Random(0L)
     val atm = (List.fill(listLength){ scala.collection.mutable.HashMap[String,Any](
             "foo" -> r.nextDouble,
