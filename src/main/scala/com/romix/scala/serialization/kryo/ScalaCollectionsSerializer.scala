@@ -34,7 +34,7 @@ import com.esotericsoftware.kryo.io.Output
  * @author eedrls
  *
  */
-class ScalaCollectionSerializer ( val kryo: Kryo ) extends Serializer[Traversable[_]] {
+class ScalaCollectionSerializer ( ) extends Serializer[Traversable[_]] {
 
 	override def read(kryo: Kryo, input: Input, typ: Class[Traversable[_]]): Traversable[_]  = {
 		val len = input.readInt(true)
@@ -57,7 +57,7 @@ class ScalaCollectionSerializer ( val kryo: Kryo ) extends Serializer[Traversabl
 	}
 }
 
-class ScalaSetSerializer ( val kryo: Kryo ) extends Serializer[Set[_]] {
+class ScalaSetSerializer ( ) extends Serializer[Set[_]] {
 	var class2constuctor = Map[Class[_], Constructor[_]]()
 	override def read(kryo: Kryo, input: Input, typ: Class[Set[_]]): Set[_]  = {
 		val len = input.readInt(true)

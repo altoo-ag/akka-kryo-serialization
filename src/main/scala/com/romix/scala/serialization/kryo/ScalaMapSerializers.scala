@@ -34,7 +34,7 @@ import com.esotericsoftware.kryo.io.Output
  * @autor luben
  */
 
-class ScalaMutableMapSerializer(val kryo: Kryo) extends Serializer[MMap[_,_]] {
+class ScalaMutableMapSerializer() extends Serializer[MMap[_,_]] {
 
   override def read(kryo: Kryo, input: Input, typ: Class[MMap[_,_]]): MMap[_,_]  = {
     val len = input.readInt(true)
@@ -63,7 +63,9 @@ class ScalaMutableMapSerializer(val kryo: Kryo) extends Serializer[MMap[_,_]] {
   }
 }
 
-class ScalaImmutableMapSerializer(val kryo: Kryo) extends Serializer[IMap[_,_]] {
+class ScalaImmutableMapSerializer() extends Serializer[IMap[_,_]] {
+
+  setImmutable(true)
 
   override def read(kryo: Kryo, input: Input, typ: Class[IMap[_,_]]): IMap[_,_]  = {
     val len = input.readInt(true)
@@ -93,8 +95,11 @@ class ScalaImmutableMapSerializer(val kryo: Kryo) extends Serializer[IMap[_,_]] 
   }
 }
 
-class ScalaSortedMapSerializer(val kryo: Kryo) extends Serializer[SortedMap[_,_]] {
+class ScalaSortedMapSerializer() extends Serializer[SortedMap[_,_]] {
   private var class2constuctor = IMap[Class[_], Constructor[_]]()
+
+  // All sorted maps are immutable
+  setImmutable(true)
 
   override def read(kryo: Kryo, input: Input, typ: Class[SortedMap[_,_]]): SortedMap[_,_]  = {
     val len = input.readInt(true)
@@ -133,3 +138,4 @@ class ScalaSortedMapSerializer(val kryo: Kryo) extends Serializer[SortedMap[_,_]
     }
   }
 }
+
