@@ -59,7 +59,8 @@ object KryoSerialization {
 
     val UseManifests: Boolean = config.getBoolean("akka.actor.kryo.use-manifests")
     
-    val EnableCompression: Boolean = config.getBoolean("akka.actor.kryo.enable-compression")
+    val EnableLZ4Compression: Boolean = Try(config.getString("akka.actor.kryo.compression")).map{_ == "lz4"}.getOrElse(false)
+    val EnableDeflateCompression: Boolean = Try(config.getString("akka.actor.kryo.compression")).map{_ == "deflate"}.getOrElse(false)
     
     val KryoCustomSerializerInit: String = Try(config.getString("akka.actor.kryo.kryo-custom-serializer-init")).getOrElse(null)
     

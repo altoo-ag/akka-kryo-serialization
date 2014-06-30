@@ -33,7 +33,8 @@ import KryoSerialization._
 import com.esotericsoftware.minlog.{Log => MiniLog}
 import com.romix.scala.serialization.kryo.ScalaKryo
 import net.jpountz.lz4.LZ4Factory
-
+import java.util.zip.{Deflater, Inflater}
+import scala.collection.mutable.ArrayBuilder
 
 class KryoSerializer (val system: ExtendedActorSystem) extends Serializer {
 
@@ -84,9 +85,14 @@ class KryoSerializer (val system: ExtendedActorSystem) extends Serializer {
 		log.debug("Got use manifests: {}", useManifests)
 	}
 
-	val enableCompression = settings.EnableCompression
+	val enableLZ4Compression = settings.EnableLZ4Compression
 	locally {
-		log.debug("Got compression enabled: {}", enableCompression)
+		log.debug("Got compression enabled: {}", enableLZ4Compression)
+	}
+
+	val enableDeflateCompression = settings.EnableDeflateCompression
+	locally {
+		log.debug("Got compression enabled: {}", enableDeflateCompression)
 	}
 
 	val customSerializerInitClassName = settings.KryoCustomSerializerInit
@@ -142,8 +148,7 @@ class KryoSerializer (val system: ExtendedActorSystem) extends Serializer {
 	def identifier = 123454323
 
 	lazy val lz4factory = LZ4Factory.fastestInstance
-
-	def compress(inputBuff: Array[Byte]): Array[Byte] = {
+	def lz4_compress(inputBuff: Array[Byte]): Array[Byte] = {
 		val inputSize = inputBuff.length
 		val lz4 = lz4factory.fastCompressor
 		val maxOutputSize = lz4.maxCompressedLength(inputSize);
@@ -158,31 +163,71 @@ class KryoSerializer (val system: ExtendedActorSystem) extends Serializer {
 		outputBuff.take(outputSize+4)
 	}
 
-	def decompress(inputBuff: Array[Byte]): Array[Byte] = {
-	    // the first 4 bytes are the original size
-	    val size: Int = (inputBuff(0).asInstanceOf[Int] & 0xff) |
-	    				(inputBuff(1).asInstanceOf[Int] & 0xff) << 8 |
-	    				(inputBuff(2).asInstanceOf[Int] & 0xff) << 16 |
-	    				(inputBuff(3).asInstanceOf[Int] & 0xff) << 24
-	    val lz4 = lz4factory.fastDecompressor()
-	    val outputBuff = new Array[Byte](size)
-	    lz4.decompress(inputBuff, 4, outputBuff, 0, size)
-	    outputBuff
+	def lz4_decompress(inputBuff: Array[Byte]): Array[Byte] = {
+		// the first 4 bytes are the original size
+		val size: Int = (inputBuff(0).asInstanceOf[Int] & 0xff) |
+										(inputBuff(1).asInstanceOf[Int] & 0xff) << 8  |
+										(inputBuff(2).asInstanceOf[Int] & 0xff) << 16 |
+										(inputBuff(3).asInstanceOf[Int] & 0xff) << 24
+		val lz4 = lz4factory.fastDecompressor()
+		val outputBuff = new Array[Byte](size)
+		lz4.decompress(inputBuff, 4, outputBuff, 0, size)
+		outputBuff
+	}
+
+	lazy val deflater = new Deflater(Deflater.BEST_SPEED)
+	lazy val inflater = new Inflater()
+
+	def zip_compress(inputBuff: Array[Byte]): Array[Byte] = {
+		val inputSize = inputBuff.length
+		val outputBuff = new ArrayBuilder.ofByte
+		outputBuff += (inputSize       & 0xff).toByte
+		outputBuff += (inputSize >> 8  & 0xff).toByte
+		outputBuff += (inputSize >> 16 & 0xff).toByte
+		outputBuff += (inputSize >> 24 & 0xff).toByte
+
+		deflater.setInput(inputBuff)
+		deflater.finish
+		val buff = new Array[Byte](4096)
+
+		while (!deflater.finished) {
+			val n = deflater.deflate(buff)
+			outputBuff ++= buff.take(n)
+		}
+		deflater.reset
+		outputBuff.result
+	}
+
+	def zip_decompress(inputBuff: Array[Byte]): Array[Byte] = {
+		val size: Int = (inputBuff(0).asInstanceOf[Int] & 0xff) |
+										(inputBuff(1).asInstanceOf[Int] & 0xff) << 8  |
+										(inputBuff(2).asInstanceOf[Int] & 0xff) << 16 |
+										(inputBuff(3).asInstanceOf[Int] & 0xff) << 24
+		val outputBuff = new Array[Byte](size)
+		inflater.setInput(inputBuff, 4, inputBuff.length - 4)
+		inflater.inflate(outputBuff)
+		inflater.reset
+		outputBuff
 	}
 
 	// Delegate to a real serializer
 	def toBinary(obj: AnyRef): Array[Byte] = {
-	    val ser = getSerializer
-	    val bin = ser.toBinary(obj)
-	    releaseSerializer(ser)
-	    if (enableCompression) compress(bin) else bin
+		val ser = getSerializer
+		val bin = ser.toBinary(obj)
+		releaseSerializer(ser)
+		if		  (enableLZ4Compression)		 lz4_compress(bin)
+		else if (enableDeflateCompression) zip_compress(bin)
+		else bin
 	}
 
 	def fromBinary(bytes: Array[Byte], clazz: Option[Class[_]]): AnyRef = {
-	    val ser = getSerializer
-	    val obj = ser.fromBinary(if (enableCompression) decompress(bytes) else bytes, clazz)
-	    releaseSerializer(ser)
-	    obj
+		val ser = getSerializer
+		val obj = ser.fromBinary(
+			if			(enableLZ4Compression) lz4_decompress(bytes)
+			else if (enableDeflateCompression) zip_decompress(bytes)
+			else bytes, clazz)
+		releaseSerializer(ser)
+		obj
 	}
 
 	val serializerPool = new ObjectPool[Serializer](serializerPoolSize, ()=> {
@@ -210,19 +255,21 @@ class KryoSerializer (val system: ExtendedActorSystem) extends Serializer {
 						}
 					}
 			kryo.register(classOf[scala.Enumeration#Value])
-                        // mutable maps
+			// mutable maps
 			kryo.addDefaultSerializer(classOf[scala.collection.mutable.Map[_,_]], classOf[ScalaMutableMapSerializer])
 
 			// immutable maps - specialized by mutable, immutable and sortable
 			kryo.addDefaultSerializer(classOf[scala.collection.immutable.SortedMap[_,_]], classOf[ScalaSortedMapSerializer])
-	    kryo.addDefaultSerializer(classOf[scala.collection.immutable.Map[_,_]], classOf[ScalaImmutableMapSerializer])
+			kryo.addDefaultSerializer(classOf[scala.collection.immutable.Map[_,_]], classOf[ScalaImmutableMapSerializer])
 
+			// Sets - specialized by mutability and sortability
 			kryo.addDefaultSerializer(classOf[scala.collection.immutable.SortedSet[_]], classOf[ScalaImmutableSortedSetSerializer])
 			kryo.addDefaultSerializer(classOf[scala.collection.immutable.Set[_]], classOf[ScalaImmutableSetSerializer])
 
 			kryo.addDefaultSerializer(classOf[scala.collection.mutable.SortedSet[_]], classOf[ScalaMutableSortedSetSerializer])
 			kryo.addDefaultSerializer(classOf[scala.collection.mutable.Set[_]], classOf[ScalaMutableSetSerializer])
 
+			// Map/Set Factories
 			kryo.addDefaultSerializer(classOf[scala.collection.generic.MapFactory[scala.collection.Map]], classOf[ScalaImmutableMapSerializer])
 			kryo.addDefaultSerializer(classOf[scala.collection.generic.SetFactory[scala.collection.Set]], classOf[ScalaImmutableSetSerializer])
 
