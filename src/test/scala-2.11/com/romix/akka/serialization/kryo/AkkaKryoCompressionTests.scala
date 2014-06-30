@@ -6,7 +6,9 @@ import akka.actor.{ ActorRef, ActorSystem }
 import akka.serialization._
 import com.typesafe.config.ConfigFactory
 import scala.collection.mutable.AnyRefMap
-import scala.collection.immutable.LongMap
+import scala.collection.mutable.LongMap
+import scala.collection.immutable.HashMap
+
 
 
 class AkkaKryoCompressionTests211 extends FlatSpec {
@@ -27,7 +29,8 @@ class AkkaKryoCompressionTests211 extends FlatSpec {
             "[Lscala.collection.immutable.HashMap$HashTrieMap;" = 31
             "scala.collection.mutable.AnyRefMap"                = 34
             "[Lscala.collection.mutable.AnyRefMap;"             = 35
-            "scala.collection.immutable.LongMap$Bin"            = 36
+            "scala.collection.mutable.LongMap"                  = 36
+            "[Lscala.collection.mutable.LongMap;"               = 37
             "[J" = 50
             "[D" = 51
             "[Z" = 52
@@ -44,6 +47,8 @@ class AkkaKryoCompressionTests211 extends FlatSpec {
         serialization-bindings {
           "scala.collection.mutable.AnyRefMap" = kryo
           "[Lscala.collection.mutable.AnyRefMap;" = kryo
+          "scala.collection.mutable.LongMap" = kryo
+          "[Lscala.collection.mutable.LongMap;" = kryo
         }
       }
     }
@@ -64,12 +69,12 @@ class AkkaKryoCompressionTests211 extends FlatSpec {
   val serialization = SerializationExtension(system)
 
   "Kryo_2.11" should "serialize and deserialize AnyRefMap[String,Any] successfully" in {
+    val r  = new scala.util.Random(0L)
     val tm = AnyRefMap[String,Any](
-        "foo" -> 123.3,
-        "bar" -> "something as a text",
-        "baz" -> 23L,
-        "boom"-> true,
-        "hash"-> LongMap[Int](1L->200,2L->300,500L->3)
+            "foo" -> r.nextDouble,
+            "bar" -> "foo,bar,baz",
+            "baz" -> 124L,
+            "hash"-> HashMap[Int,Int](r.nextInt->r.nextInt,5->500, 10->r.nextInt)
       )
 
     assert(serialization.findSerializerFor(tm).getClass == classOf[KryoSerializer])
@@ -91,7 +96,7 @@ class AkkaKryoCompressionTests211 extends FlatSpec {
             "foo" -> r.nextDouble,
             "bar" -> "foo,bar,baz",
             "baz" -> 124L,
-            "hash"-> LongMap[Int](r.nextLong->r.nextInt,5L->500, 10L->r.nextInt)
+            "hash"-> HashMap[Int,Int](r.nextInt->r.nextInt,5->500, 10->r.nextInt)
         ) }).toArray
 
     assert(serialization.findSerializerFor(atm).getClass === classOf[KryoSerializer])
@@ -105,11 +110,42 @@ class AkkaKryoCompressionTests211 extends FlatSpec {
     val bytes = serialized.get
     println(s"Serialized to ${bytes.length} bytes")
 
-    timeIt("AnyRefMap Serialize:   ", iterations){serialization.serialize( atm )}
-    timeIt("AnyRefMap Serialize:   ", iterations){serialization.serialize( atm )}
-    timeIt("AnyRefMap Serialize:   ", iterations){serialization.serialize( atm )}
-    timeIt("AnyRefMap Deserialize: ", iterations)(serialization.deserialize(bytes, classOf[Array[AnyRefMap[String,Any]]]))
-    timeIt("AnyRefMap Deserialize: ", iterations)(serialization.deserialize(bytes, classOf[Array[AnyRefMap[String,Any]]]))
-    timeIt("AnyRefMap Deserialize: ", iterations)(serialization.deserialize(bytes, classOf[Array[AnyRefMap[String,Any]]]))
+    timeIt("Mutable AnyRefMap Serialize:   ", iterations){serialization.serialize( atm )}
+    timeIt("Mutable AnyRefMap Serialize:   ", iterations){serialization.serialize( atm )}
+    timeIt("Mutable AnyRefMap Serialize:   ", iterations){serialization.serialize( atm )}
+    timeIt("Mutable AnyRefMap Deserialize: ", iterations)(serialization.deserialize(bytes, classOf[Array[AnyRefMap[String,Any]]]))
+    timeIt("Mutable AnyRefMap Deserialize: ", iterations)(serialization.deserialize(bytes, classOf[Array[AnyRefMap[String,Any]]]))
+    timeIt("Mutable AnyRefMap Deserialize: ", iterations)(serialization.deserialize(bytes, classOf[Array[AnyRefMap[String,Any]]]))
+  }
+
+  it should "serialize and deserialize Array[mutable.LongMap[Any]] timings (with compression)" in {
+    val iterations = 500
+    val listLength = 500
+
+    val r  = new scala.util.Random(0L)
+    val atm = (List.fill(listLength){ LongMap[Any](
+            1L -> r.nextDouble,
+            2L -> "foo,bar,baz",
+            3L -> 124L,
+            4L-> HashMap[Int,Int](r.nextInt->r.nextInt,5->500, 10->r.nextInt)
+        ) }).toArray
+
+    assert(serialization.findSerializerFor(atm).getClass === classOf[KryoSerializer])
+
+    val serialized = serialization.serialize(atm)
+    assert(serialized.isSuccess)
+
+    val deserialized = serialization.deserialize(serialized.get, classOf[Array[LongMap[Any]]])
+    assert(deserialized.isSuccess)
+
+    val bytes = serialized.get
+    println(s"Serialized to ${bytes.length} bytes")
+
+    timeIt("Mutable LongMap Serialize:   ", iterations){serialization.serialize( atm )}
+    timeIt("Mutable LongMap Serialize:   ", iterations){serialization.serialize( atm )}
+    timeIt("Mutable LongMap Serialize:   ", iterations){serialization.serialize( atm )}
+    timeIt("Mutable LongMap Deserialize: ", iterations)(serialization.deserialize(bytes, classOf[Array[LongMap[Any]]]))
+    timeIt("Mutable LongMap Deserialize: ", iterations)(serialization.deserialize(bytes, classOf[Array[LongMap[Any]]]))
+    timeIt("Mutable LongMap Deserialize: ", iterations)(serialization.deserialize(bytes, classOf[Array[LongMap[Any]]]))
   }
 }

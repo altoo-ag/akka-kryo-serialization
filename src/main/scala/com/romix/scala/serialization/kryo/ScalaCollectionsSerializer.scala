@@ -17,9 +17,6 @@
 package com.romix.scala.serialization.kryo
 
 import scala.collection.Traversable
-import scala.collection.Set
-import scala.collection.SortedSet
-import java.lang.reflect.Constructor
 
 import com.esotericsoftware.kryo.Kryo
 import com.esotericsoftware.kryo.Serializer
@@ -27,9 +24,8 @@ import com.esotericsoftware.kryo.io.Input
 import com.esotericsoftware.kryo.io.Output
 
 /***
- * This module provides helper classes for serialization of Scala collections.
- * Currently it supports Sets and any Traversable collections. Maps are in
- * separate module named ScalaMapSerializers
+ *
+ * Generic serializer for traversable collections
  *
  * @author eedrls
  *
@@ -57,49 +53,3 @@ class ScalaCollectionSerializer ( ) extends Serializer[Traversable[_]] {
 	}
 }
 
-class ScalaSetSerializer ( ) extends Serializer[Set[_]] {
-	var class2constuctor = Map[Class[_], Constructor[_]]()
-	override def read(kryo: Kryo, input: Input, typ: Class[Set[_]]): Set[_]  = {
-		val len = input.readInt(true)
-
-		var coll: Set[Any] =
-			if(classOf[SortedSet[_]].isAssignableFrom(typ)) {
-				// Read ordering and set it for this collection
-				implicit val setOrdering = kryo.readClassAndObject(input).asInstanceOf[scala.math.Ordering[Any]]
-				try {
-				val constructor =
-					class2constuctor.get(typ) getOrElse {
-					   val constr = typ.getDeclaredConstructor(classOf[scala.math.Ordering[_]])
-					   class2constuctor += typ->constr
-					   constr
-					}
-				constructor.newInstance(setOrdering).asInstanceOf[Set[Any]].empty
-				} catch {
-					case _: Throwable => kryo.newInstance(typ).asInstanceOf[Set[Any]].empty
-				}
-			} else {
-				kryo.newInstance(typ).asInstanceOf[Set[Any]].empty
-			}
-
-		var i = 0
-		while (i < len) {
-			coll += kryo.readClassAndObject(input)
-			i += 1
-		}
-		coll
-	}
-
-	override def write (kryo : Kryo, output: Output, obj: Set[_]) = {
-		val collection: Set[_] = obj
-		val len = collection.size
-		output.writeInt(len, true)
-
-		if(classOf[SortedSet[_]].isAssignableFrom(obj.getClass())) {
-			val ordering = obj.asInstanceOf[SortedSet[_]].ordering
-			kryo.writeClassAndObject(output, ordering)
-		}
-
-		val it = collection.iterator
-		while (it.hasNext) { kryo.writeClassAndObject(output, it.next) }
-	}
-}

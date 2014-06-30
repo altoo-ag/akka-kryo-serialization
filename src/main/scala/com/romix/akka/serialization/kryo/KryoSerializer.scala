@@ -213,13 +213,19 @@ class KryoSerializer (val system: ExtendedActorSystem) extends Serializer {
                         // mutable maps
 			kryo.addDefaultSerializer(classOf[scala.collection.mutable.Map[_,_]], classOf[ScalaMutableMapSerializer])
 
-                        // immutable maps - specialized by mutable, immutable and sortable
-	                kryo.addDefaultSerializer(classOf[scala.collection.immutable.SortedMap[_,_]], classOf[ScalaSortedMapSerializer])
-	                kryo.addDefaultSerializer(classOf[scala.collection.immutable.Map[_,_]], classOf[ScalaImmutableMapSerializer])
-			kryo.addDefaultSerializer(classOf[scala.collection.generic.MapFactory[scala.collection.Map]], classOf[ScalaImmutableMapSerializer])
+			// immutable maps - specialized by mutable, immutable and sortable
+			kryo.addDefaultSerializer(classOf[scala.collection.immutable.SortedMap[_,_]], classOf[ScalaSortedMapSerializer])
+	    kryo.addDefaultSerializer(classOf[scala.collection.immutable.Map[_,_]], classOf[ScalaImmutableMapSerializer])
 
-			kryo.addDefaultSerializer(classOf[scala.collection.Set[_]], classOf[ScalaSetSerializer])
-			kryo.addDefaultSerializer(classOf[scala.collection.generic.SetFactory[scala.collection.Set]], classOf[ScalaSetSerializer])
+			kryo.addDefaultSerializer(classOf[scala.collection.immutable.SortedSet[_]], classOf[ScalaImmutableSortedSetSerializer])
+			kryo.addDefaultSerializer(classOf[scala.collection.immutable.Set[_]], classOf[ScalaImmutableSetSerializer])
+
+			kryo.addDefaultSerializer(classOf[scala.collection.mutable.SortedSet[_]], classOf[ScalaMutableSortedSetSerializer])
+			kryo.addDefaultSerializer(classOf[scala.collection.mutable.Set[_]], classOf[ScalaMutableSetSerializer])
+
+			kryo.addDefaultSerializer(classOf[scala.collection.generic.MapFactory[scala.collection.Map]], classOf[ScalaImmutableMapSerializer])
+			kryo.addDefaultSerializer(classOf[scala.collection.generic.SetFactory[scala.collection.Set]], classOf[ScalaImmutableSetSerializer])
+
 			kryo.addDefaultSerializer(classOf[scala.collection.Traversable[_]], classOf[ScalaCollectionSerializer])
 			kryo.addDefaultSerializer(classOf[ActorRef], new ActorRefSerializer(system))
 
