@@ -20,7 +20,7 @@ import com.typesafe.sbt.osgi.SbtOsgi.{ OsgiKeys, osgiSettings, defaultOsgiSettin
 
 object MinimalBuild extends Build {
 
-  lazy val buildVersion = "0.3.1"
+  lazy val buildVersion = "0.3.2"
 
   lazy val typesafe = "Typesafe Repository" at "http://repo.typesafe.com/typesafe/releases/"
   lazy val typesafeSnapshot = "Typesafe Snapshots Repository" at "http://repo.typesafe.com/typesafe/snapshots/"
@@ -33,27 +33,48 @@ object MinimalBuild extends Build {
     resolvers += typesafeSnapshot,
     resolvers += sonatypeSnapshot,
     // publishArtifact in packageDoc := false,
-    crossScalaVersions := Seq("2.9.2", "2.9.3", "2.10.4"),
-    scalaVersion := "2.10.4",
+    crossScalaVersions := Seq("2.10.4","2.11.1"),
+    scalaVersion := "2.11.1",
     libraryDependencies += "com.typesafe.akka" %% "akka-remote" % "2.3.3",
     libraryDependencies += "com.typesafe.akka" %% "akka-kernel" % "2.3.3",
     libraryDependencies += "com.esotericsoftware.kryo" % "kryo" % "2.24.0",
     libraryDependencies += "net.jpountz.lz4" % "lz4" % "1.2.0",
-    libraryDependencies += "com.novocode" % "junit-interface" % "0.8" % "test",
-    libraryDependencies += "org.scala-tools.testing" %% "specs" % "1.6.9" % "test",
+
+    libraryDependencies ++= {
+      val sv = scalaVersion.value
+      CrossVersion.partialVersion(sv) match {
+        case Some((2, scalaMajor)) if scalaMajor >= 11 =>
+          Seq(
+            "org.scalatest"  % "scalatest_2.11" % "2.2.0" % "test"
+          )
+        case Some((2, scalaMajor)) if scalaMajor >= 10 =>
+          Seq(
+            "org.scalatest" % "scalatest_2.10" % "2.2.0" % "test"
+          )
+      }
+    },
+
+    // Conditional compilation depening on scala version
+    unmanagedSourceDirectories in Compile <++= (scalaBinaryVersion, baseDirectory) {
+      (sv, bd) => Seq(bd / "src" / "main" / ("scala-"+sv)) },
+
+    unmanagedSourceDirectories in Test <++= (scalaBinaryVersion, baseDirectory) {
+      (sv, bd) => Seq(bd / "src" / "test" / ("scala-"+sv)) },
+
 
     parallelExecution in Test := false,
-    
+
     scalacOptions         := Seq(
       "-encoding", "utf8",
       "-feature",
       "-unchecked",
       "-deprecation",
       "-target:jvm-1.6",
-      "-language:_",
+      "-language:existentials",
+      "-optimise",
       "-Xlog-reflective-calls"
     ),
-    
+
     publishTo := {
 	val nexus = "https://oss.sonatype.org/"
 	if (buildVersion.trim.endsWith("SNAPSHOT"))
@@ -91,11 +112,19 @@ object MinimalBuild extends Build {
     ))
     .settings(defaultOsgiSettings: _*)
     .settings(
-      OsgiKeys.exportPackage := Seq("com.romix.akka.serialization.kryo;version\"0.3.0.1\"", "com.romix.scala.serialization.kryo;version\"0.3.0.1\""),
-      OsgiKeys.importPackage := Seq("com.esotericsoftware*;version=\"[2.20,3.0)\"",
-        "com.typesafe.config;version=\"[1.2.0, 2.0.0)\"",
-        "akka*;version=\"[2.1.0,3.0.0)\"",
-        "scala*;version=\"[2.9.2,2.11.0)\"",
-        "*")
+      OsgiKeys.privatePackage := Seq(
+        "com.romix.akka.serialization.kryo",
+        "com.romix.scala.serialization.kryo"),
+      OsgiKeys.exportPackage := Seq(
+        "com.romix.akka.serialization.kryo;version=\"0.3.2\"",
+        "com.romix.scala.serialization.kryo;version=\"0.3.2\""),
+      OsgiKeys.importPackage := Seq(
+        "com.esotericsoftware.*;version=\"[2.24.0,3.0.0)\"",
+        "com.typesafe.config;version=\"[1.2.0,1.3.0)\"",
+        "akka*;version=\"[2.3.0,3.4.0)\"",
+        "scala*;version=\"[2.10.0,2.12)\"",
+        "scala*;version=\"[2.10.0,2.12)\"",
+        "net.jpountz.lz4;resolution:=optional"
+        )
     )
 }
