@@ -36,6 +36,88 @@ import net.jpountz.lz4.LZ4Factory
 import java.util.zip.{Deflater, Inflater}
 import scala.collection.mutable.ArrayBuilder
 
+trait KryoCompressor {
+	def compress(inputBuff: Array[Byte]): Array[Byte]
+	def decompress(inputBuff: Array[Byte]): Array[Byte]
+}
+
+class NoKryoComressor extends KryoCompressor {
+	def compress(inputBuff: Array[Byte]) = inputBuff
+	def decompress(inputBuff: Array[Byte]) = inputBuff
+}
+
+class LZ4KryoComressor extends KryoCompressor {
+
+	lazy val lz4factory = LZ4Factory.fastestInstance
+
+	def compress(inputBuff: Array[Byte]): Array[Byte] = {
+		val inputSize = inputBuff.length
+		val lz4 = lz4factory.fastCompressor
+		val maxOutputSize = lz4.maxCompressedLength(inputSize);
+		val outputBuff = new Array[Byte](maxOutputSize + 4)
+		val outputSize = lz4.compress(inputBuff, 0, inputSize, outputBuff, 4, maxOutputSize)
+
+		// encode 32 bit lenght in the first bytes
+		outputBuff(0) = (inputSize       & 0xff).toByte
+		outputBuff(1) = (inputSize >> 8  & 0xff).toByte
+		outputBuff(2) = (inputSize >> 16 & 0xff).toByte
+		outputBuff(3) = (inputSize >> 24 & 0xff).toByte
+		outputBuff.take(outputSize+4)
+	}
+
+	def decompress(inputBuff: Array[Byte]): Array[Byte] = {
+		// the first 4 bytes are the original size
+		val size: Int = (inputBuff(0).asInstanceOf[Int] & 0xff) |
+										(inputBuff(1).asInstanceOf[Int] & 0xff) << 8  |
+										(inputBuff(2).asInstanceOf[Int] & 0xff) << 16 |
+										(inputBuff(3).asInstanceOf[Int] & 0xff) << 24
+		val lz4 = lz4factory.fastDecompressor()
+		val outputBuff = new Array[Byte](size)
+		lz4.decompress(inputBuff, 4, outputBuff, 0, size)
+		outputBuff
+	}
+}
+
+class ZipKryoComressor extends KryoCompressor {
+
+	lazy val deflater = new Deflater(Deflater.BEST_SPEED)
+	lazy val inflater = new Inflater()
+
+	def compress(inputBuff: Array[Byte]): Array[Byte] = {
+		val inputSize = inputBuff.length
+		val outputBuff = new ArrayBuilder.ofByte
+		outputBuff += (inputSize       & 0xff).toByte
+		outputBuff += (inputSize >> 8  & 0xff).toByte
+		outputBuff += (inputSize >> 16 & 0xff).toByte
+		outputBuff += (inputSize >> 24 & 0xff).toByte
+
+		deflater.setInput(inputBuff)
+		deflater.finish
+		val buff = new Array[Byte](4096)
+
+		while (!deflater.finished) {
+			val n = deflater.deflate(buff)
+			outputBuff ++= buff.take(n)
+		}
+		deflater.reset
+		outputBuff.result
+	}
+
+	def decompress(inputBuff: Array[Byte]): Array[Byte] = {
+		val size: Int = (inputBuff(0).asInstanceOf[Int] & 0xff) |
+										(inputBuff(1).asInstanceOf[Int] & 0xff) << 8  |
+										(inputBuff(2).asInstanceOf[Int] & 0xff) << 16 |
+										(inputBuff(3).asInstanceOf[Int] & 0xff) << 24
+		val outputBuff = new Array[Byte](size)
+		inflater.setInput(inputBuff, 4, inputBuff.length - 4)
+		inflater.inflate(outputBuff)
+		inflater.reset
+		outputBuff
+	}
+}
+
+
+
 class KryoSerializer (val system: ExtendedActorSystem) extends Serializer {
 
 	import KryoSerialization._
@@ -85,16 +167,6 @@ class KryoSerializer (val system: ExtendedActorSystem) extends Serializer {
 		log.debug("Got use manifests: {}", useManifests)
 	}
 
-	val enableLZ4Compression = settings.EnableLZ4Compression
-	locally {
-		log.debug("Got compression enabled: {}", enableLZ4Compression)
-	}
-
-	val enableDeflateCompression = settings.EnableDeflateCompression
-	locally {
-		log.debug("Got compression enabled: {}", enableDeflateCompression)
-	}
-
 	val customSerializerInitClassName = settings.KryoCustomSerializerInit
     locally {
         log.debug("Got custom serializer init class: {}", customSerializerInitClassName)
@@ -110,20 +182,28 @@ class KryoSerializer (val system: ExtendedActorSystem) extends Serializer {
                         }
                     }
 
-    locally {
-        log.debug("Got serializer init class: {}", customSerializerInitClass)
-    }
+	locally {
+			log.debug("Got serializer init class: {}", customSerializerInitClass)
+	}
 
-    val customizerInstance = Try(customSerializerInitClass.map(_.newInstance))
-    locally {
-        log.debug("Got customizer instance: {}", customizerInstance)
-    }
+	val customizerInstance = Try(customSerializerInitClass.map(_.newInstance))
+	locally {
+			log.debug("Got customizer instance: {}", customizerInstance)
+	}
 
-    val customizerMethod = Try(customSerializerInitClass.map(_.getMethod("customize", classOf[Kryo])))
+	val customizerMethod = Try(customSerializerInitClass.map(_.getMethod("customize", classOf[Kryo])))
 
-    locally {
-        log.debug("Got customizer method: {}", customizerMethod)
-    }
+	locally {
+			log.debug("Got customizer method: {}", customizerMethod)
+	}
+	val compressor: KryoCompressor = settings.Compression match {
+		case "lz4"      => new LZ4KryoComressor
+		case "deflate"  => new ZipKryoComressor
+		case _					=> new NoKryoComressor
+	}
+	locally {
+		log.debug("Got compression: {}", settings.Compression)
+	}
 
 	val serializer = try new KryoBasedSerializer(getKryo(idStrategy, serializerType),
 											 bufferSize,
@@ -147,85 +227,18 @@ class KryoSerializer (val system: ExtendedActorSystem) extends Serializer {
 	// A unique identifier for this Serializer
 	def identifier = 123454323
 
-	lazy val lz4factory = LZ4Factory.fastestInstance
-	def lz4_compress(inputBuff: Array[Byte]): Array[Byte] = {
-		val inputSize = inputBuff.length
-		val lz4 = lz4factory.fastCompressor
-		val maxOutputSize = lz4.maxCompressedLength(inputSize);
-		val outputBuff = new Array[Byte](maxOutputSize + 4)
-		val outputSize = lz4.compress(inputBuff, 0, inputSize, outputBuff, 4, maxOutputSize)
-
-		// encode 32 bit lenght in the first bytes
-		outputBuff(0) = (inputSize       & 0xff).toByte
-		outputBuff(1) = (inputSize >> 8  & 0xff).toByte
-		outputBuff(2) = (inputSize >> 16 & 0xff).toByte
-		outputBuff(3) = (inputSize >> 24 & 0xff).toByte
-		outputBuff.take(outputSize+4)
-	}
-
-	def lz4_decompress(inputBuff: Array[Byte]): Array[Byte] = {
-		// the first 4 bytes are the original size
-		val size: Int = (inputBuff(0).asInstanceOf[Int] & 0xff) |
-										(inputBuff(1).asInstanceOf[Int] & 0xff) << 8  |
-										(inputBuff(2).asInstanceOf[Int] & 0xff) << 16 |
-										(inputBuff(3).asInstanceOf[Int] & 0xff) << 24
-		val lz4 = lz4factory.fastDecompressor()
-		val outputBuff = new Array[Byte](size)
-		lz4.decompress(inputBuff, 4, outputBuff, 0, size)
-		outputBuff
-	}
-
-	lazy val deflater = new Deflater(Deflater.BEST_SPEED)
-	lazy val inflater = new Inflater()
-
-	def zip_compress(inputBuff: Array[Byte]): Array[Byte] = {
-		val inputSize = inputBuff.length
-		val outputBuff = new ArrayBuilder.ofByte
-		outputBuff += (inputSize       & 0xff).toByte
-		outputBuff += (inputSize >> 8  & 0xff).toByte
-		outputBuff += (inputSize >> 16 & 0xff).toByte
-		outputBuff += (inputSize >> 24 & 0xff).toByte
-
-		deflater.setInput(inputBuff)
-		deflater.finish
-		val buff = new Array[Byte](4096)
-
-		while (!deflater.finished) {
-			val n = deflater.deflate(buff)
-			outputBuff ++= buff.take(n)
-		}
-		deflater.reset
-		outputBuff.result
-	}
-
-	def zip_decompress(inputBuff: Array[Byte]): Array[Byte] = {
-		val size: Int = (inputBuff(0).asInstanceOf[Int] & 0xff) |
-										(inputBuff(1).asInstanceOf[Int] & 0xff) << 8  |
-										(inputBuff(2).asInstanceOf[Int] & 0xff) << 16 |
-										(inputBuff(3).asInstanceOf[Int] & 0xff) << 24
-		val outputBuff = new Array[Byte](size)
-		inflater.setInput(inputBuff, 4, inputBuff.length - 4)
-		inflater.inflate(outputBuff)
-		inflater.reset
-		outputBuff
-	}
 
 	// Delegate to a real serializer
 	def toBinary(obj: AnyRef): Array[Byte] = {
 		val ser = getSerializer
 		val bin = ser.toBinary(obj)
 		releaseSerializer(ser)
-		if		  (enableLZ4Compression)		 lz4_compress(bin)
-		else if (enableDeflateCompression) zip_compress(bin)
-		else bin
+		compressor.compress(bin)
 	}
 
 	def fromBinary(bytes: Array[Byte], clazz: Option[Class[_]]): AnyRef = {
 		val ser = getSerializer
-		val obj = ser.fromBinary(
-			if			(enableLZ4Compression) lz4_decompress(bytes)
-			else if (enableDeflateCompression) zip_decompress(bytes)
-			else bytes, clazz)
+		val obj = ser.fromBinary(compressor.decompress(bytes), clazz)
 		releaseSerializer(ser)
 		obj
 	}
