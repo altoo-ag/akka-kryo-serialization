@@ -22,7 +22,7 @@ How to use this library in your project
 To use this serializer, you need to do two things:
 *   Include a dependency on this library into your project:
 
-	`libraryDependencies += "com.github.romix.akka" % "akka-kryo-serialization" % "0.3.0"`
+	`libraryDependencies += "com.github.romix.akka" % "akka-kryo-serialization" % "0.3.2"`
     
 *   Add some new elements to your Akka configuration file, e.g. `application.conf`
 
@@ -71,7 +71,7 @@ If you want to test the latest snapshot of this library, please use the followin
 
 For your SBT project files, you can use the following coordinates:
 
-    "com.github.romix.akka" %% "akka-kryo-serialization" % "0.3.1"
+    "com.github.romix.akka" %% "akka-kryo-serialization" % "0.3.2"
     
 
 How do I build this library on my own?
