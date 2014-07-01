@@ -14,7 +14,7 @@ import org.objenesis.strategy.StdInstantiatorStrategy
 
 import org.scalatest.FlatSpec
 
-abstract class SpecCase extends FlatSpec  {
+abstract class SpecCase extends FlatSpec {
   var kryo: Kryo = null
 
   override def withFixture(test: NoArgTest) = {

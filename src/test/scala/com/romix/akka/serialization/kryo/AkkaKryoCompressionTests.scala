@@ -13,7 +13,6 @@ class AkkaKryoCompressionTests extends FlatSpec {
   def testConfig(systemName: String, config: String): Unit = {
     val system = ActorSystem(systemName, ConfigFactory.parseString(config))
 
-
     val iterations = 500
     val listLength = 500
 
@@ -25,7 +24,7 @@ class AkkaKryoCompressionTests extends FlatSpec {
         i += 1
       }
       val ms = (System.nanoTime - now) / 1000000
-      println(s"$systemName $name:\t$ms\tms\t=\t${loops*1000/ms}\tops/s")
+      println(s"$systemName $name:\t$ms\tms\t=\t${loops * 1000 / ms}\tops/s")
     }
 
     // Get the Serialization Extension
@@ -33,58 +32,55 @@ class AkkaKryoCompressionTests extends FlatSpec {
 
     // Maps
     s"$systemName KryoSerializer" should "serialize and deserialize immutable TreeMap[String,Any] successfully" in {
-      val tm = TreeMap[String,Any](
-          "foo" -> 123.3,
-          "bar" -> "something as a text",
-          "baz" -> null,
-          "boom"-> true,
-          "hash"-> HashMap[Int,Int](1->200,2->300,500->3)
-        )
+      val tm = TreeMap[String, Any](
+        "foo" -> 123.3,
+        "bar" -> "something as a text",
+        "baz" -> null,
+        "boom" -> true,
+        "hash" -> HashMap[Int, Int](1 -> 200, 2 -> 300, 500 -> 3))
 
       assert(serialization.findSerializerFor(tm).getClass == classOf[KryoSerializer])
 
       val serialized = serialization.serialize(tm)
       assert(serialized.isSuccess)
 
-      val deserialized = serialization.deserialize(serialized.get, classOf[TreeMap[String,Any]])
+      val deserialized = serialization.deserialize(serialized.get, classOf[TreeMap[String, Any]])
       assert(deserialized.isSuccess)
       assert(deserialized.get == tm)
     }
 
     it should "serialize and deserialize immutable HashMap[String,Any] successfully" in {
-      val tm = HashMap[String,Any](
-          "foo" -> 123.3,
-          "bar" -> "something as a text",
-          "baz" -> null,
-          "boom"-> true,
-          "hash"-> HashMap[Int,Int](1->200,2->300,500->3)
-        )
+      val tm = HashMap[String, Any](
+        "foo" -> 123.3,
+        "bar" -> "something as a text",
+        "baz" -> null,
+        "boom" -> true,
+        "hash" -> HashMap[Int, Int](1 -> 200, 2 -> 300, 500 -> 3))
 
       assert(serialization.findSerializerFor(tm).getClass == classOf[KryoSerializer])
 
       val serialized = serialization.serialize(tm)
       assert(serialized.isSuccess)
 
-      val deserialized = serialization.deserialize(serialized.get, classOf[HashMap[String,Any]])
+      val deserialized = serialization.deserialize(serialized.get, classOf[HashMap[String, Any]])
       assert(deserialized.isSuccess)
       assert(deserialized.get == tm)
     }
 
     it should "serialize and deserialize mutable HashMap[String,Any] successfully" in {
-      val tm = scala.collection.mutable.HashMap[String,Any](
-          "foo" -> 123.3,
-          "bar" -> "something as a text",
-          "baz" -> null,
-          "boom"-> true,
-          "hash"-> HashMap[Int,Int](1->200,2->300,500->3)
-        )
+      val tm = scala.collection.mutable.HashMap[String, Any](
+        "foo" -> 123.3,
+        "bar" -> "something as a text",
+        "baz" -> null,
+        "boom" -> true,
+        "hash" -> HashMap[Int, Int](1 -> 200, 2 -> 300, 500 -> 3))
 
       assert(serialization.findSerializerFor(tm).getClass == classOf[KryoSerializer])
 
       val serialized = serialization.serialize(tm)
       assert(serialized.isSuccess)
 
-      val deserialized = serialization.deserialize(serialized.get, classOf[scala.collection.mutable.HashMap[String,Any]])
+      val deserialized = serialization.deserialize(serialized.get, classOf[scala.collection.mutable.HashMap[String, Any]])
       assert(deserialized.isSuccess)
       assert(deserialized.get == tm)
     }
@@ -145,100 +141,103 @@ class AkkaKryoCompressionTests extends FlatSpec {
     // Timing Maps
 
     it should "serialize and deserialize Array[HashMap[String,Any]] timings (with compression)" in {
-      val r  = new scala.util.Random(0L)
-      val atm = (List.fill(listLength){ HashMap[String,Any](
-              "foo" -> r.nextDouble,
-              "bar" -> "foo,bar,baz",
-              "baz" -> 124L,
-              "hash"-> HashMap[Int,Int](r.nextInt->r.nextInt,5->500, 10->r.nextInt)
-          ) }).toArray
+      val r = new scala.util.Random(0L)
+      val atm = (List.fill(listLength) {
+        HashMap[String, Any](
+          "foo" -> r.nextDouble,
+          "bar" -> "foo,bar,baz",
+          "baz" -> 124L,
+          "hash" -> HashMap[Int, Int](r.nextInt -> r.nextInt, 5 -> 500, 10 -> r.nextInt))
+      }).toArray
 
       assert(serialization.findSerializerFor(atm).getClass === classOf[KryoSerializer])
 
       val serialized = serialization.serialize(atm)
       assert(serialized.isSuccess)
 
-      val deserialized = serialization.deserialize(serialized.get, classOf[Array[HashMap[String,Any]]])
+      val deserialized = serialization.deserialize(serialized.get, classOf[Array[HashMap[String, Any]]])
       assert(deserialized.isSuccess)
 
       val bytes = serialized.get
       println(s"Serialized to ${bytes.length} bytes")
 
-      timeIt("Immutable HashMap Serialize:   ", iterations){serialization.serialize( atm )}
-      timeIt("Immutable HashMap Serialize:   ", iterations){serialization.serialize( atm )}
-      timeIt("Immutable HashMap Serialize:   ", iterations){serialization.serialize( atm )}
+      timeIt("Immutable HashMap Serialize:   ", iterations) { serialization.serialize(atm) }
+      timeIt("Immutable HashMap Serialize:   ", iterations) { serialization.serialize(atm) }
+      timeIt("Immutable HashMap Serialize:   ", iterations) { serialization.serialize(atm) }
 
-      timeIt("Immutable HashMap Deserialize: ", iterations)(serialization.deserialize(bytes, classOf[Array[HashMap[String,Any]]]))
-      timeIt("Immutable HashMap Deserialize: ", iterations)(serialization.deserialize(bytes, classOf[Array[HashMap[String,Any]]]))
-      timeIt("Immutable HashMap Deserialize: ", iterations)(serialization.deserialize(bytes, classOf[Array[HashMap[String,Any]]]))
+      timeIt("Immutable HashMap Deserialize: ", iterations)(serialization.deserialize(bytes, classOf[Array[HashMap[String, Any]]]))
+      timeIt("Immutable HashMap Deserialize: ", iterations)(serialization.deserialize(bytes, classOf[Array[HashMap[String, Any]]]))
+      timeIt("Immutable HashMap Deserialize: ", iterations)(serialization.deserialize(bytes, classOf[Array[HashMap[String, Any]]]))
     }
 
-
     it should "serialize and deserialize Array[TreeMap[String,Any]] timings (with compression)" in {
-      val r  = new scala.util.Random(0L)
-      val atm = (List.fill(listLength){ TreeMap[String,Any](
-              "foo" -> r.nextDouble,
-              "bar" -> "foo,bar,baz",
-              "baz" -> 124L,
-              "hash"-> HashMap[Int,Int](r.nextInt->r.nextInt,5->500, 10->r.nextInt)
-          ) }).toArray
+      val r = new scala.util.Random(0L)
+      val atm = (List.fill(listLength) {
+        TreeMap[String, Any](
+          "foo" -> r.nextDouble,
+          "bar" -> "foo,bar,baz",
+          "baz" -> 124L,
+          "hash" -> HashMap[Int, Int](r.nextInt -> r.nextInt, 5 -> 500, 10 -> r.nextInt))
+      }).toArray
 
       assert(serialization.findSerializerFor(atm).getClass === classOf[KryoSerializer])
 
       val serialized = serialization.serialize(atm)
       assert(serialized.isSuccess)
 
-      val deserialized = serialization.deserialize(serialized.get, classOf[Array[TreeMap[String,Any]]])
+      val deserialized = serialization.deserialize(serialized.get, classOf[Array[TreeMap[String, Any]]])
       assert(deserialized.isSuccess)
 
       val bytes = serialized.get
       println(s"Serialized to ${bytes.length} bytes")
 
-      timeIt("Immutable TreeMap Serialize:   ", iterations){serialization.serialize( atm )}
-      timeIt("Immutable TreeMap Serialize:   ", iterations){serialization.serialize( atm )}
-      timeIt("Immutable TreeMap Serialize:   ", iterations){serialization.serialize( atm )}
+      timeIt("Immutable TreeMap Serialize:   ", iterations) { serialization.serialize(atm) }
+      timeIt("Immutable TreeMap Serialize:   ", iterations) { serialization.serialize(atm) }
+      timeIt("Immutable TreeMap Serialize:   ", iterations) { serialization.serialize(atm) }
 
-      timeIt("Immutable TreeMap Deserialize: ", iterations)(serialization.deserialize(bytes, classOf[Array[TreeMap[String,Any]]]))
-      timeIt("Immutable TreeMap Deserialize: ", iterations)(serialization.deserialize(bytes, classOf[Array[TreeMap[String,Any]]]))
-      timeIt("Immutable TreeMap Deserialize: ", iterations)(serialization.deserialize(bytes, classOf[Array[TreeMap[String,Any]]]))
+      timeIt("Immutable TreeMap Deserialize: ", iterations)(serialization.deserialize(bytes, classOf[Array[TreeMap[String, Any]]]))
+      timeIt("Immutable TreeMap Deserialize: ", iterations)(serialization.deserialize(bytes, classOf[Array[TreeMap[String, Any]]]))
+      timeIt("Immutable TreeMap Deserialize: ", iterations)(serialization.deserialize(bytes, classOf[Array[TreeMap[String, Any]]]))
     }
 
     it should "serialize and deserialize Array[mutable.HashMap[String,Any]] timings (with compression)" in {
-      val r  = new scala.util.Random(0L)
-      val atm = (List.fill(listLength){ scala.collection.mutable.HashMap[String,Any](
-              "foo" -> r.nextDouble,
-              "bar" -> "foo,bar,baz",
-              "baz" -> 124L,
-              "hash"-> HashMap[Int,Int](r.nextInt->r.nextInt,5->500, 10->r.nextInt)
-          ) }).toArray
+      val r = new scala.util.Random(0L)
+      val atm = (List.fill(listLength) {
+        scala.collection.mutable.HashMap[String, Any](
+          "foo" -> r.nextDouble,
+          "bar" -> "foo,bar,baz",
+          "baz" -> 124L,
+          "hash" -> HashMap[Int, Int](r.nextInt -> r.nextInt, 5 -> 500, 10 -> r.nextInt))
+      }).toArray
 
       assert(serialization.findSerializerFor(atm).getClass === classOf[KryoSerializer])
 
       val serialized = serialization.serialize(atm)
       assert(serialized.isSuccess)
 
-      val deserialized = serialization.deserialize(serialized.get, classOf[Array[scala.collection.mutable.HashMap[String,Any]]])
+      val deserialized = serialization.deserialize(serialized.get, classOf[Array[scala.collection.mutable.HashMap[String, Any]]])
       assert(deserialized.isSuccess)
 
       val bytes = serialized.get
       println(s"Serialized to ${bytes.length} bytes")
 
-      timeIt("Mutable HashMap Serialize:   ", iterations){serialization.serialize( atm )}
-      timeIt("Mutable HashMap Serialize:   ", iterations){serialization.serialize( atm )}
-      timeIt("Mutable HashMap Serialize:   ", iterations){serialization.serialize( atm )}
+      timeIt("Mutable HashMap Serialize:   ", iterations) { serialization.serialize(atm) }
+      timeIt("Mutable HashMap Serialize:   ", iterations) { serialization.serialize(atm) }
+      timeIt("Mutable HashMap Serialize:   ", iterations) { serialization.serialize(atm) }
 
-      timeIt("Mutable HashMap Deserialize: ", iterations)(serialization.deserialize(bytes, classOf[Array[scala.collection.mutable.HashMap[String,Any]]]))
-      timeIt("Mutable HashMap Deserialize: ", iterations)(serialization.deserialize(bytes, classOf[Array[scala.collection.mutable.HashMap[String,Any]]]))
-      timeIt("Mutable HashMap Deserialize: ", iterations)(serialization.deserialize(bytes, classOf[Array[scala.collection.mutable.HashMap[String,Any]]]))
+      timeIt("Mutable HashMap Deserialize: ", iterations)(serialization.deserialize(bytes, classOf[Array[scala.collection.mutable.HashMap[String, Any]]]))
+      timeIt("Mutable HashMap Deserialize: ", iterations)(serialization.deserialize(bytes, classOf[Array[scala.collection.mutable.HashMap[String, Any]]]))
+      timeIt("Mutable HashMap Deserialize: ", iterations)(serialization.deserialize(bytes, classOf[Array[scala.collection.mutable.HashMap[String, Any]]]))
     }
 
     // Timing Sets
 
     it should "serialize and deserialize Array[immutable.HashSet[String]] timings (with compression)" in {
-      val r  = new scala.util.Random(0L)
-      val orig = (List.fill(listLength){ scala.collection.immutable.HashSet[String](
-              "foo", "bar", "foo,bar,baz", "baz", r.nextString(10)
-          )}).toArray
+      val r = new scala.util.Random(0L)
+      val orig = (List.fill(listLength) {
+        scala.collection.immutable.HashSet[String](
+          "foo", "bar", "foo,bar,baz", "baz", r.nextString(10))
+      }).toArray
 
       assert(serialization.findSerializerFor(orig).getClass === classOf[KryoSerializer])
 
@@ -251,9 +250,9 @@ class AkkaKryoCompressionTests extends FlatSpec {
       val bytes = serialized.get
       println(s"Serialized to ${bytes.length} bytes")
 
-      timeIt("Immutable HashSet Serialize:   ", iterations){serialization.serialize( orig )}
-      timeIt("Immutable HashSet Serialize:   ", iterations){serialization.serialize( orig )}
-      timeIt("Immutable HashSet Serialize:   ", iterations){serialization.serialize( orig )}
+      timeIt("Immutable HashSet Serialize:   ", iterations) { serialization.serialize(orig) }
+      timeIt("Immutable HashSet Serialize:   ", iterations) { serialization.serialize(orig) }
+      timeIt("Immutable HashSet Serialize:   ", iterations) { serialization.serialize(orig) }
 
       timeIt("Immutable HashSet Deserialize: ", iterations)(serialization.deserialize(bytes, classOf[Array[scala.collection.immutable.HashSet[String]]]))
       timeIt("Immutable HashSet Deserialize: ", iterations)(serialization.deserialize(bytes, classOf[Array[scala.collection.immutable.HashSet[String]]]))
@@ -261,10 +260,11 @@ class AkkaKryoCompressionTests extends FlatSpec {
     }
 
     it should "serialize and deserialize Array[immutable.TreeSet[String]] timings (with compression)" in {
-      val r  = new scala.util.Random(0L)
-      val orig = (List.fill(listLength){ scala.collection.immutable.TreeSet[String](
-              "foo", "bar", "foo,bar,baz", "baz", r.nextString(10)
-          )}).toArray
+      val r = new scala.util.Random(0L)
+      val orig = (List.fill(listLength) {
+        scala.collection.immutable.TreeSet[String](
+          "foo", "bar", "foo,bar,baz", "baz", r.nextString(10))
+      }).toArray
 
       assert(serialization.findSerializerFor(orig).getClass === classOf[KryoSerializer])
 
@@ -277,9 +277,9 @@ class AkkaKryoCompressionTests extends FlatSpec {
       val bytes = serialized.get
       println(s"Serialized to ${bytes.length} bytes")
 
-      timeIt("Immutable TreeSet Serialize:   ", iterations){serialization.serialize( orig )}
-      timeIt("Immutable TreeSet Serialize:   ", iterations){serialization.serialize( orig )}
-      timeIt("Immutable TreeSet Serialize:   ", iterations){serialization.serialize( orig )}
+      timeIt("Immutable TreeSet Serialize:   ", iterations) { serialization.serialize(orig) }
+      timeIt("Immutable TreeSet Serialize:   ", iterations) { serialization.serialize(orig) }
+      timeIt("Immutable TreeSet Serialize:   ", iterations) { serialization.serialize(orig) }
 
       timeIt("Immutable TreeSet Deserialize: ", iterations)(serialization.deserialize(bytes, classOf[Array[scala.collection.immutable.TreeSet[String]]]))
       timeIt("Immutable TreeSet Deserialize: ", iterations)(serialization.deserialize(bytes, classOf[Array[scala.collection.immutable.TreeSet[String]]]))
@@ -287,10 +287,11 @@ class AkkaKryoCompressionTests extends FlatSpec {
     }
 
     it should "serialize and deserialize Array[mutable.HashSet[String]] timings (with compression)" in {
-      val r  = new scala.util.Random(0L)
-      val orig = (List.fill(listLength){ scala.collection.mutable.HashSet[String](
-              "foo", "bar", "foo,bar,baz", "baz", r.nextString(10)
-          )}).toArray
+      val r = new scala.util.Random(0L)
+      val orig = (List.fill(listLength) {
+        scala.collection.mutable.HashSet[String](
+          "foo", "bar", "foo,bar,baz", "baz", r.nextString(10))
+      }).toArray
 
       assert(serialization.findSerializerFor(orig).getClass === classOf[KryoSerializer])
 
@@ -303,9 +304,9 @@ class AkkaKryoCompressionTests extends FlatSpec {
       val bytes = serialized.get
       println(s"Serialized to ${bytes.length} bytes")
 
-      timeIt("Mutable HashSet Serialize:   ", iterations){serialization.serialize( orig )}
-      timeIt("Mutable HashSet Serialize:   ", iterations){serialization.serialize( orig )}
-      timeIt("Mutable HashSet Serialize:   ", iterations){serialization.serialize( orig )}
+      timeIt("Mutable HashSet Serialize:   ", iterations) { serialization.serialize(orig) }
+      timeIt("Mutable HashSet Serialize:   ", iterations) { serialization.serialize(orig) }
+      timeIt("Mutable HashSet Serialize:   ", iterations) { serialization.serialize(orig) }
 
       timeIt("Mutable HashSet Deserialize: ", iterations)(serialization.deserialize(bytes, classOf[Array[scala.collection.mutable.HashSet[String]]]))
       timeIt("Mutable HashSet Deserialize: ", iterations)(serialization.deserialize(bytes, classOf[Array[scala.collection.mutable.HashSet[String]]]))
@@ -313,10 +314,11 @@ class AkkaKryoCompressionTests extends FlatSpec {
     }
 
     it should "serialize and deserialize Array[mutable.TreeSet[String]] timings (with compression)" in {
-      val r  = new scala.util.Random(0L)
-      val orig = (List.fill(listLength){ scala.collection.mutable.TreeSet[String](
-              "foo", "bar", "foo,bar,baz", "baz", r.nextString(10)
-          )}).toArray
+      val r = new scala.util.Random(0L)
+      val orig = (List.fill(listLength) {
+        scala.collection.mutable.TreeSet[String](
+          "foo", "bar", "foo,bar,baz", "baz", r.nextString(10))
+      }).toArray
 
       assert(serialization.findSerializerFor(orig).getClass === classOf[KryoSerializer])
 
@@ -329,9 +331,9 @@ class AkkaKryoCompressionTests extends FlatSpec {
       val bytes = serialized.get
       println(s"Serialized to ${bytes.length} bytes")
 
-      timeIt("Mutable TreeSet Serialize:   ", iterations){serialization.serialize( orig )}
-      timeIt("Mutable TreeSet Serialize:   ", iterations){serialization.serialize( orig )}
-      timeIt("Mutable TreeSet Serialize:   ", iterations){serialization.serialize( orig )}
+      timeIt("Mutable TreeSet Serialize:   ", iterations) { serialization.serialize(orig) }
+      timeIt("Mutable TreeSet Serialize:   ", iterations) { serialization.serialize(orig) }
+      timeIt("Mutable TreeSet Serialize:   ", iterations) { serialization.serialize(orig) }
 
       timeIt("Mutable TreeSet Deserialize: ", iterations)(serialization.deserialize(bytes, classOf[Array[scala.collection.mutable.TreeSet[String]]]))
       timeIt("Mutable TreeSet Deserialize: ", iterations)(serialization.deserialize(bytes, classOf[Array[scala.collection.mutable.TreeSet[String]]]))

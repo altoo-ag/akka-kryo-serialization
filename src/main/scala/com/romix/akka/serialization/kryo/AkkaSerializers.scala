@@ -1,4 +1,5 @@
-/*******************************************************************************
+/**
+ * *****************************************************************************
  * Copyright 2012 Roman Levenstein
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,7 +13,8 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- ******************************************************************************/
+ * ****************************************************************************
+ */
 
 package com.romix.akka.serialization.kryo
 
@@ -24,25 +26,26 @@ import com.esotericsoftware.kryo.Serializer
 import com.esotericsoftware.kryo.io.Input
 import com.esotericsoftware.kryo.io.Output
 
-/***
+/**
+ * *
  * This module provides helper classes for serialization of Akka-specific classes.
- * 
+ *
  * @author Roman Levenstein
  *
  */
 
 class ActorRefSerializer(val system: ExtendedActorSystem) extends Serializer[ActorRef] {
 
-	override def read(kryo: Kryo, input: Input, typ: Class[ActorRef]): ActorRef = {
-		val path = input.readString()
-		system.provider.resolveActorRef(path)
-	}
+  override def read(kryo: Kryo, input: Input, typ: Class[ActorRef]): ActorRef = {
+    val path = input.readString()
+    system.provider.resolveActorRef(path)
+  }
 
-	override def write(kryo: Kryo, output: Output, obj: ActorRef) = {
-	    output.writeString(Serialization.serializedActorPath(obj))
-//		Serialization.currentTransportAddress.value match {
-//			case null => output.writeString(obj.path.toString)
-//			case addr => output.writeString(obj.path.toStringWithAddress(addr))
-//		}
-	}
+  override def write(kryo: Kryo, output: Output, obj: ActorRef) = {
+    output.writeString(Serialization.serializedActorPath(obj))
+    //		Serialization.currentTransportAddress.value match {
+    //			case null => output.writeString(obj.path.toString)
+    //			case addr => output.writeString(obj.path.toStringWithAddress(addr))
+    //		}
+  }
 }

@@ -7,7 +7,6 @@ import com.esotericsoftware.kryo.io.Input
 import com.esotericsoftware.kryo.io.Output
 import com.romix.scala.serialization.kryo._
 
-
 /** @author romix */
 // @Ignore
 class EnumarationSerializationTest extends SpecCase {
@@ -62,11 +61,11 @@ class EnumarationSerializationTest extends SpecCase {
 }
 
 object WeekDay extends Enumeration {
-    type WeekDay = Value
-    val Mon, Tue, Wed, Thu, Fri, Sat, Sun = Value
+  type WeekDay = Value
+  val Mon, Tue, Wed, Thu, Fri, Sat, Sun = Value
 }
 
 object Time extends Enumeration {
-    type Time = Value
-    val Second, Minute, Hour, Day, Month, Year = Value
+  type Time = Value
+  val Second, Minute, Hour, Day, Month, Year = Value
 }

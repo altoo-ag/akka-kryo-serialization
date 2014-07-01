@@ -132,121 +132,116 @@ class AkkaKryoSerializationTests extends FlatSpec with Matchers {
 
   // Long list for testing serializers and compression
   val testList =
-    List(1,2,3,4,5,6,7,8,9,10,10,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,
-         1,2,3,4,5,6,7,8,9,10,10,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,
-         1,2,3,4,5,6,7,8,9,10,10,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,
-         1,2,3,4,5,6,7,8,9,10,10,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40)
-
+    List(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 10, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40,
+      1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 10, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40,
+      1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 10, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40,
+      1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 10, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40)
 
   val testSeq = Seq(
-      "Rome", "Italy", "London", "England", "Paris", "France", "New York", "USA", "Tokio", "Japan", "Peking", "China", "Brussels", "Belgium",
-      "Rome", "Italy", "London", "England", "Paris", "France", "New York", "USA", "Tokio", "Japan", "Peking", "China", "Brussels", "Belgium",
-      "Rome", "Italy", "London", "England", "Paris", "France", "New York", "USA", "Tokio", "Japan", "Peking", "China", "Brussels", "Belgium",
-      "Rome", "Italy", "London", "England", "Paris", "France", "New York", "USA", "Tokio", "Japan", "Peking", "China", "Brussels", "Belgium"
-      )
-
+    "Rome", "Italy", "London", "England", "Paris", "France", "New York", "USA", "Tokio", "Japan", "Peking", "China", "Brussels", "Belgium",
+    "Rome", "Italy", "London", "England", "Paris", "France", "New York", "USA", "Tokio", "Japan", "Peking", "China", "Brussels", "Belgium",
+    "Rome", "Italy", "London", "England", "Paris", "France", "New York", "USA", "Tokio", "Japan", "Peking", "China", "Brussels", "Belgium",
+    "Rome", "Italy", "London", "England", "Paris", "France", "New York", "USA", "Tokio", "Japan", "Peking", "China", "Brussels", "Belgium")
 
   "KryoSerializer" should "be selected for lists" in {
     // Find the Serializer for it
     val serializer = serialization.findSerializerFor(testList)
-    serializer.getClass.equals(classOf[KryoSerializer]) should be (true)
+    serializer.getClass.equals(classOf[KryoSerializer]) should be(true)
 
     // Check serialization/deserialization
     val serialized = serialization.serialize(testList)
-    serialized.isSuccess should be (true)
-
+    serialized.isSuccess should be(true)
 
     val deserialized = serialization.deserialize(serialized.get, testList.getClass)
-    deserialized.isSuccess should be (true)
+    deserialized.isSuccess should be(true)
 
-    deserialized.get.equals(testList) should be (true)
+    deserialized.get.equals(testList) should be(true)
   }
 
   it should "be selected for ActorRef" in {
     val serializer = serialization.findSerializerFor(system.actorFor("akka://test-system/test-actor"))
-    serializer.getClass.equals(classOf[KryoSerializer]) should be (true)
+    serializer.getClass.equals(classOf[KryoSerializer]) should be(true)
   }
 
   it should "serialize and deserialize ActorRef successfully" in {
     val actorRef = system.actorFor("akka://test-system/test-actor")
 
     val serialized = serialization.serialize(actorRef)
-    serialized.isSuccess should be (true)
+    serialized.isSuccess should be(true)
 
     val deserialized = serialization.deserialize(serialized.get, classOf[ActorRef])
-    deserialized.isSuccess should be (true)
+    deserialized.isSuccess should be(true)
 
-    deserialized.get.equals(actorRef) should be (true)
+    deserialized.get.equals(actorRef) should be(true)
   }
 
   def serializeDeserialize(serialization: Serialization, obj: AnyRef): Int = {
     val serializer = serialization.findSerializerFor(obj)
     Console.println("Object of class " + obj.getClass.getName + " got serializer of class " + serializer.getClass.getName)
-    serializer.getClass.equals(classOf[KryoSerializer]) should be (true)
+    serializer.getClass.equals(classOf[KryoSerializer]) should be(true)
     // Check serialization/deserialization
     val serialized = serialization.serialize(obj)
-    serialized.isSuccess should be (true)
+    serialized.isSuccess should be(true)
 
     val deserialized = serialization.deserialize(serialized.get, obj.getClass)
-    deserialized.isSuccess should be (true)
+    deserialized.isSuccess should be(true)
 
-    deserialized.get.equals(obj) should be (true)
+    deserialized.get.equals(obj) should be(true)
     serialized.get.size
   }
 
-
   it should "produce smaller serialized List representation when compression is enabled" in {
-    val uncompressedSize = serializeDeserialize (serialization, testList)
-    val compressedSize = serializeDeserialize (serializationWithCompression, testList)
-    (compressedSize < uncompressedSize) should be (true)
+    val uncompressedSize = serializeDeserialize(serialization, testList)
+    val compressedSize = serializeDeserialize(serializationWithCompression, testList)
+    (compressedSize < uncompressedSize) should be(true)
     Console.println("Compressed Size = " + compressedSize)
     Console.println("Non-compressed Size = " + uncompressedSize)
   }
 
   it should "produce smaller serialized huge List representation when compression is enabled" in {
     var testList = List.empty[String]
-    0 until hugeCollectionSize foreach {case i => testList = ("k"+i) :: testList}
-    val uncompressedSize = serializeDeserialize (serialization, testList)
-    val compressedSize = serializeDeserialize (serializationWithCompression, testList)
-    (compressedSize < uncompressedSize) should be (true)
+    0 until hugeCollectionSize foreach { case i => testList = ("k" + i) :: testList }
+    val uncompressedSize = serializeDeserialize(serialization, testList)
+    val compressedSize = serializeDeserialize(serializationWithCompression, testList)
+    (compressedSize < uncompressedSize) should be(true)
     Console.println("Compressed Size = " + compressedSize)
     Console.println("Non-compressed Size = " + uncompressedSize)
   }
 
   it should "produce smaller serialized huge Map representation when compression is enabled" in {
-        var testMap:Map[String, String] = Map.empty[String, String]
-        0 until hugeCollectionSize foreach {case i => testMap += ("k"+i)->("v"+i)}
-    val uncompressedSize = serializeDeserialize (serialization, testMap)
-    val compressedSize = serializeDeserialize (serializationWithCompression, testMap)
-    (compressedSize < uncompressedSize) should be (true)
+    var testMap: Map[String, String] = Map.empty[String, String]
+    0 until hugeCollectionSize foreach { case i => testMap += ("k" + i) -> ("v" + i) }
+    val uncompressedSize = serializeDeserialize(serialization, testMap)
+    val compressedSize = serializeDeserialize(serializationWithCompression, testMap)
+    (compressedSize < uncompressedSize) should be(true)
     Console.println("Compressed Size = " + compressedSize)
     Console.println("Non-compressed Size = " + uncompressedSize)
   }
 
   it should "produce smaller serialized Seq representation when compression is enabled" in {
-    val uncompressedSize = serializeDeserialize (serialization, testSeq)
-    val compressedSize = serializeDeserialize (serializationWithCompression, testSeq)
-    (compressedSize < uncompressedSize) should be (true)
+    val uncompressedSize = serializeDeserialize(serialization, testSeq)
+    val compressedSize = serializeDeserialize(serializationWithCompression, testSeq)
+    (compressedSize < uncompressedSize) should be(true)
     Console.println("Compressed Size = " + compressedSize)
     Console.println("Non-compressed Size = " + uncompressedSize)
   }
 
   it should "produce smaller serialized huge Seq representation when compression is enabled" in {
-        var testSeq = Seq[String]()
-        0 until hugeCollectionSize foreach {case i => testSeq = testSeq :+ ("k"+i)}
-    val uncompressedSize = serializeDeserialize (serialization, testSeq)
-    val compressedSize = serializeDeserialize (serializationWithCompression, testSeq)
-    (compressedSize < uncompressedSize) should be (true)
+    var testSeq = Seq[String]()
+    0 until hugeCollectionSize foreach { case i => testSeq = testSeq :+ ("k" + i) }
+    val uncompressedSize = serializeDeserialize(serialization, testSeq)
+    val compressedSize = serializeDeserialize(serializationWithCompression, testSeq)
+    (compressedSize < uncompressedSize) should be(true)
     Console.println("Compressed Size = " + compressedSize)
     Console.println("Non-compressed Size = " + uncompressedSize)
   }
 
   it should "produce smaller serialized huge Set representation when compression is enabled" in {
-        var testSet = Set.empty[String]
-        0 until hugeCollectionSize foreach {case i => testSet += ("k"+i)}
-    val uncompressedSize = serializeDeserialize (serialization, testSet)
-    val compressedSize = serializeDeserialize (serializationWithCompression, testSet)
-    (compressedSize < uncompressedSize) should be (true)
+    var testSet = Set.empty[String]
+    0 until hugeCollectionSize foreach { case i => testSet += ("k" + i) }
+    val uncompressedSize = serializeDeserialize(serialization, testSet)
+    val compressedSize = serializeDeserialize(serializationWithCompression, testSet)
+    (compressedSize < uncompressedSize) should be(true)
     Console.println("Compressed Size = " + compressedSize)
     Console.println("Non-compressed Size = " + uncompressedSize)
   }
