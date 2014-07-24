@@ -45,14 +45,13 @@ class AkkaKryoCompressionTests extends FlatSpec {
               "scala.collection.immutable.BitSet$BitSetN"         = 51
               "scala.collection.immutable.BitSet$BitSet1"         = 52
 
-              "[J" = 50
-              "[D" = 51
-              "[Z" = 52
-              "[Ljava.lang.Object;" = 53
-              "[Ljava.lang.String;" = 54
-              "scala.math.Ordering$String$" = 100
+              "[J" = 150
+              "[D" = 151
+              "[Z" = 152
+              "[Ljava.lang.Object;" = 153
+              "[Ljava.lang.String;" = 154
+              "scala.math.Ordering$String$" = 155
             }
-
           }
          serializers {
             kryo = "com.romix.akka.serialization.kryo.KryoSerializer"
