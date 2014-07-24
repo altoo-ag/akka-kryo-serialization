@@ -7,7 +7,6 @@ import akka.serialization._
 import com.typesafe.config.ConfigFactory
 import scala.collection.immutable.HashMap
 import scala.collection.immutable.TreeMap
-import scala.collection.mutable.BitSet
 
 class AkkaKryoCompressionTests extends FlatSpec {
   val defaultConfig = ConfigFactory.parseString("""
@@ -40,6 +39,11 @@ class AkkaKryoCompressionTests extends FlatSpec {
               "[Lscala.collection.mutable.TreeSet;"               = 45
               "scala.collection.mutable.BitSet"                   = 46
               "[Lscala.collection.mutable.BitSet;"                = 47
+              "scala.collection.immutable.BitSet"                 = 48
+              "[Lscala.collection.immutable.BitSet;"              = 49
+              "scala.collection.immutable.BitSet$BitSet2"         = 50
+              "scala.collection.immutable.BitSet$BitSetN"         = 51
+              "scala.collection.immutable.BitSet$BitSet1"         = 52
 
               "[J" = 50
               "[D" = 51
@@ -71,12 +75,13 @@ class AkkaKryoCompressionTests extends FlatSpec {
             "[Lscala.collection.immutable.HashSet;" = kryo
             "scala.collection.immutable.TreeSet" = kryo
             "[Lscala.collection.immutable.TreeSet;" = kryo
+            "scala.collection.immutable.BitSet" = kryo
+            "[Lscala.collection.immutable.BitSet;" = kryo
 
              "scala.collection.mutable.HashSet" = kryo
             "[Lscala.collection.mutable.HashSet;" = kryo
             "scala.collection.mutable.TreeSet" = kryo
             "[Lscala.collection.mutable.TreeSet;" = kryo
-
             "scala.collection.mutable.BitSet" = kryo
             "[Lscala.collection.mutable.BitSet;" = kryo
           }
@@ -360,6 +365,34 @@ class AkkaKryoCompressionTests extends FlatSpec {
       timeIt("Immutable TreeSet Deserialize: ", iterations)(serialization.deserialize(bytes, classOf[Array[scala.collection.immutable.TreeSet[String]]]))
     }
 
+    it should "serialize and deserialize Array[immutable.BitSet timings (with compression)" in {
+      val r = new scala.util.Random(0L)
+      val orig = (List.fill(listLength) {
+        scala.collection.immutable.BitSet(
+          1, 4, r.nextInt().abs % 32, r.nextInt().abs % 64, r.nextInt().abs % 64, r.nextInt().abs % 128 , r.nextInt().abs % 128,r.nextInt().abs % 256
+        )
+      }).toArray
+
+      assert(serialization.findSerializerFor(orig).getClass === classOf[KryoSerializer])
+
+      val serialized = serialization.serialize(orig)
+      assert(serialized.isSuccess)
+
+      val deserialized = serialization.deserialize(serialized.get, classOf[Array[scala.collection.immutable.BitSet]])
+      assert(deserialized.isSuccess)
+
+      val bytes = serialized.get
+      println(s"Serialized to ${bytes.length} bytes")
+
+      timeIt("Immutable BitSet Serialize:   ", iterations) { serialization.serialize(orig) }
+      timeIt("Immutable BitSet Serialize:   ", iterations) { serialization.serialize(orig) }
+      timeIt("Immutable BitSet Serialize:   ", iterations) { serialization.serialize(orig) }
+
+      timeIt("Immutable BitSet Deserialize: ", iterations)(serialization.deserialize(bytes, classOf[Array[scala.collection.immutable.BitSet]]))
+      timeIt("Immutable BitSet Deserialize: ", iterations)(serialization.deserialize(bytes, classOf[Array[scala.collection.immutable.BitSet]]))
+      timeIt("Immutable BitSet Deserialize: ", iterations)(serialization.deserialize(bytes, classOf[Array[scala.collection.immutable.BitSet]]))
+    }
+
     it should "serialize and deserialize Array[mutable.HashSet[String]] timings (with compression)" in {
       val r = new scala.util.Random(0L)
       val orig = (List.fill(listLength) {
@@ -417,7 +450,7 @@ class AkkaKryoCompressionTests extends FlatSpec {
     it should "serialize and deserialize Array[mutable.BitSet timings (with compression)" in {
       val r = new scala.util.Random(0L)
       val orig = (List.fill(listLength) {
-        BitSet(
+        scala.collection.mutable.BitSet(
           1, 4, r.nextInt().abs % 32, r.nextInt().abs % 64, r.nextInt().abs % 64, r.nextInt().abs % 128 , r.nextInt().abs % 128,r.nextInt().abs % 256
         )
       }).toArray
@@ -441,7 +474,6 @@ class AkkaKryoCompressionTests extends FlatSpec {
       timeIt("Mutable BitSet Deserialize: ", iterations)(serialization.deserialize(bytes, classOf[Array[scala.collection.mutable.BitSet]]))
       timeIt("Mutable BitSet Deserialize: ", iterations)(serialization.deserialize(bytes, classOf[Array[scala.collection.mutable.BitSet]]))
     }
-
   }
 
   testConfig("Zip", "akka.actor.kryo.compression = deflate")
