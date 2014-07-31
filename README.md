@@ -132,7 +132,7 @@ The following options are available for configuring this serializer:
 			# Define a default size for byte buffers used during serialization   
 			buffer-size = 4096  
 
-			# The serialization byte buffers are doubled as needed until they exceed maxBufferSize and an exception is thrown. Can be -1 for no maximum.   
+			# The serialization byte buffers are doubled as needed until they exceed max-buffer-size and an exception is thrown. Can be -1 for no maximum.
 			max-buffer-size = -1
 
 			# If set, akka uses manifests to put a class name
