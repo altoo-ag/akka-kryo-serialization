@@ -146,7 +146,7 @@ class KryoSerializer(val system: ExtendedActorSystem) extends Serializer {
   val maxBufferSize = settings.MaxBufferSize
 
   locally {
-    log.debug("Got mac-buffer-size: {}", maxBufferSize)
+    log.debug("Got max-buffer-size: {}", maxBufferSize)
   }
   
   val serializerPoolSize = settings.SerializerPoolSize
