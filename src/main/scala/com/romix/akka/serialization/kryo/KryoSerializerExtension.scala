@@ -42,6 +42,8 @@ object KryoSerialization {
     val SerializerType: String = config.getString("akka.actor.kryo.type")
 
     val BufferSize: Int = config.getInt("akka.actor.kryo.buffer-size")
+    
+    val MaxBufferSize: Int = config.getInt("akka.actor.kryo.max-buffer-size")
 
     val SerializerPoolSize: Int = config.getInt("akka.actor.kryo.serializer-pool-size")
 

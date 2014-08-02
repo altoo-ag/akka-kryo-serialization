@@ -143,6 +143,12 @@ class KryoSerializer(val system: ExtendedActorSystem) extends Serializer {
     log.debug("Got buffer-size: {}", bufferSize)
   }
 
+  val maxBufferSize = settings.MaxBufferSize
+
+  locally {
+    log.debug("Got max-buffer-size: {}", maxBufferSize)
+  }
+  
   val serializerPoolSize = settings.SerializerPoolSize
 
   val idStrategy = settings.IdStrategy
@@ -207,6 +213,7 @@ class KryoSerializer(val system: ExtendedActorSystem) extends Serializer {
 
   val serializer = try new KryoBasedSerializer(getKryo(idStrategy, serializerType),
     bufferSize,
+    maxBufferSize,
     serializerPoolSize,
     useManifests)
   catch {
@@ -244,6 +251,7 @@ class KryoSerializer(val system: ExtendedActorSystem) extends Serializer {
   val serializerPool = new ObjectPool[Serializer](serializerPoolSize, () => {
     new KryoBasedSerializer(getKryo(idStrategy, serializerType),
       bufferSize,
+      maxBufferSize,
       serializerPoolSize,
       useManifests)
   })
@@ -365,7 +373,12 @@ class KryoSerializer(val system: ExtendedActorSystem) extends Serializer {
  * *
  * Kryo-based serializer backend
  */
-class KryoBasedSerializer(val kryo: Kryo, val bufferSize: Int, val bufferPoolSize: Int, val useManifests: Boolean) extends Serializer {
+class KryoBasedSerializer(
+    val kryo: Kryo, 
+    val bufferSize: Int,
+    val maxBufferSize: Int,
+    val bufferPoolSize: Int,
+    val useManifests: Boolean) extends Serializer {
 
   // This is whether "fromBinary" requires a "clazz" or not
   def includeManifest: Boolean = useManifests
@@ -400,7 +413,7 @@ class KryoBasedSerializer(val kryo: Kryo, val bufferSize: Int, val bufferPoolSiz
     }
   }
 
-  val buf = new Output(bufferSize, 1024 * 1024)
+  val buf = new Output(bufferSize, maxBufferSize)
   private def getBuffer = buf
   private def releaseBuffer(buffer: Output) = { buffer.clear() }
 
