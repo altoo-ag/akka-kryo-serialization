@@ -9,9 +9,87 @@ import scala.collection.immutable.HashMap
 import scala.collection.immutable.TreeMap
 
 class AkkaKryoCompressionTests extends FlatSpec {
+  val defaultConfig = ConfigFactory.parseString("""
+      akka {
+        extensions = ["com.romix.akka.serialization.kryo.KryoSerializationExtension$"]
+        actor {
+          kryo {
+            type = "nograph"
+            idstrategy = "incremental"
+            kryo-reference-map = false
+            buffer-size = 65536
+            compression = off
+            implicit-registration-logging = true
+            mappings {
+              "akka.actor.ActorRef" = 20
+              "akka.actor.DeadLetterActorRef" = 21
+              "scala.collection.immutable.HashMap$HashTrieMap"    = 32
+              "[Lscala.collection.immutable.HashMap;"             = 33
+              "scala.collection.immutable.TreeMap"                = 34
+              "[Lscala.collection.immutable.TreeMap;"             = 35
+              "scala.collection.mutable.HashMap"                  = 36
+              "[Lscala.collection.mutable.HashMap;"               = 37
+              "scala.collection.immutable.HashSet$HashTrieSet"    = 38
+              "[Lscala.collection.immutable.HashSet;"             = 39
+              "scala.collection.immutable.TreeSet"                = 40
+              "[Lscala.collection.immutable.TreeSet;"             = 41
+              "scala.collection.mutable.HashSet"                  = 42
+              "[Lscala.collection.mutable.HashSet;"               = 43
+              "scala.collection.mutable.TreeSet"                  = 44
+              "[Lscala.collection.mutable.TreeSet;"               = 45
+              "scala.collection.mutable.BitSet"                   = 46
+              "[Lscala.collection.mutable.BitSet;"                = 47
+              "scala.collection.immutable.BitSet"                 = 48
+              "[Lscala.collection.immutable.BitSet;"              = 49
+              "scala.collection.immutable.BitSet$BitSet2"         = 50
+              "scala.collection.immutable.BitSet$BitSetN"         = 51
+              "scala.collection.immutable.BitSet$BitSet1"         = 52
+
+              "[J" = 150
+              "[D" = 151
+              "[Z" = 152
+              "[Ljava.lang.Object;" = 153
+              "[Ljava.lang.String;" = 154
+              "scala.math.Ordering$String$" = 155
+            }
+          }
+         serializers {
+            kryo = "com.romix.akka.serialization.kryo.KryoSerializer"
+          }
+
+          serialization-bindings {
+            "scala.Product" = kryo
+            "akka.actor.ActorRef" = kryo
+
+            "scala.collection.immutable.TreeMap" = kryo
+            "[Lscala.collection.immutable.TreeMap;" = kryo
+
+            "scala.collection.mutable.HashMap" = kryo
+            "[Lscala.collection.mutable.HashMap;" = kryo
+
+            "scala.collection.immutable.HashMap" = kryo
+            "[Lscala.collection.immutable.HashMap;" = kryo
+
+            "scala.collection.immutable.HashSet" = kryo
+            "[Lscala.collection.immutable.HashSet;" = kryo
+            "scala.collection.immutable.TreeSet" = kryo
+            "[Lscala.collection.immutable.TreeSet;" = kryo
+            "scala.collection.immutable.BitSet" = kryo
+            "[Lscala.collection.immutable.BitSet;" = kryo
+
+             "scala.collection.mutable.HashSet" = kryo
+            "[Lscala.collection.mutable.HashSet;" = kryo
+            "scala.collection.mutable.TreeSet" = kryo
+            "[Lscala.collection.mutable.TreeSet;" = kryo
+            "scala.collection.mutable.BitSet" = kryo
+            "[Lscala.collection.mutable.BitSet;" = kryo
+          }
+        }
+      }
+  """)
 
   def testConfig(systemName: String, config: String): Unit = {
-    val system = ActorSystem(systemName, ConfigFactory.parseString(config))
+    val system = ActorSystem(systemName, ConfigFactory.parseString(config).withFallback(defaultConfig))
 
     val iterations = 500
     val listLength = 500
@@ -286,6 +364,34 @@ class AkkaKryoCompressionTests extends FlatSpec {
       timeIt("Immutable TreeSet Deserialize: ", iterations)(serialization.deserialize(bytes, classOf[Array[scala.collection.immutable.TreeSet[String]]]))
     }
 
+    it should "serialize and deserialize Array[immutable.BitSet timings (with compression)" in {
+      val r = new scala.util.Random(0L)
+      val orig = (List.fill(listLength) {
+        scala.collection.immutable.BitSet(
+          1, 4, r.nextInt().abs % 32, r.nextInt().abs % 64, r.nextInt().abs % 64, r.nextInt().abs % 128 , r.nextInt().abs % 128,r.nextInt().abs % 256
+        )
+      }).toArray
+
+      assert(serialization.findSerializerFor(orig).getClass === classOf[KryoSerializer])
+
+      val serialized = serialization.serialize(orig)
+      assert(serialized.isSuccess)
+
+      val deserialized = serialization.deserialize(serialized.get, classOf[Array[scala.collection.immutable.BitSet]])
+      assert(deserialized.isSuccess)
+
+      val bytes = serialized.get
+      println(s"Serialized to ${bytes.length} bytes")
+
+      timeIt("Immutable BitSet Serialize:   ", iterations) { serialization.serialize(orig) }
+      timeIt("Immutable BitSet Serialize:   ", iterations) { serialization.serialize(orig) }
+      timeIt("Immutable BitSet Serialize:   ", iterations) { serialization.serialize(orig) }
+
+      timeIt("Immutable BitSet Deserialize: ", iterations)(serialization.deserialize(bytes, classOf[Array[scala.collection.immutable.BitSet]]))
+      timeIt("Immutable BitSet Deserialize: ", iterations)(serialization.deserialize(bytes, classOf[Array[scala.collection.immutable.BitSet]]))
+      timeIt("Immutable BitSet Deserialize: ", iterations)(serialization.deserialize(bytes, classOf[Array[scala.collection.immutable.BitSet]]))
+    }
+
     it should "serialize and deserialize Array[mutable.HashSet[String]] timings (with compression)" in {
       val r = new scala.util.Random(0L)
       val orig = (List.fill(listLength) {
@@ -339,209 +445,37 @@ class AkkaKryoCompressionTests extends FlatSpec {
       timeIt("Mutable TreeSet Deserialize: ", iterations)(serialization.deserialize(bytes, classOf[Array[scala.collection.mutable.TreeSet[String]]]))
       timeIt("Mutable TreeSet Deserialize: ", iterations)(serialization.deserialize(bytes, classOf[Array[scala.collection.mutable.TreeSet[String]]]))
     }
+
+    it should "serialize and deserialize Array[mutable.BitSet timings (with compression)" in {
+      val r = new scala.util.Random(0L)
+      val orig = (List.fill(listLength) {
+        scala.collection.mutable.BitSet(
+          1, 4, r.nextInt().abs % 32, r.nextInt().abs % 64, r.nextInt().abs % 64, r.nextInt().abs % 128 , r.nextInt().abs % 128,r.nextInt().abs % 256
+        )
+      }).toArray
+
+      assert(serialization.findSerializerFor(orig).getClass === classOf[KryoSerializer])
+
+      val serialized = serialization.serialize(orig)
+      assert(serialized.isSuccess)
+
+      val deserialized = serialization.deserialize(serialized.get, classOf[Array[scala.collection.mutable.BitSet]])
+      assert(deserialized.isSuccess)
+
+      val bytes = serialized.get
+      println(s"Serialized to ${bytes.length} bytes")
+
+      timeIt("Mutable BitSet Serialize:   ", iterations) { serialization.serialize(orig) }
+      timeIt("Mutable BitSet Serialize:   ", iterations) { serialization.serialize(orig) }
+      timeIt("Mutable BitSet Serialize:   ", iterations) { serialization.serialize(orig) }
+
+      timeIt("Mutable BitSet Deserialize: ", iterations)(serialization.deserialize(bytes, classOf[Array[scala.collection.mutable.BitSet]]))
+      timeIt("Mutable BitSet Deserialize: ", iterations)(serialization.deserialize(bytes, classOf[Array[scala.collection.mutable.BitSet]]))
+      timeIt("Mutable BitSet Deserialize: ", iterations)(serialization.deserialize(bytes, classOf[Array[scala.collection.mutable.BitSet]]))
+    }
   }
 
-  testConfig("Zip", """
-      akka {
-        extensions = ["com.romix.akka.serialization.kryo.KryoSerializationExtension$"]
-        actor {
-          kryo {
-            type = "nograph"
-            idstrategy = "incremental"
-            kryo-reference-map = false
-            buffer-size = 65536
-            compression = deflate
-            implicit-registration-logging = true
-            mappings {
-              "akka.actor.ActorRef" = 20
-              "akka.actor.DeadLetterActorRef" = 21
-              "scala.collection.immutable.HashMap$HashTrieMap"    = 32
-              "[Lscala.collection.immutable.HashMap;"             = 33
-              "scala.collection.immutable.TreeMap"                = 34
-              "[Lscala.collection.immutable.TreeMap;"             = 35
-              "scala.collection.mutable.HashMap"                  = 36
-              "[Lscala.collection.mutable.HashMap;"               = 37
-              "scala.collection.immutable.HashSet$HashTrieSet"    = 38
-              "[Lscala.collection.immutable.HashSet;"             = 39
-              "scala.collection.immutable.TreeSet"                = 40
-              "[Lscala.collection.immutable.TreeSet;"             = 41
-              "scala.collection.mutable.HashSet"                  = 42
-              "[Lscala.collection.mutable.HashSet;"               = 43
-              "scala.collection.mutable.TreeSet"                  = 44
-              "[Lscala.collection.mutable.TreeSet;"               = 45
-              "[J" = 50
-              "[D" = 51
-              "[Z" = 52
-              "[Ljava.lang.Object;" = 53
-              "[Ljava.lang.String;" = 54
-              "scala.math.Ordering$String$" = 100
-            }
-
-          }
-         serializers {
-            kryo = "com.romix.akka.serialization.kryo.KryoSerializer"
-          }
-
-          serialization-bindings {
-            "scala.Product" = kryo
-            "akka.actor.ActorRef" = kryo
-
-            "scala.collection.immutable.TreeMap" = kryo
-            "[Lscala.collection.immutable.TreeMap;" = kryo
-
-            "scala.collection.mutable.HashMap" = kryo
-            "[Lscala.collection.mutable.HashMap;" = kryo
-
-            "scala.collection.immutable.HashMap" = kryo
-            "[Lscala.collection.immutable.HashMap;" = kryo
-
-            "scala.collection.immutable.HashSet" = kryo
-            "[Lscala.collection.immutable.HashSet;" = kryo
-            "scala.collection.immutable.TreeSet" = kryo
-            "[Lscala.collection.immutable.TreeSet;" = kryo
-
-             "scala.collection.mutable.HashSet" = kryo
-            "[Lscala.collection.mutable.HashSet;" = kryo
-            "scala.collection.mutable.TreeSet" = kryo
-            "[Lscala.collection.mutable.TreeSet;" = kryo
-          }
-        }
-      }
-  """)
-
-  testConfig("LZ4", """
-      akka {
-        extensions = ["com.romix.akka.serialization.kryo.KryoSerializationExtension$"]
-        actor {
-          kryo {
-            type = "nograph"
-            idstrategy = "incremental"
-            kryo-reference-map = false
-            buffer-size = 65536
-            compression = lz4
-            implicit-registration-logging = true
-            mappings {
-              "akka.actor.ActorRef" = 20
-              "akka.actor.DeadLetterActorRef" = 21
-              "scala.collection.immutable.HashMap$HashTrieMap"    = 32
-              "[Lscala.collection.immutable.HashMap;"             = 33
-              "scala.collection.immutable.TreeMap"                = 34
-              "[Lscala.collection.immutable.TreeMap;"             = 35
-              "scala.collection.mutable.HashMap"                  = 36
-              "[Lscala.collection.mutable.HashMap;"               = 37
-              "scala.collection.immutable.HashSet$HashTrieSet"    = 38
-              "[Lscala.collection.immutable.HashSet;"             = 39
-              "scala.collection.immutable.TreeSet"                = 40
-              "[Lscala.collection.immutable.TreeSet;"             = 41
-              "scala.collection.mutable.HashSet"                  = 42
-              "[Lscala.collection.mutable.HashSet;"               = 43
-              "scala.collection.mutable.TreeSet"                  = 44
-              "[Lscala.collection.mutable.TreeSet;"               = 45
-              "[J" = 50
-              "[D" = 51
-              "[Z" = 52
-              "[Ljava.lang.Object;" = 53
-              "[Ljava.lang.String;" = 54
-              "scala.math.Ordering$String$" = 100
-            }
-
-          }
-         serializers {
-            kryo = "com.romix.akka.serialization.kryo.KryoSerializer"
-          }
-
-          serialization-bindings {
-            "scala.Product" = kryo
-            "akka.actor.ActorRef" = kryo
-
-            "scala.collection.immutable.TreeMap" = kryo
-            "[Lscala.collection.immutable.TreeMap;" = kryo
-
-            "scala.collection.mutable.HashMap" = kryo
-            "[Lscala.collection.mutable.HashMap;" = kryo
-
-            "scala.collection.immutable.HashMap" = kryo
-            "[Lscala.collection.immutable.HashMap;" = kryo
-
-            "scala.collection.immutable.HashSet" = kryo
-            "[Lscala.collection.immutable.HashSet;" = kryo
-            "scala.collection.immutable.TreeSet" = kryo
-            "[Lscala.collection.immutable.TreeSet;" = kryo
-
-             "scala.collection.mutable.HashSet" = kryo
-            "[Lscala.collection.mutable.HashSet;" = kryo
-            "scala.collection.mutable.TreeSet" = kryo
-            "[Lscala.collection.mutable.TreeSet;" = kryo
-          }
-        }
-      }
-  """)
-
-  testConfig("Off", """
-      akka {
-        extensions = ["com.romix.akka.serialization.kryo.KryoSerializationExtension$"]
-        actor {
-          kryo {
-            type = "nograph"
-            idstrategy = "incremental"
-            kryo-reference-map = false
-            buffer-size = 65536
-            compression = Off
-            implicit-registration-logging = true
-            mappings {
-              "akka.actor.ActorRef" = 20
-              "akka.actor.DeadLetterActorRef" = 21
-              "scala.collection.immutable.HashMap$HashTrieMap"    = 32
-              "[Lscala.collection.immutable.HashMap;"             = 33
-              "scala.collection.immutable.TreeMap"                = 34
-              "[Lscala.collection.immutable.TreeMap;"             = 35
-              "scala.collection.mutable.HashMap"                  = 36
-              "[Lscala.collection.mutable.HashMap;"               = 37
-              "scala.collection.immutable.HashSet$HashTrieSet"    = 38
-              "[Lscala.collection.immutable.HashSet;"             = 39
-              "scala.collection.immutable.TreeSet"                = 40
-              "[Lscala.collection.immutable.TreeSet;"             = 41
-              "scala.collection.mutable.HashSet"                  = 42
-              "[Lscala.collection.mutable.HashSet;"               = 43
-              "scala.collection.mutable.TreeSet"                  = 44
-              "[Lscala.collection.mutable.TreeSet;"               = 45
-              "[J" = 50
-              "[D" = 51
-              "[Z" = 52
-              "[Ljava.lang.Object;" = 53
-              "[Ljava.lang.String;" = 54
-              "scala.math.Ordering$String$" = 100
-            }
-
-          }
-         serializers {
-            kryo = "com.romix.akka.serialization.kryo.KryoSerializer"
-          }
-
-          serialization-bindings {
-            "scala.Product" = kryo
-            "akka.actor.ActorRef" = kryo
-
-            "scala.collection.immutable.TreeMap" = kryo
-            "[Lscala.collection.immutable.TreeMap;" = kryo
-
-            "scala.collection.mutable.HashMap" = kryo
-            "[Lscala.collection.mutable.HashMap;" = kryo
-
-            "scala.collection.immutable.HashMap" = kryo
-            "[Lscala.collection.immutable.HashMap;" = kryo
-
-            "scala.collection.immutable.HashSet" = kryo
-            "[Lscala.collection.immutable.HashSet;" = kryo
-            "scala.collection.immutable.TreeSet" = kryo
-            "[Lscala.collection.immutable.TreeSet;" = kryo
-
-             "scala.collection.mutable.HashSet" = kryo
-            "[Lscala.collection.mutable.HashSet;" = kryo
-            "scala.collection.mutable.TreeSet" = kryo
-            "[Lscala.collection.mutable.TreeSet;" = kryo
-          }
-        }
-      }
-  """)
+  testConfig("Zip", "akka.actor.kryo.compression = deflate")
+  testConfig("LZ4", "akka.actor.kryo.compression = lz4")
+  testConfig("Off", "")
 }

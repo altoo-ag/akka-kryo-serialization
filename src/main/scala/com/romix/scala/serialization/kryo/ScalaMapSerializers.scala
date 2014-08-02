@@ -34,7 +34,7 @@ import com.esotericsoftware.kryo.io.Output
  * 1. To not need reflection at runtime (find if it is SortedMap)
  * 2. Use inplace updates with mutable Maps
  *
- * @autor luben
+ * @author luben
  */
 
 class ScalaMutableMapSerializer() extends Serializer[MMap[_, _]] {
