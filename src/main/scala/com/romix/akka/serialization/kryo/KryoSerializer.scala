@@ -262,7 +262,10 @@ class KryoSerializer(val system: ExtendedActorSystem) extends Serializer {
 
   private def getKryo(strategy: String, serializerType: String): Kryo = {
     val referenceResolver = if (settings.KryoReferenceMap) new MapReferenceResolver() else new ListReferenceResolver()
-    val kryo = new ScalaKryo(new KryoClassResolver(implicitRegistrationLogging), referenceResolver, new DefaultStreamFactory())
+    val classResolver =
+      if (settings.IdStrategy == "incremental") new KryoClassResolver(implicitRegistrationLogging)
+      else new DefaultClassResolver()
+    val kryo = new ScalaKryo(classResolver, referenceResolver, new DefaultStreamFactory())
     // Support deserialization of classes without no-arg constructors
     val instStrategy = kryo.getInstantiatorStrategy().asInstanceOf[Kryo.DefaultInstantiatorStrategy]
     instStrategy.setFallbackInstantiatorStrategy(new StdInstantiatorStrategy())
