@@ -108,7 +108,8 @@ The following options are available for configuring this serializer:
 			# default, explicit, incremental  
 			#  
 			# default - slowest and produces bigger serialized representation. Contains fully-  
-			# qualified class names (FQCNs) for each class  
+			# qualified class names (FQCNs) for each class. Note that selecting this strategy 
+			# does not work in version 0.3.2, but is available on master and from 0.3.3 onward.
 			#  
 			# explicit - fast and produces compact serialized representation. Requires that all  
 			# classes that will be serialized are pre-registered using the "mappings" and "classes"
