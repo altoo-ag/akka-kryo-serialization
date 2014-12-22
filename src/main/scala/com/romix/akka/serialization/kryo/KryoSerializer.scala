@@ -23,6 +23,9 @@ import akka.actor.ExtendedActorSystem
 import akka.actor.ActorRef
 import akka.event.Logging
 import com.typesafe.config.ConfigFactory
+import org.apache.shiro.codec.{CodecSupport, Base64 => SB64}
+import org.apache.shiro.crypto.AesCipherService
+import org.apache.shiro.util.ByteSource
 import scala.collection.JavaConversions._
 import com.esotericsoftware.kryo.Kryo
 import com.esotericsoftware.kryo.io.Input
@@ -119,6 +122,30 @@ class ZipKryoComressor extends KryoCompressor {
   }
 }
 
+class KryoAESCryptoGrapher(key: String) extends KryoCompressor {
+  val passPhrase = key //"j68KkRjq21ykRGAQ"
+  val cipher = new AesCipherService
+
+  def encrypt(plainTextBytes: Array[Byte]): Try[Array[Byte]] =
+    Try {
+      cipher.encrypt(plainTextBytes, passPhrase.getBytes).getBytes
+    }
+
+  def decrypt(base64Encrypted: Array[Byte]): Try[Array[Byte]] =
+    Try {
+      //val byteSource: ByteSource = ByteSource.Util.bytes(base64Encrypted)
+      val decryptedToken = cipher.decrypt(base64Encrypted, passPhrase.getBytes)
+      decryptedToken.getBytes
+    }
+
+  override def compress(inputBuff: Array[Byte]): Array[Byte]  = {
+    encrypt(inputBuff).getOrElse(Array.empty[Byte])
+  }
+  override def decompress(inputBuff: Array[Byte]): Array[Byte] = {
+    decrypt(inputBuff).getOrElse(Array.empty[Byte])
+  }
+}
+
 class KryoSerializer(val system: ExtendedActorSystem) extends Serializer {
 
   import KryoSerialization._
@@ -203,9 +230,10 @@ class KryoSerializer(val system: ExtendedActorSystem) extends Serializer {
   locally {
     log.debug("Got customizer method: {}", customizerMethod)
   }
-  val compressor: KryoCompressor = settings.Compression match {
-    case "lz4" => new LZ4KryoComressor
-    case "deflate" => new ZipKryoComressor
+  val compressor: KryoCompressor = (settings.Compression, settings.Encryption) match {
+    case ("lz4", "off") => new LZ4KryoComressor
+    case ("deflate", "off") => new ZipKryoComressor
+    case ("off", "aes") => new KryoAESCryptoGrapher("j68KkRjq21ykRGAQ")
     case _ => new NoKryoComressor
   }
   locally {
