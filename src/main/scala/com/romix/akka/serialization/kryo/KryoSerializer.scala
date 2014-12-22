@@ -146,6 +146,107 @@ class KryoAESCryptoGrapher(key: String) extends KryoCompressor {
   }
 }
 
+class LZ4KryoAESCryptoGrapher(key: String) extends KryoCompressor {
+  lazy val lz4factory = LZ4Factory.fastestInstance
+
+  val passPhrase = key //"j68KkRjq21ykRGAQ"
+  val cipher = new AesCipherService
+
+  def encrypt(plainTextBytes: Array[Byte]): Try[Array[Byte]] =
+    Try {
+      cipher.encrypt(plainTextBytes, passPhrase.getBytes).getBytes
+    }
+
+  def decrypt(base64Encrypted: Array[Byte]): Try[Array[Byte]] =
+    Try {
+      //val byteSource: ByteSource = ByteSource.Util.bytes(base64Encrypted)
+      val decryptedToken = cipher.decrypt(base64Encrypted, passPhrase.getBytes)
+      decryptedToken.getBytes
+    }
+
+  override def compress(inputBuff: Array[Byte]): Array[Byte]  = {
+    val inputSize = inputBuff.length
+    val lz4 = lz4factory.fastCompressor
+    val maxOutputSize = lz4.maxCompressedLength(inputSize);
+    val outputBuff = new Array[Byte](maxOutputSize + 4)
+    val outputSize = lz4.compress(inputBuff, 0, inputSize, outputBuff, 4, maxOutputSize)
+
+    // encode 32 bit lenght in the first bytes
+    outputBuff(0) = (inputSize & 0xff).toByte
+    outputBuff(1) = (inputSize >> 8 & 0xff).toByte
+    outputBuff(2) = (inputSize >> 16 & 0xff).toByte
+    outputBuff(3) = (inputSize >> 24 & 0xff).toByte
+    outputBuff.take(outputSize + 4)
+    encrypt(outputBuff.take(outputSize + 4)).getOrElse(Array.empty[Byte])
+  }
+
+  override def decompress(inputBuff1: Array[Byte]): Array[Byte] = {
+    val inputBuff = decrypt(inputBuff1).getOrElse(Array.empty[Byte])
+    // the first 4 bytes are the original size
+    val size: Int = (inputBuff(0).asInstanceOf[Int] & 0xff) |
+      (inputBuff(1).asInstanceOf[Int] & 0xff) << 8 |
+      (inputBuff(2).asInstanceOf[Int] & 0xff) << 16 |
+      (inputBuff(3).asInstanceOf[Int] & 0xff) << 24
+    val lz4 = lz4factory.fastDecompressor()
+    val outputBuff = new Array[Byte](size)
+    lz4.decompress(inputBuff, 4, outputBuff, 0, size)
+    outputBuff
+  }
+}
+
+class ZipKryoAESCryptoGrapher(key: String) extends KryoCompressor {
+  lazy val deflater = new Deflater(Deflater.BEST_SPEED)
+  lazy val inflater = new Inflater()
+
+  val passPhrase = key //"j68KkRjq21ykRGAQ"
+  val cipher = new AesCipherService
+
+  def encrypt(plainTextBytes: Array[Byte]): Try[Array[Byte]] =
+    Try {
+      cipher.encrypt(plainTextBytes, passPhrase.getBytes).getBytes
+    }
+
+  def decrypt(base64Encrypted: Array[Byte]): Try[Array[Byte]] =
+    Try {
+      //val byteSource: ByteSource = ByteSource.Util.bytes(base64Encrypted)
+      val decryptedToken = cipher.decrypt(base64Encrypted, passPhrase.getBytes)
+      decryptedToken.getBytes
+    }
+
+  override def compress(inputBuff: Array[Byte]): Array[Byte]  = {
+    val inputSize = inputBuff.length
+    val outputBuff = new ArrayBuilder.ofByte
+    outputBuff += (inputSize & 0xff).toByte
+    outputBuff += (inputSize >> 8 & 0xff).toByte
+    outputBuff += (inputSize >> 16 & 0xff).toByte
+    outputBuff += (inputSize >> 24 & 0xff).toByte
+
+    deflater.setInput(inputBuff)
+    deflater.finish
+    val buff = new Array[Byte](4096)
+
+    while (!deflater.finished) {
+      val n = deflater.deflate(buff)
+      outputBuff ++= buff.take(n)
+    }
+    deflater.reset
+    outputBuff.result
+    encrypt(outputBuff.result).getOrElse(Array.empty[Byte])
+  }
+  override def decompress(inputBuff1: Array[Byte]): Array[Byte] = {
+    val inputBuff = decrypt(inputBuff1).getOrElse(Array.empty[Byte])
+    val size: Int = (inputBuff(0).asInstanceOf[Int] & 0xff) |
+      (inputBuff(1).asInstanceOf[Int] & 0xff) << 8 |
+      (inputBuff(2).asInstanceOf[Int] & 0xff) << 16 |
+      (inputBuff(3).asInstanceOf[Int] & 0xff) << 24
+    val outputBuff = new Array[Byte](size)
+    inflater.setInput(inputBuff, 4, inputBuff.length - 4)
+    inflater.inflate(outputBuff)
+    inflater.reset
+    outputBuff
+  }
+}
+
 class KryoSerializer(val system: ExtendedActorSystem) extends Serializer {
 
   import KryoSerialization._
@@ -234,6 +335,8 @@ class KryoSerializer(val system: ExtendedActorSystem) extends Serializer {
     case ("lz4", "off") => new LZ4KryoComressor
     case ("deflate", "off") => new ZipKryoComressor
     case ("off", "aes") => new KryoAESCryptoGrapher("j68KkRjq21ykRGAQ")
+    case ("lz4", "aes") => new LZ4KryoAESCryptoGrapher("j68KkRjq21ykRGAQ")
+    case ("deflate", "aes") => new ZipKryoAESCryptoGrapher("j68KkRjq21ykRGAQ")
     case _ => new NoKryoComressor
   }
   locally {
