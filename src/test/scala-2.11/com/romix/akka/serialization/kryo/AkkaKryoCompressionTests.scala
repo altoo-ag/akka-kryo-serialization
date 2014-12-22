@@ -233,6 +233,90 @@ class AkkaKryoCompressionTests211 extends FlatSpec {
       }
                     """)
 
+  testConfig("LZ4+AES", """
+      akka {
+        extensions = ["com.romix.akka.serialization.kryo.KryoSerializationExtension$"]
+        actor {
+          kryo {
+            type = "nograph"
+            idstrategy = "incremental"
+            kryo-reference-map = false
+            buffer-size = 65536
+            encryption = aes
+            compression = lz4
+            implicit-registration-logging = true
+            mappings {
+              "scala.collection.immutable.HashMap$HashTrieMap"    = 30
+              "[Lscala.collection.immutable.HashMap$HashTrieMap;" = 31
+              "scala.collection.mutable.AnyRefMap"                = 34
+              "[Lscala.collection.mutable.AnyRefMap;"             = 35
+              "scala.collection.mutable.LongMap"                  = 36
+              "[Lscala.collection.mutable.LongMap;"               = 37
+              "[J" = 50
+              "[D" = 51
+              "[Z" = 52
+              "[Ljava.lang.Object;" = 53
+              "[Ljava.lang.String;" = 54
+              "scala.math.Ordering$String$" = 100
+            }
+
+          }
+         serializers {
+            kryo = "com.romix.akka.serialization.kryo.KryoSerializer"
+          }
+
+          serialization-bindings {
+            "scala.collection.mutable.AnyRefMap" = kryo
+            "[Lscala.collection.mutable.AnyRefMap;" = kryo
+            "scala.collection.mutable.LongMap" = kryo
+            "[Lscala.collection.mutable.LongMap;" = kryo
+          }
+        }
+      }
+                    """)
+
+  testConfig("Zip+AES", """
+      akka {
+        extensions = ["com.romix.akka.serialization.kryo.KryoSerializationExtension$"]
+        actor {
+          kryo {
+            type = "nograph"
+            idstrategy = "incremental"
+            kryo-reference-map = false
+            buffer-size = 65536
+            encryption = aes
+            compression = lz4
+            implicit-registration-logging = true
+            mappings {
+              "scala.collection.immutable.HashMap$HashTrieMap"    = 30
+              "[Lscala.collection.immutable.HashMap$HashTrieMap;" = 31
+              "scala.collection.mutable.AnyRefMap"                = 34
+              "[Lscala.collection.mutable.AnyRefMap;"             = 35
+              "scala.collection.mutable.LongMap"                  = 36
+              "[Lscala.collection.mutable.LongMap;"               = 37
+              "[J" = 50
+              "[D" = 51
+              "[Z" = 52
+              "[Ljava.lang.Object;" = 53
+              "[Ljava.lang.String;" = 54
+              "scala.math.Ordering$String$" = 100
+            }
+
+          }
+         serializers {
+            kryo = "com.romix.akka.serialization.kryo.KryoSerializer"
+          }
+
+          serialization-bindings {
+            "scala.collection.mutable.AnyRefMap" = kryo
+            "[Lscala.collection.mutable.AnyRefMap;" = kryo
+            "scala.collection.mutable.LongMap" = kryo
+            "[Lscala.collection.mutable.LongMap;" = kryo
+          }
+        }
+      }
+                        """)
+
   testConfig("Off", """
       akka {
         extensions = ["com.romix.akka.serialization.kryo.KryoSerializationExtension$"]
