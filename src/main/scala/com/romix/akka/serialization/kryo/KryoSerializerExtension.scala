@@ -65,6 +65,8 @@ object KryoSerialization {
 
     val Compression: String = Try(config.getString("akka.actor.kryo.compression")).getOrElse("off")
 
+    val Encryption: String = Try(config.getString("akka.actor.kryo.encryption")).getOrElse("off")
+
     val KryoCustomSerializerInit: String = Try(config.getString("akka.actor.kryo.kryo-custom-serializer-init")).getOrElse(null)
 
     private def configToMap(cfg: Config): Map[String, String] =
