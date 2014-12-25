@@ -123,7 +123,7 @@ class ZipKryoComressor extends KryoCompressor {
 }
 
 class KryoAESCryptoGrapher(key: String) extends KryoCompressor {
-  val passPhrase = key //"j68KkRjq21ykRGAQ"
+  val passPhrase = key
   val cipher = new AesCipherService
 
   def encrypt(plainTextBytes: Array[Byte]): Try[Array[Byte]] =
@@ -133,7 +133,6 @@ class KryoAESCryptoGrapher(key: String) extends KryoCompressor {
 
   def decrypt(base64Encrypted: Array[Byte]): Try[Array[Byte]] =
     Try {
-      //val byteSource: ByteSource = ByteSource.Util.bytes(base64Encrypted)
       val decryptedToken = cipher.decrypt(base64Encrypted, passPhrase.getBytes)
       decryptedToken.getBytes
     }
@@ -149,7 +148,7 @@ class KryoAESCryptoGrapher(key: String) extends KryoCompressor {
 class LZ4KryoAESCryptoGrapher(key: String) extends KryoCompressor {
   lazy val lz4factory = LZ4Factory.fastestInstance
 
-  val passPhrase = key //"j68KkRjq21ykRGAQ"
+  val passPhrase = key
   val cipher = new AesCipherService
 
   def encrypt(plainTextBytes: Array[Byte]): Try[Array[Byte]] =
@@ -159,7 +158,6 @@ class LZ4KryoAESCryptoGrapher(key: String) extends KryoCompressor {
 
   def decrypt(base64Encrypted: Array[Byte]): Try[Array[Byte]] =
     Try {
-      //val byteSource: ByteSource = ByteSource.Util.bytes(base64Encrypted)
       val decryptedToken = cipher.decrypt(base64Encrypted, passPhrase.getBytes)
       decryptedToken.getBytes
     }
@@ -198,7 +196,7 @@ class ZipKryoAESCryptoGrapher(key: String) extends KryoCompressor {
   lazy val deflater = new Deflater(Deflater.BEST_SPEED)
   lazy val inflater = new Inflater()
 
-  val passPhrase = key //"j68KkRjq21ykRGAQ"
+  val passPhrase = key
   val cipher = new AesCipherService
 
   def encrypt(plainTextBytes: Array[Byte]): Try[Array[Byte]] =
@@ -208,7 +206,6 @@ class ZipKryoAESCryptoGrapher(key: String) extends KryoCompressor {
 
   def decrypt(base64Encrypted: Array[Byte]): Try[Array[Byte]] =
     Try {
-      //val byteSource: ByteSource = ByteSource.Util.bytes(base64Encrypted)
       val decryptedToken = cipher.decrypt(base64Encrypted, passPhrase.getBytes)
       decryptedToken.getBytes
     }
@@ -334,9 +331,9 @@ class KryoSerializer(val system: ExtendedActorSystem) extends Serializer {
   val compressor: KryoCompressor = (settings.Compression, settings.Encryption) match {
     case ("lz4", "off") => new LZ4KryoComressor
     case ("deflate", "off") => new ZipKryoComressor
-    case ("off", "aes") => new KryoAESCryptoGrapher("j68KkRjq21ykRGAQ")
-    case ("lz4", "aes") => new LZ4KryoAESCryptoGrapher("j68KkRjq21ykRGAQ")
-    case ("deflate", "aes") => new ZipKryoAESCryptoGrapher("j68KkRjq21ykRGAQ")
+    case ("off", "aes") => new KryoAESCryptoGrapher(settings.AESKey)
+    case ("lz4", "aes") => new LZ4KryoAESCryptoGrapher(settings.AESKey)
+    case ("deflate", "aes") => new ZipKryoAESCryptoGrapher(settings.AESKey)
     case _ => new NoKryoComressor
   }
   locally {
