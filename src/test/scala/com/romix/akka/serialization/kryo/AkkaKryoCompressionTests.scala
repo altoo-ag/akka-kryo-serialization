@@ -481,10 +481,12 @@ class AkkaKryoCompressionTests extends FlatSpec {
   testConfig("ZipAES",
     """akka.actor.kryo.compression = deflate
       |akka.actor.kryo.encryption = aes
+      |akka.actor.kryo.aeskey = j68KkRjq21ykRGAQ
     """.stripMargin)
   testConfig("LZ4AES",
     """akka.actor.kryo.compression = lz4
       |akka.actor.kryo.encryption = aes
+      |akka.actor.kryo.aeskey = j68KkRjq21ykRGAQ
     """.stripMargin)
   testConfig("Off", "")
 }

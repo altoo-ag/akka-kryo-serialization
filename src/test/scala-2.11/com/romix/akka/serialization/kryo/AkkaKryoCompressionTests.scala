@@ -202,6 +202,7 @@ class AkkaKryoCompressionTests211 extends FlatSpec {
             kryo-reference-map = false
             buffer-size = 65536
             encryption = aes
+            aeskey = j68KkRjq21ykRGAQ
             implicit-registration-logging = true
             mappings {
               "scala.collection.immutable.HashMap$HashTrieMap"    = 30
@@ -243,6 +244,7 @@ class AkkaKryoCompressionTests211 extends FlatSpec {
             kryo-reference-map = false
             buffer-size = 65536
             encryption = aes
+            aeskey = j68KkRjq21ykRGAQ
             compression = lz4
             implicit-registration-logging = true
             mappings {
@@ -285,6 +287,7 @@ class AkkaKryoCompressionTests211 extends FlatSpec {
             kryo-reference-map = false
             buffer-size = 65536
             encryption = aes
+            aeskey = j68KkRjq21ykRGAQ
             compression = lz4
             implicit-registration-logging = true
             mappings {
