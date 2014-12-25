@@ -233,7 +233,7 @@ class AkkaKryoCompressionTests211 extends FlatSpec {
       }
                     """)
 
-  testConfig("LZ4+AES", """
+  testConfig("LZ4AES", """
       akka {
         extensions = ["com.romix.akka.serialization.kryo.KryoSerializationExtension$"]
         actor {
@@ -275,7 +275,7 @@ class AkkaKryoCompressionTests211 extends FlatSpec {
       }
                     """)
 
-  testConfig("Zip+AES", """
+  testConfig("ZipAES", """
       akka {
         extensions = ["com.romix.akka.serialization.kryo.KryoSerializationExtension$"]
         actor {
