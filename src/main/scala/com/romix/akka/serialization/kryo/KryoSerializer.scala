@@ -18,29 +18,24 @@
 
 package com.romix.akka.serialization.kryo
 
-import akka.serialization._
-import akka.actor.ExtendedActorSystem
-import akka.actor.ActorRef
+import java.util.zip.{Deflater, Inflater}
+
+import akka.actor.{ActorRef, ExtendedActorSystem}
 import akka.event.Logging
-import com.typesafe.config.ConfigFactory
-import org.apache.shiro.codec.{CodecSupport, Base64 => SB64}
-import org.apache.shiro.crypto.AesCipherService
-import org.apache.shiro.util.ByteSource
-import scala.collection.JavaConversions._
+import akka.serialization._
 import com.esotericsoftware.kryo.Kryo
-import com.esotericsoftware.kryo.io.Input
-import com.esotericsoftware.kryo.io.Output
+import com.esotericsoftware.kryo.io.{Input, Output}
 import com.esotericsoftware.kryo.serializers.FieldSerializer
-import org.objenesis.strategy.StdInstantiatorStrategy
 import com.esotericsoftware.kryo.util._
-import com.romix.scala.serialization.kryo._
-import scala.util.{ Try, Success, Failure }
-import KryoSerialization._
-import com.esotericsoftware.minlog.{ Log => MiniLog }
-import com.romix.scala.serialization.kryo.ScalaKryo
+import com.esotericsoftware.minlog.{Log => MiniLog}
+import com.romix.scala.serialization.kryo.{ScalaKryo, _}
 import net.jpountz.lz4.LZ4Factory
-import java.util.zip.{ Deflater, Inflater }
+import org.apache.shiro.crypto.AesCipherService
+import org.objenesis.strategy.StdInstantiatorStrategy
+
+import scala.collection.JavaConversions._
 import scala.collection.mutable.ArrayBuilder
+import scala.util.{Failure, Success, Try}
 
 trait KryoCompressor {
   def compress(inputBuff: Array[Byte]): Array[Byte]
@@ -63,7 +58,7 @@ class LZ4KryoComressor extends KryoCompressor {
     val outputBuff = new Array[Byte](maxOutputSize + 4)
     val outputSize = lz4.compress(inputBuff, 0, inputSize, outputBuff, 4, maxOutputSize)
 
-    // encode 32 bit lenght in the first bytes
+    // encode 32 bit length in the first bytes
     outputBuff(0) = (inputSize & 0xff).toByte
     outputBuff(1) = (inputSize >> 8 & 0xff).toByte
     outputBuff(2) = (inputSize >> 16 & 0xff).toByte
@@ -146,107 +141,38 @@ class KryoAESCryptoGrapher(key: String) extends KryoCompressor {
 }
 
 class LZ4KryoAESCryptoGrapher(key: String) extends KryoCompressor {
-  lazy val lz4factory = LZ4Factory.fastestInstance
-
-  val passPhrase = key
-  val cipher = new AesCipherService
-
-  def encrypt(plainTextBytes: Array[Byte]): Try[Array[Byte]] =
-    Try {
-      cipher.encrypt(plainTextBytes, passPhrase.getBytes).getBytes
-    }
-
-  def decrypt(base64Encrypted: Array[Byte]): Try[Array[Byte]] =
-    Try {
-      val decryptedToken = cipher.decrypt(base64Encrypted, passPhrase.getBytes)
-      decryptedToken.getBytes
-    }
+  private val aesCryptoGrapher = new KryoAESCryptoGrapher(key)
+  private val lz4Compressor = new LZ4KryoComressor
 
   override def compress(inputBuff: Array[Byte]): Array[Byte]  = {
-    val inputSize = inputBuff.length
-    val lz4 = lz4factory.fastCompressor
-    val maxOutputSize = lz4.maxCompressedLength(inputSize);
-    val outputBuff = new Array[Byte](maxOutputSize + 4)
-    val outputSize = lz4.compress(inputBuff, 0, inputSize, outputBuff, 4, maxOutputSize)
-
-    // encode 32 bit lenght in the first bytes
-    outputBuff(0) = (inputSize & 0xff).toByte
-    outputBuff(1) = (inputSize >> 8 & 0xff).toByte
-    outputBuff(2) = (inputSize >> 16 & 0xff).toByte
-    outputBuff(3) = (inputSize >> 24 & 0xff).toByte
-    outputBuff.take(outputSize + 4)
-    encrypt(outputBuff.take(outputSize + 4)).getOrElse(Array.empty[Byte])
+    val outputBuff = lz4Compressor.compress(inputBuff)
+    aesCryptoGrapher.encrypt(outputBuff).getOrElse(Array.empty[Byte])
   }
 
-  override def decompress(inputBuff1: Array[Byte]): Array[Byte] = {
-    val inputBuff = decrypt(inputBuff1).getOrElse(Array.empty[Byte])
-    // the first 4 bytes are the original size
-    val size: Int = (inputBuff(0).asInstanceOf[Int] & 0xff) |
-      (inputBuff(1).asInstanceOf[Int] & 0xff) << 8 |
-      (inputBuff(2).asInstanceOf[Int] & 0xff) << 16 |
-      (inputBuff(3).asInstanceOf[Int] & 0xff) << 24
-    val lz4 = lz4factory.fastDecompressor()
-    val outputBuff = new Array[Byte](size)
-    lz4.decompress(inputBuff, 4, outputBuff, 0, size)
-    outputBuff
+  override def decompress(inputBuff: Array[Byte]): Array[Byte] = {
+    val decryptedBuff = aesCryptoGrapher.decrypt(inputBuff).getOrElse(Array.empty[Byte])
+    lz4Compressor.decompress(decryptedBuff)
   }
 }
 
 class ZipKryoAESCryptoGrapher(key: String) extends KryoCompressor {
-  lazy val deflater = new Deflater(Deflater.BEST_SPEED)
-  lazy val inflater = new Inflater()
-
-  val passPhrase = key
-  val cipher = new AesCipherService
-
-  def encrypt(plainTextBytes: Array[Byte]): Try[Array[Byte]] =
-    Try {
-      cipher.encrypt(plainTextBytes, passPhrase.getBytes).getBytes
-    }
-
-  def decrypt(base64Encrypted: Array[Byte]): Try[Array[Byte]] =
-    Try {
-      val decryptedToken = cipher.decrypt(base64Encrypted, passPhrase.getBytes)
-      decryptedToken.getBytes
-    }
+  private val aesCryptoGrapher = new KryoAESCryptoGrapher(key)
+  private val zipCompressor = new ZipKryoComressor
 
   override def compress(inputBuff: Array[Byte]): Array[Byte]  = {
-    val inputSize = inputBuff.length
-    val outputBuff = new ArrayBuilder.ofByte
-    outputBuff += (inputSize & 0xff).toByte
-    outputBuff += (inputSize >> 8 & 0xff).toByte
-    outputBuff += (inputSize >> 16 & 0xff).toByte
-    outputBuff += (inputSize >> 24 & 0xff).toByte
-
-    deflater.setInput(inputBuff)
-    deflater.finish
-    val buff = new Array[Byte](4096)
-
-    while (!deflater.finished) {
-      val n = deflater.deflate(buff)
-      outputBuff ++= buff.take(n)
-    }
-    deflater.reset
-    outputBuff.result
-    encrypt(outputBuff.result).getOrElse(Array.empty[Byte])
+    val outputBuff = zipCompressor.compress(inputBuff)
+    aesCryptoGrapher.encrypt(outputBuff).getOrElse(Array.empty[Byte])
   }
-  override def decompress(inputBuff1: Array[Byte]): Array[Byte] = {
-    val inputBuff = decrypt(inputBuff1).getOrElse(Array.empty[Byte])
-    val size: Int = (inputBuff(0).asInstanceOf[Int] & 0xff) |
-      (inputBuff(1).asInstanceOf[Int] & 0xff) << 8 |
-      (inputBuff(2).asInstanceOf[Int] & 0xff) << 16 |
-      (inputBuff(3).asInstanceOf[Int] & 0xff) << 24
-    val outputBuff = new Array[Byte](size)
-    inflater.setInput(inputBuff, 4, inputBuff.length - 4)
-    inflater.inflate(outputBuff)
-    inflater.reset
-    outputBuff
+
+  override def decompress(inputBuff: Array[Byte]): Array[Byte] = {
+    val decryptedBuff = aesCryptoGrapher.decrypt(inputBuff).getOrElse(Array.empty[Byte])
+    zipCompressor.decompress(decryptedBuff)
   }
 }
 
 class KryoSerializer(val system: ExtendedActorSystem) extends Serializer {
 
-  import KryoSerialization._
+  import com.romix.akka.serialization.kryo.KryoSerialization._
   val log = Logging(system, getClass.getName)
 
   val settings = new Settings(system.settings.config)
@@ -557,9 +483,8 @@ class KryoBasedSerializer(
 
 }
 
-import java.util.concurrent.ArrayBlockingQueue
+import java.util.concurrent.{ArrayBlockingQueue, TimeUnit}
 import java.util.concurrent.atomic.AtomicInteger
-import java.util.concurrent.TimeUnit
 
 // Support pooling of objects. Useful if you want to reduce
 // the GC overhead and memory pressure.
