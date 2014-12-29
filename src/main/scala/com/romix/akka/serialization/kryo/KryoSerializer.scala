@@ -18,7 +18,11 @@
 
 package com.romix.akka.serialization.kryo
 
+import java.io.UnsupportedEncodingException
+import java.security.{NoSuchAlgorithmException, InvalidAlgorithmParameterException, InvalidKeyException, SecureRandom}
 import java.util.zip.{Deflater, Inflater}
+import javax.crypto.{NoSuchPaddingException, BadPaddingException, IllegalBlockSizeException, Cipher}
+import javax.crypto.spec.{SecretKeySpec, IvParameterSpec}
 
 import akka.actor.{ActorRef, ExtendedActorSystem}
 import akka.event.Logging
@@ -30,7 +34,6 @@ import com.esotericsoftware.kryo.util._
 import com.esotericsoftware.minlog.{Log => MiniLog}
 import com.romix.scala.serialization.kryo.{ScalaKryo, _}
 import net.jpountz.lz4.LZ4Factory
-import org.apache.shiro.crypto.AesCipherService
 import org.objenesis.strategy.StdInstantiatorStrategy
 
 import scala.collection.JavaConversions._
@@ -118,25 +121,38 @@ class ZipKryoComressor extends KryoCompressor {
 }
 
 class KryoAESCryptoGrapher(key: String) extends KryoCompressor {
-  val passPhrase = key
-  val cipher = new AesCipherService
+  val sKeySpec = new SecretKeySpec(key.getBytes("UTF-8"), "AES")
+  val keyLen = key.length
 
-  def encrypt(plainTextBytes: Array[Byte]): Try[Array[Byte]] =
-    Try {
-      cipher.encrypt(plainTextBytes, passPhrase.getBytes).getBytes
-    }
+  var iv: Array[Byte] = Array.fill[Byte](keyLen)(0)
+  val cipher = Cipher.getInstance("AES/CBC/PKCS5Padding")
 
-  def decrypt(base64Encrypted: Array[Byte]): Try[Array[Byte]] =
-    Try {
-      val decryptedToken = cipher.decrypt(base64Encrypted, passPhrase.getBytes)
-      decryptedToken.getBytes
+  val random = new SecureRandom()
+  random.nextBytes(iv)
+  val ivSpec = new IvParameterSpec(iv)
+
+  def encrypt(plainTextBytes: Array[Byte]): Array[Byte] = {
+    cipher.init(Cipher.ENCRYPT_MODE, sKeySpec, ivSpec)
+    cipher.doFinal(plainTextBytes)
+  }
+
+  def decrypt(encryptedBytes: Array[Byte]): Array[Byte] = {
+    try {
+      cipher.init(Cipher.DECRYPT_MODE, sKeySpec, ivSpec)
+      cipher.doFinal(encryptedBytes)
+    } catch {
+      case e @ (_: IllegalBlockSizeException | _: BadPaddingException | _: UnsupportedEncodingException |
+                _: InvalidKeyException | _: InvalidAlgorithmParameterException | _: NoSuchPaddingException |
+                _: NoSuchAlgorithmException) =>
+        throw new Exception(e.getMessage)
     }
+  }
 
   override def compress(inputBuff: Array[Byte]): Array[Byte]  = {
-    encrypt(inputBuff).getOrElse(Array.empty[Byte])
+    encrypt(inputBuff)
   }
   override def decompress(inputBuff: Array[Byte]): Array[Byte] = {
-    decrypt(inputBuff).getOrElse(Array.empty[Byte])
+    decrypt(inputBuff)
   }
 }
 
@@ -146,11 +162,11 @@ class LZ4KryoAESCryptoGrapher(key: String) extends KryoCompressor {
 
   override def compress(inputBuff: Array[Byte]): Array[Byte]  = {
     val outputBuff = lz4Compressor.compress(inputBuff)
-    aesCryptoGrapher.encrypt(outputBuff).getOrElse(Array.empty[Byte])
+    aesCryptoGrapher.encrypt(outputBuff)
   }
 
   override def decompress(inputBuff: Array[Byte]): Array[Byte] = {
-    val decryptedBuff = aesCryptoGrapher.decrypt(inputBuff).getOrElse(Array.empty[Byte])
+    val decryptedBuff = aesCryptoGrapher.decrypt(inputBuff)
     lz4Compressor.decompress(decryptedBuff)
   }
 }
@@ -161,11 +177,11 @@ class ZipKryoAESCryptoGrapher(key: String) extends KryoCompressor {
 
   override def compress(inputBuff: Array[Byte]): Array[Byte]  = {
     val outputBuff = zipCompressor.compress(inputBuff)
-    aesCryptoGrapher.encrypt(outputBuff).getOrElse(Array.empty[Byte])
+    aesCryptoGrapher.encrypt(outputBuff)
   }
 
   override def decompress(inputBuff: Array[Byte]): Array[Byte] = {
-    val decryptedBuff = aesCryptoGrapher.decrypt(inputBuff).getOrElse(Array.empty[Byte])
+    val decryptedBuff = aesCryptoGrapher.decrypt(inputBuff)
     zipCompressor.decompress(decryptedBuff)
   }
 }
