@@ -75,6 +75,9 @@ object MinimalBuild extends Build {
       "-Xlog-reflective-calls"
     ),
 
+    //Enabling hardware AES support if available
+    javaOptions in run += "-XX:+UseAES -XX:+UseAESIntrinsics",
+
     publishTo := {
 	val nexus = "https://oss.sonatype.org/"
 	if (buildVersion.trim.endsWith("SNAPSHOT"))
