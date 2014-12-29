@@ -121,14 +121,14 @@ class ZipKryoComressor extends KryoCompressor {
 }
 
 class KryoAESCryptoGrapher(key: String) extends KryoCompressor {
-  val sKeySpec = new SecretKeySpec(key.getBytes("UTF-8"), "AES")
+  lazy val sKeySpec = new SecretKeySpec(key.getBytes("UTF-8"), "AES")
 
   var iv: Array[Byte] = Array.fill[Byte](16)(0)
-  val cipher = Cipher.getInstance("AES/CBC/PKCS5Padding")
+  lazy val cipher = Cipher.getInstance("AES/CBC/PKCS5Padding")
 
-  val random = new SecureRandom()
+  lazy val random = new SecureRandom()
   random.nextBytes(iv)
-  val ivSpec = new IvParameterSpec(iv)
+  lazy val ivSpec = new IvParameterSpec(iv)
 
   def encrypt(plainTextBytes: Array[Byte]): Array[Byte] = {
     cipher.init(Cipher.ENCRYPT_MODE, sKeySpec, ivSpec)
