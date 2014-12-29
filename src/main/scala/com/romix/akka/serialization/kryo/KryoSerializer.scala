@@ -122,9 +122,8 @@ class ZipKryoComressor extends KryoCompressor {
 
 class KryoAESCryptoGrapher(key: String) extends KryoCompressor {
   val sKeySpec = new SecretKeySpec(key.getBytes("UTF-8"), "AES")
-  val keyLen = key.length
 
-  var iv: Array[Byte] = Array.fill[Byte](keyLen)(0)
+  var iv: Array[Byte] = Array.fill[Byte](16)(0)
   val cipher = Cipher.getInstance("AES/CBC/PKCS5Padding")
 
   val random = new SecureRandom()
