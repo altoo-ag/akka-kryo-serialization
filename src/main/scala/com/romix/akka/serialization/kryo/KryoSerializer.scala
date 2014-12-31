@@ -155,34 +155,21 @@ class KryoAESCryptoGrapher(key: String) extends KryoCompressor {
   }
 }
 
-class LZ4KryoAESCryptoGrapher(key: String) extends KryoCompressor {
+class KryoAESCryptoCompressor(compressType: String, key: String) extends KryoCompressor {
   private val aesCryptoGrapher = new KryoAESCryptoGrapher(key)
-  private val lz4Compressor = new LZ4KryoComressor
+  private val compressor = compressType match {
+    case "lz4" =>  new LZ4KryoComressor
+    case "deflate" => new ZipKryoComressor
+  }
 
-  override def compress(inputBuff: Array[Byte]): Array[Byte]  = {
-    val outputBuff = lz4Compressor.compress(inputBuff)
-    aesCryptoGrapher.encrypt(outputBuff)
+  override def compress(inputBuff: Array[Byte]): Array[Byte] = {
+    (compressor.compress _ andThen aesCryptoGrapher.encrypt _)(inputBuff)
   }
 
   override def decompress(inputBuff: Array[Byte]): Array[Byte] = {
-    val decryptedBuff = aesCryptoGrapher.decrypt(inputBuff)
-    lz4Compressor.decompress(decryptedBuff)
-  }
-}
-
-class ZipKryoAESCryptoGrapher(key: String) extends KryoCompressor {
-  private val aesCryptoGrapher = new KryoAESCryptoGrapher(key)
-  private val zipCompressor = new ZipKryoComressor
-
-  override def compress(inputBuff: Array[Byte]): Array[Byte]  = {
-    val outputBuff = zipCompressor.compress(inputBuff)
-    aesCryptoGrapher.encrypt(outputBuff)
+    (aesCryptoGrapher.decrypt _ andThen compressor.decompress _)(inputBuff)
   }
 
-  override def decompress(inputBuff: Array[Byte]): Array[Byte] = {
-    val decryptedBuff = aesCryptoGrapher.decrypt(inputBuff)
-    zipCompressor.decompress(decryptedBuff)
-  }
 }
 
 class KryoSerializer(val system: ExtendedActorSystem) extends Serializer {
@@ -273,8 +260,8 @@ class KryoSerializer(val system: ExtendedActorSystem) extends Serializer {
     case ("lz4", "off") => new LZ4KryoComressor
     case ("deflate", "off") => new ZipKryoComressor
     case ("off", "aes") => new KryoAESCryptoGrapher(settings.AESKey)
-    case ("lz4", "aes") => new LZ4KryoAESCryptoGrapher(settings.AESKey)
-    case ("deflate", "aes") => new ZipKryoAESCryptoGrapher(settings.AESKey)
+    case ("lz4", "aes") => new KryoAESCryptoCompressor("lz4", settings.AESKey)
+    case ("deflate", "aes") => new KryoAESCryptoCompressor("deflate", settings.AESKey)
     case _ => new NoKryoComressor
   }
   locally {
