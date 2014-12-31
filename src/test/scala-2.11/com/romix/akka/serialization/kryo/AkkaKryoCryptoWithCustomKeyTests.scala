@@ -7,7 +7,7 @@ import org.scalatest.FlatSpec
 
 import scala.collection.mutable.AnyRefMap
 
-class KryoCryptoTestKey extends KryoCrypto {
+class KryoCryptoTestKey {
   def kryoAESKey = "TheTestSecretKey"
 }
 

@@ -262,15 +262,30 @@ class KryoSerializer(val system: ExtendedActorSystem) extends Serializer {
     log.debug("Got custom aes key class: {}", customAESKeyClassName)
   }
 
-  val aesKey: String = {
-    if (customAESKeyClassName == null) settings.AESKey
-    else if (Class.forName(customAESKeyClassName).newInstance.isInstanceOf[KryoCrypto]) {
-      Class.forName(customAESKeyClassName).newInstance.asInstanceOf[KryoCrypto].kryoAESKey
-    } else {
-      log.info("Custom aes key class is not of type 'KryoCrypto' or it could not be loaded. Using value of 'aeskey' from conf if available, else using default key")
-      settings.AESKey
-    }
+  val customAESKeyClass =
+    if (customAESKeyClassName == null) null else
+      system.dynamicAccess.getClassFor[AnyRef](customAESKeyClassName) match {
+        case Success(clazz) => Some(clazz)
+        case Failure(e) => {
+          log.error("Class could not be loaded {} ", customAESKeyClassName)
+          throw e
+        }
+      }
+  locally {
+    log.debug("Got custom key class: {}", customAESKeyClass)
   }
+
+  val customAESKeyInstance = Try(customAESKeyClass.map(_.newInstance))
+  locally {
+    log.debug("Got custom aes key instance: {}", customAESKeyInstance)
+  }
+
+  val aesKeyMethod = Try(customAESKeyClass.map(_.getMethod("kryoAESKey")))
+  locally {
+    log.debug("Got custom aes key method: {}", customAESKeyInstance)
+  }
+
+  val aesKey = Try(aesKeyMethod.get.get.invoke(customAESKeyInstance.get.get).asInstanceOf[String]).getOrElse(settings.AESKey)
 
   val compressor: KryoCompressor = (settings.Compression, settings.Encryption) match {
     case ("lz4", "off") => new LZ4KryoComressor
