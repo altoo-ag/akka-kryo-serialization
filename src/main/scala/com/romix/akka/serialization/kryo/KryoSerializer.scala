@@ -256,12 +256,28 @@ class KryoSerializer(val system: ExtendedActorSystem) extends Serializer {
   locally {
     log.debug("Got customizer method: {}", customizerMethod)
   }
+
+  val customAESKeyClassName = settings.AESKeyClass
+  locally {
+    log.debug("Got custom aes key class: {}", customAESKeyClassName)
+  }
+
+  val aesKey: String = {
+    if (customAESKeyClassName == null) settings.AESKey
+    else if (Class.forName(customAESKeyClassName).newInstance.isInstanceOf[KryoCrypto]) {
+      Class.forName(customAESKeyClassName).newInstance.asInstanceOf[KryoCrypto].kryoAESKey
+    } else {
+      log.info("Custom aes key class is not of type 'KryoCrypto' or it could not be loaded. Using value of 'aeskey' from conf if available, else using default key")
+      settings.AESKey
+    }
+  }
+
   val compressor: KryoCompressor = (settings.Compression, settings.Encryption) match {
     case ("lz4", "off") => new LZ4KryoComressor
     case ("deflate", "off") => new ZipKryoComressor
-    case ("off", "aes") => new KryoAESCryptoGrapher(settings.AESKey)
-    case ("lz4", "aes") => new KryoAESCryptoCompressor("lz4", settings.AESKey)
-    case ("deflate", "aes") => new KryoAESCryptoCompressor("deflate", settings.AESKey)
+    case ("off", "aes") => new KryoAESCryptoGrapher(aesKey)
+    case ("lz4", "aes") => new KryoAESCryptoCompressor("lz4", aesKey)
+    case ("deflate", "aes") => new KryoAESCryptoCompressor("deflate", aesKey)
     case _ => new NoKryoComressor
   }
   locally {

@@ -67,6 +67,8 @@ object KryoSerialization {
 
     val Encryption: String = Try(config.getString("akka.actor.kryo.encryption")).getOrElse("off")
 
+    val AESKeyClass: String = Try(config.getString("akka.actor.kryo.custom-aeskey-class")).getOrElse(null)
+
     val AESKey: String = Try(config.getString("akka.actor.kryo.aeskey")).getOrElse("ThisIsASecretKey")
 
     val KryoCustomSerializerInit: String = Try(config.getString("akka.actor.kryo.kryo-custom-serializer-init")).getOrElse(null)
@@ -88,4 +90,8 @@ object KryoSerializationExtension extends ExtensionId[KryoSerialization] with Ex
   override def get(system: ActorSystem): KryoSerialization = super.get(system)
   override def lookup = KryoSerializationExtension
   override def createExtension(system: ExtendedActorSystem): KryoSerialization = new KryoSerialization(system)
+}
+
+trait KryoCrypto {
+  def kryoAESKey: String
 }
