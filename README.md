@@ -156,7 +156,8 @@ The following options are available for configuring this serializer:
 
 			# If provided, Kryo uses the class specified by a fully qualified class name
 			# to get custom AES key. Such a class should define the method 'kryoAESKey'. 
-			# This key overrides 'aeskey'. If unable to load class, default aes key is used.
+			# This key overrides 'aeskey'. If class doesn't contain 'kryoAESKey' method,
+			# default aes key is used.
 			custom-aeskey-class = "CustomAESKeyClass"
 
 			# Log implicitly registered classes. Useful, if you want to know all classes
@@ -276,11 +277,11 @@ An example of such a custom Kryo serializer initialization class could be someth
 How to use a custom key for aes
 -------------------------------------------------------------------
 
-Sometimes you need to pass a custom aes key, deonding on the context you are in, instead of having a static key. For example, you might have the key in a data store, or provided by some other application. In such instances, you might want to provide the key dynamically to kryo serializer.
-You can provide the following optional parameter in teh config file:
+Sometimes you need to pass a custom aes key, depending on the context you are in, instead of having a static key. For example, you might have the key in a data store, or provided by some other application. In such instances, you might want to provide the key dynamically to kryo serializer.
+You can provide the following optional parameter in the config file:
 			`custom-aeskey-class = "CustomAESKeyClass"`
 
-Where `CustomAESKeyClass` is a fully qualified class name of your custom serializer class. Such a class can be just any class with a method called `kryoAESKey`, which has a string return type i.e.
+Where `CustomAESKeyClass` is a fully qualified class name of your custom aes key provider class. Such a class can be just any class with a method called `kryoAESKey`, which has a string return type i.e.
 
 
 			public string kryoAESKey(...); // for Java
@@ -293,7 +294,7 @@ An example of such a custom aes-key supplier class could be something like this:
 				def kryoAESKey: String  = {
 					"ThisIsASecretKey"
 				}
-
+```
 
 
 Usage as a general purpose Scala serialization library 
