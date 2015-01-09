@@ -40,21 +40,33 @@ import scala.collection.JavaConversions._
 import scala.collection.mutable.ArrayBuilder
 import scala.util.{Failure, Success, Try}
 
-trait KryoCompressor {
-  def compress(inputBuff: Array[Byte]): Array[Byte]
-  def decompress(inputBuff: Array[Byte]): Array[Byte]
+trait Transformation {
+  def toBinary(inputBuff: Array[Byte]): Array[Byte]
+  def fromBinary(inputBuff: Array[Byte]): Array[Byte]
 }
 
-class NoKryoComressor extends KryoCompressor {
-  def compress(inputBuff: Array[Byte]) = inputBuff
-  def decompress(inputBuff: Array[Byte]) = inputBuff
+class NoKryoTransformer extends Transformation {
+  def toBinary(inputBuff: Array[Byte]) = inputBuff
+  def fromBinary(inputBuff: Array[Byte]) = inputBuff
 }
 
-class LZ4KryoComressor extends KryoCompressor {
+class KryoTransformer(transformers: List[Transformation]) {
+  def toBinary(inputBuff: Array[Byte]): Array[Byte] = {
+    val pipeLine = transformers.map(x => x.toBinary _)
+    pipeLine.reduceLeft(_ andThen _)(inputBuff)
+  }
+
+  def fromBinary(inputBuff: Array[Byte]) = {
+    val pipeLine = transformers.map(x => x.fromBinary _)
+    pipeLine.reverse.reduceLeft(_ andThen _)(inputBuff)
+  }
+}
+
+class LZ4KryoCompressor extends Transformation {
 
   lazy val lz4factory = LZ4Factory.fastestInstance
 
-  def compress(inputBuff: Array[Byte]): Array[Byte] = {
+  def toBinary(inputBuff: Array[Byte]): Array[Byte] = {
     val inputSize = inputBuff.length
     val lz4 = lz4factory.fastCompressor
     val maxOutputSize = lz4.maxCompressedLength(inputSize);
@@ -69,7 +81,7 @@ class LZ4KryoComressor extends KryoCompressor {
     outputBuff.take(outputSize + 4)
   }
 
-  def decompress(inputBuff: Array[Byte]): Array[Byte] = {
+  def fromBinary(inputBuff: Array[Byte]): Array[Byte] = {
     // the first 4 bytes are the original size
     val size: Int = (inputBuff(0).asInstanceOf[Int] & 0xff) |
       (inputBuff(1).asInstanceOf[Int] & 0xff) << 8 |
@@ -82,12 +94,12 @@ class LZ4KryoComressor extends KryoCompressor {
   }
 }
 
-class ZipKryoComressor extends KryoCompressor {
+class ZipKryoCompressor extends Transformation {
 
   lazy val deflater = new Deflater(Deflater.BEST_SPEED)
   lazy val inflater = new Inflater()
 
-  def compress(inputBuff: Array[Byte]): Array[Byte] = {
+  def toBinary(inputBuff: Array[Byte]): Array[Byte] = {
     val inputSize = inputBuff.length
     val outputBuff = new ArrayBuilder.ofByte
     outputBuff += (inputSize & 0xff).toByte
@@ -107,7 +119,7 @@ class ZipKryoComressor extends KryoCompressor {
     outputBuff.result
   }
 
-  def decompress(inputBuff: Array[Byte]): Array[Byte] = {
+  def fromBinary(inputBuff: Array[Byte]): Array[Byte] = {
     val size: Int = (inputBuff(0).asInstanceOf[Int] & 0xff) |
       (inputBuff(1).asInstanceOf[Int] & 0xff) << 8 |
       (inputBuff(2).asInstanceOf[Int] & 0xff) << 16 |
@@ -120,7 +132,7 @@ class ZipKryoComressor extends KryoCompressor {
   }
 }
 
-class KryoAESCryptoGrapher(key: String) extends KryoCompressor {
+class KryoCryptographer(key: String) extends Transformation {
   lazy val sKeySpec = new SecretKeySpec(key.getBytes("UTF-8"), "AES")
 
   var iv: Array[Byte] = Array.fill[Byte](16)(0)
@@ -147,29 +159,12 @@ class KryoAESCryptoGrapher(key: String) extends KryoCompressor {
     }
   }
 
-  override def compress(inputBuff: Array[Byte]): Array[Byte]  = {
+  override def toBinary(inputBuff: Array[Byte]): Array[Byte]  = {
     encrypt(inputBuff)
   }
-  override def decompress(inputBuff: Array[Byte]): Array[Byte] = {
+  override def fromBinary(inputBuff: Array[Byte]): Array[Byte] = {
     decrypt(inputBuff)
   }
-}
-
-class KryoAESCryptoCompressor(compressType: String, key: String) extends KryoCompressor {
-  private val aesCryptoGrapher = new KryoAESCryptoGrapher(key)
-  private val compressor = compressType match {
-    case "lz4" =>  new LZ4KryoComressor
-    case "deflate" => new ZipKryoComressor
-  }
-
-  override def compress(inputBuff: Array[Byte]): Array[Byte] = {
-    (compressor.compress _ andThen aesCryptoGrapher.encrypt _)(inputBuff)
-  }
-
-  override def decompress(inputBuff: Array[Byte]): Array[Byte] = {
-    (aesCryptoGrapher.decrypt _ andThen compressor.decompress _)(inputBuff)
-  }
-
 }
 
 class KryoSerializer(val system: ExtendedActorSystem) extends Serializer {
@@ -287,16 +282,19 @@ class KryoSerializer(val system: ExtendedActorSystem) extends Serializer {
 
   val aesKey = Try(aesKeyMethod.get.get.invoke(customAESKeyInstance.get.get).asInstanceOf[String]).getOrElse(settings.AESKey)
 
-  val compressor: KryoCompressor = (settings.Compression, settings.Encryption) match {
-    case ("lz4", "off") => new LZ4KryoComressor
-    case ("deflate", "off") => new ZipKryoComressor
-    case ("off", "aes") => new KryoAESCryptoGrapher(aesKey)
-    case ("lz4", "aes") => new KryoAESCryptoCompressor("lz4", aesKey)
-    case ("deflate", "aes") => new KryoAESCryptoCompressor("deflate", aesKey)
-    case _ => new NoKryoComressor
+  val transformMap = Map(
+    "off" -> new NoKryoTransformer,
+    "lz4" -> new LZ4KryoCompressor,
+    "deflate" -> new ZipKryoCompressor,
+    "aescbc" -> new KryoCryptographer(aesKey))
+
+  val kryoTransformers = {
+    settings.Transformers.split(",").toList.map(x => transformMap.get(x).orElse(throw new Exception(s"Could not recognise the transformer: [${x}]"))).flatten
   }
+
+  val transformer = new KryoTransformer(kryoTransformers)
   locally {
-    log.debug("Got compression: {}", settings.Compression)
+    log.debug("Got transformers: {}", settings.Transformers)
   }
 
   val serializer = try new KryoBasedSerializer(getKryo(idStrategy, serializerType),
@@ -326,12 +324,12 @@ class KryoSerializer(val system: ExtendedActorSystem) extends Serializer {
     val ser = getSerializer
     val bin = ser.toBinary(obj)
     releaseSerializer(ser)
-    compressor.compress(bin)
+    transformer.toBinary(bin)
   }
 
   def fromBinary(bytes: Array[Byte], clazz: Option[Class[_]]): AnyRef = {
     val ser = getSerializer
-    val obj = ser.fromBinary(compressor.decompress(bytes), clazz)
+    val obj = ser.fromBinary(transformer.fromBinary(bytes), clazz)
     releaseSerializer(ser)
     obj
   }
