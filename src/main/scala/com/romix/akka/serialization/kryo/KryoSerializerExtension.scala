@@ -71,6 +71,8 @@ object KryoSerialization {
 
     val AESKey: String = Try(config.getString("akka.actor.kryo.aeskey")).getOrElse("ThisIsASecretKey")
 
+    val Transformers:  String = Try(config.getString("akka.actor.kryo.transformers")).getOrElse("off")
+
     val KryoCustomSerializerInit: String = Try(config.getString("akka.actor.kryo.kryo-custom-serializer-init")).getOrElse(null)
 
     private def configToMap(cfg: Config): Map[String, String] =
