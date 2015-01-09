@@ -44,7 +44,7 @@ class AkkaKryoSerializationTests extends FlatSpec with Matchers {
       trace = true
       idstrategy = "incremental"
       implicit-registration-logging = true
-      compression = off
+      transformers = off
       mappings {
             "akka.actor.ActorRef" = 20
             "akka.actor.DeadLetterActorRef" = 21
@@ -91,7 +91,7 @@ class AkkaKryoSerializationTests extends FlatSpec with Matchers {
       trace = true
       idstrategy = "incremental"
       implicit-registration-logging = true
-      compression = lz4
+      transformers = lz4
       mappings {
             "akka.actor.ActorRef" = 20
             "akka.actor.DeadLetterActorRef" = 21

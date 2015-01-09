@@ -119,7 +119,7 @@ class AkkaKryoCompressionTests211 extends FlatSpec {
             idstrategy = "incremental"
             kryo-reference-map = false
             buffer-size = 65536
-            compression = deflate
+            transformers = deflate
             implicit-registration-logging = true
             mappings {
               "scala.collection.immutable.HashMap$HashTrieMap"    = 30
@@ -160,7 +160,7 @@ class AkkaKryoCompressionTests211 extends FlatSpec {
             idstrategy = "incremental"
             kryo-reference-map = false
             buffer-size = 65536
-            compression = lz4
+            transformers = lz4
             implicit-registration-logging = true
             mappings {
               "scala.collection.immutable.HashMap$HashTrieMap"    = 30
@@ -192,7 +192,7 @@ class AkkaKryoCompressionTests211 extends FlatSpec {
       }
   """)
 
-  testConfig("AES", """
+  testConfig("AES/CBC", """
       akka {
         extensions = ["com.romix.akka.serialization.kryo.KryoSerializationExtension$"]
         actor {
@@ -201,7 +201,7 @@ class AkkaKryoCompressionTests211 extends FlatSpec {
             idstrategy = "incremental"
             kryo-reference-map = false
             buffer-size = 65536
-            encryption = aes
+            transformers = aescbc
             aeskey = j68KkRjq21ykRGAQ
             implicit-registration-logging = true
             mappings {
@@ -243,9 +243,8 @@ class AkkaKryoCompressionTests211 extends FlatSpec {
             idstrategy = "incremental"
             kryo-reference-map = false
             buffer-size = 65536
-            encryption = aes
+            transformers = "lz4,aescbc"
             aeskey = j68KkRjq21ykRGAQ
-            compression = lz4
             implicit-registration-logging = true
             mappings {
               "scala.collection.immutable.HashMap$HashTrieMap"    = 30
@@ -286,9 +285,8 @@ class AkkaKryoCompressionTests211 extends FlatSpec {
             idstrategy = "incremental"
             kryo-reference-map = false
             buffer-size = 65536
-            encryption = aes
+            transformers = "deflate,aescbc"
             aeskey = j68KkRjq21ykRGAQ
-            compression = lz4
             implicit-registration-logging = true
             mappings {
               "scala.collection.immutable.HashMap$HashTrieMap"    = 30

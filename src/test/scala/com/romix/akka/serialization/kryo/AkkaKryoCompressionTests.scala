@@ -18,7 +18,7 @@ class AkkaKryoCompressionTests extends FlatSpec {
             idstrategy = "incremental"
             kryo-reference-map = false
             buffer-size = 65536
-            compression = off
+            transformers = off
             implicit-registration-logging = true
             mappings {
               "akka.actor.ActorRef" = 20
@@ -475,17 +475,15 @@ class AkkaKryoCompressionTests extends FlatSpec {
     }
   }
 
-  testConfig("Zip", "akka.actor.kryo.compression = deflate")
-  testConfig("LZ4", "akka.actor.kryo.compression = lz4")
-  testConfig("AES", "akka.actor.kryo.encryption = aes")
+  testConfig("Zip", "akka.actor.kryo.transformers = deflate")
+  testConfig("LZ4", "akka.actor.kryo.transformers = lz4")
+  testConfig("AES", "akka.actor.kryo.transformers = aescbc")
   testConfig("ZipAES",
-    """akka.actor.kryo.compression = deflate
-      |akka.actor.kryo.encryption = aes
+    """akka.actor.kryo.transformers = "deflate,aescbc"
       |akka.actor.kryo.aeskey = j68KkRjq21ykRGAQ
     """.stripMargin)
   testConfig("LZ4AES",
-    """akka.actor.kryo.compression = lz4
-      |akka.actor.kryo.encryption = aes
+    """akka.actor.kryo.transformers = "lz4,aescbc"
       |akka.actor.kryo.aeskey = j68KkRjq21ykRGAQ
     """.stripMargin)
   testConfig("Off", "")
