@@ -69,9 +69,11 @@ object KryoSerialization {
 
     val AESKeyClass: String = Try(config.getString("akka.actor.kryo.custom-aeskey-class")).getOrElse(null)
 
-    val AESKey: String = Try(config.getString("akka.actor.kryo.aeskey")).getOrElse("ThisIsASecretKey")
+    val AESKey = Try(config.getString(s"akka.actor.kryo.encryption.aes.key")).getOrElse("ThisIsASecretKey")
 
-    val Transformers:  String = Try(config.getString("akka.actor.kryo.transformers")).getOrElse("off")
+    val AESMode = Try(config.getString(s"akka.actor.kryo.encryption.aes.mode")).getOrElse("AES/CBC/PKCS5Padding")
+
+    val PreSerTransformations:  String = Try(config.getString("akka.actor.kryo.pre-serialization-transformations")).getOrElse("off")
 
     val KryoCustomSerializerInit: String = Try(config.getString("akka.actor.kryo.kryo-custom-serializer-init")).getOrElse(null)
 
