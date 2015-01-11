@@ -50,15 +50,16 @@ class NoKryoTransformer extends Transformation {
   def fromBinary(inputBuff: Array[Byte]) = inputBuff
 }
 
-class KryoTransformer(transformers: List[Transformation]) {
+class KryoTransformer(transformations: List[Transformation]) {
+  val toPipeLine = transformations.map(x => x.toBinary _)
+  val fromPipeLine = transformations.map(x => x.fromBinary _).reverse
+
   def toBinary(inputBuff: Array[Byte]): Array[Byte] = {
-    val pipeLine = transformers.map(x => x.toBinary _)
-    pipeLine.reduceLeft(_ andThen _)(inputBuff)
+    toPipeLine.reduceLeft(_ andThen _)(inputBuff)
   }
 
   def fromBinary(inputBuff: Array[Byte]) = {
-    val pipeLine = transformers.map(x => x.fromBinary _)
-    pipeLine.reverse.reduceLeft(_ andThen _)(inputBuff)
+    fromPipeLine.reduceLeft(_ andThen _)(inputBuff)
   }
 }
 
@@ -132,11 +133,11 @@ class ZipKryoCompressor extends Transformation {
   }
 }
 
-class KryoCryptographer(key: String) extends Transformation {
+class KryoCryptographer(key: String, mode: String) extends Transformation {
   lazy val sKeySpec = new SecretKeySpec(key.getBytes("UTF-8"), "AES")
 
   var iv: Array[Byte] = Array.fill[Byte](16)(0)
-  lazy val cipher = Cipher.getInstance("AES/CBC/PKCS5Padding")
+  lazy val cipher = Cipher.getInstance(mode)
 
   lazy val random = new SecureRandom()
   random.nextBytes(iv)
@@ -280,21 +281,26 @@ class KryoSerializer(val system: ExtendedActorSystem) extends Serializer {
     log.debug("Got custom aes key method: {}", customAESKeyInstance)
   }
 
-  val aesKey = Try(aesKeyMethod.get.get.invoke(customAESKeyInstance.get.get).asInstanceOf[String]).getOrElse(settings.AESKey)
+  val aesKey = Try(aesKeyMethod.get.get.invoke(customAESKeyInstance.get.get).asInstanceOf[String])
+    .getOrElse(settings.AESKey)
 
-  val transformMap = Map(
-    "off" -> new NoKryoTransformer,
-    "lz4" -> new LZ4KryoCompressor,
-    "deflate" -> new ZipKryoCompressor,
-    "aescbc" -> new KryoCryptographer(aesKey))
-
-  val kryoTransformers = {
-    settings.Transformers.split(",").toList.map(x => transformMap.get(x).orElse(throw new Exception(s"Could not recognise the transformer: [${x}]"))).flatten
+  val transform = (typ: String) => {
+    typ match {
+      case "lz4" => new LZ4KryoCompressor
+      case "deflate" => new ZipKryoCompressor
+      case "aes" => new KryoCryptographer(aesKey, settings.AESMode)
+      case "off" => new NoKryoTransformer
+      case x => throw new Exception(s"Could not recognise the transformer: [${x}]")
+    }
   }
 
-  val transformer = new KryoTransformer(kryoTransformers)
+  val preSerTransformations = {
+    settings.PreSerTransformations.split(",").toList.map(transform(_))
+  }
+
+  val kryoTransformer = new KryoTransformer(preSerTransformations)
   locally {
-    log.debug("Got transformers: {}", settings.Transformers)
+    log.debug("Got transformations: {}", settings.PreSerTransformations)
   }
 
   val serializer = try new KryoBasedSerializer(getKryo(idStrategy, serializerType),
@@ -324,12 +330,12 @@ class KryoSerializer(val system: ExtendedActorSystem) extends Serializer {
     val ser = getSerializer
     val bin = ser.toBinary(obj)
     releaseSerializer(ser)
-    transformer.toBinary(bin)
+    kryoTransformer.toBinary(bin)
   }
 
   def fromBinary(bytes: Array[Byte], clazz: Option[Class[_]]): AnyRef = {
     val ser = getSerializer
-    val obj = ser.fromBinary(transformer.fromBinary(bytes), clazz)
+    val obj = ser.fromBinary(kryoTransformer.fromBinary(bytes), clazz)
     releaseSerializer(ser)
     obj
   }
