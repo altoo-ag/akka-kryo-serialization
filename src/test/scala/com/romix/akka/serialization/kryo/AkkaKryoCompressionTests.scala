@@ -18,7 +18,7 @@ class AkkaKryoCompressionTests extends FlatSpec {
             idstrategy = "incremental"
             kryo-reference-map = false
             buffer-size = 65536
-            transformers = off
+            pre-serialization-transformations = off
             implicit-registration-logging = true
             mappings {
               "akka.actor.ActorRef" = 20
@@ -475,16 +475,16 @@ class AkkaKryoCompressionTests extends FlatSpec {
     }
   }
 
-  testConfig("Zip", "akka.actor.kryo.transformers = deflate")
-  testConfig("LZ4", "akka.actor.kryo.transformers = lz4")
-  testConfig("AES", "akka.actor.kryo.transformers = aescbc")
+  testConfig("Zip", "akka.actor.kryo.pre-serialization-transformations = deflate")
+  testConfig("LZ4", "akka.actor.kryo.pre-serialization-transformations = lz4")
+  testConfig("AES", "akka.actor.kryo.pre-serialization-transformations = aes")
   testConfig("ZipAES",
-    """akka.actor.kryo.transformers = "deflate,aescbc"
-      |akka.actor.kryo.aeskey = j68KkRjq21ykRGAQ
+    """akka.actor.kryo.pre-serialization-transformations = "deflate,aes"
+      |akka.actor.kryo.encryption.aes.key = j68KkRjq21ykRGAQ
     """.stripMargin)
   testConfig("LZ4AES",
-    """akka.actor.kryo.transformers = "lz4,aescbc"
-      |akka.actor.kryo.aeskey = j68KkRjq21ykRGAQ
+    """akka.actor.kryo.pre-serialization-transformations = "lz4,aes"
+      |akka.actor.kryo.encryption.aes.key = j68KkRjq21ykRGAQ
     """.stripMargin)
   testConfig("Off", "")
 }

@@ -119,7 +119,7 @@ class AkkaKryoCompressionTests211 extends FlatSpec {
             idstrategy = "incremental"
             kryo-reference-map = false
             buffer-size = 65536
-            transformers = deflate
+            pre-serialization-transformations = deflate
             implicit-registration-logging = true
             mappings {
               "scala.collection.immutable.HashMap$HashTrieMap"    = 30
@@ -160,7 +160,7 @@ class AkkaKryoCompressionTests211 extends FlatSpec {
             idstrategy = "incremental"
             kryo-reference-map = false
             buffer-size = 65536
-            transformers = lz4
+            pre-serialization-transformations = lz4
             implicit-registration-logging = true
             mappings {
               "scala.collection.immutable.HashMap$HashTrieMap"    = 30
@@ -192,7 +192,7 @@ class AkkaKryoCompressionTests211 extends FlatSpec {
       }
   """)
 
-  testConfig("AES/CBC", """
+  testConfig("AES", """
       akka {
         extensions = ["com.romix.akka.serialization.kryo.KryoSerializationExtension$"]
         actor {
@@ -201,8 +201,13 @@ class AkkaKryoCompressionTests211 extends FlatSpec {
             idstrategy = "incremental"
             kryo-reference-map = false
             buffer-size = 65536
-            transformers = aescbc
-            aeskey = j68KkRjq21ykRGAQ
+            pre-serialization-transformations = aes
+            encryption {
+              aes {
+                mode = "AES/CBC/PKCS5Padding"
+                key = j68KkRjq21ykRGAQ
+                }
+              }
             implicit-registration-logging = true
             mappings {
               "scala.collection.immutable.HashMap$HashTrieMap"    = 30
@@ -243,8 +248,13 @@ class AkkaKryoCompressionTests211 extends FlatSpec {
             idstrategy = "incremental"
             kryo-reference-map = false
             buffer-size = 65536
-            transformers = "lz4,aescbc"
-            aeskey = j68KkRjq21ykRGAQ
+            pre-serialization-transformations = "lz4,aes"
+            encryption {
+            aes {
+              mode = "AES/CBC/PKCS5Padding"
+              key = j68KkRjq21ykRGAQ
+                }
+              }
             implicit-registration-logging = true
             mappings {
               "scala.collection.immutable.HashMap$HashTrieMap"    = 30
@@ -285,8 +295,13 @@ class AkkaKryoCompressionTests211 extends FlatSpec {
             idstrategy = "incremental"
             kryo-reference-map = false
             buffer-size = 65536
-            transformers = "deflate,aescbc"
-            aeskey = j68KkRjq21ykRGAQ
+            pre-serialization-transformations = "deflate,aes"
+            encryption {
+            aes {
+              mode = "AES/CBC/PKCS5Padding"
+              key = j68KkRjq21ykRGAQ
+                }
+              }
             implicit-registration-logging = true
             mappings {
               "scala.collection.immutable.HashMap$HashTrieMap"    = 30
