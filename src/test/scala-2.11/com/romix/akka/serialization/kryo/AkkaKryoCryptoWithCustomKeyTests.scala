@@ -45,10 +45,9 @@ class AkkaKryoCryptoWithCustomKeyTests extends FlatSpec {
             encryption {
             aes {
               mode = "AES/CBC/PKCS5Padding"
-              key = j68KkRjq21ykRGAQ
+              custom-key-class = "com.romix.akka.serialization.kryo.KryoCryptoTestKey"
                 }
               }
-            custom-aeskey-class = "com.romix.akka.serialization.kryo.KryoCryptoTestKey"
             implicit-registration-logging = true
             mappings {
               "scala.collection.immutable.HashMap$HashTrieMap"    = 30
