@@ -137,18 +137,18 @@ class KryoCryptographer(key: String, mode: String) extends Transformation {
   lazy val sKeySpec = new SecretKeySpec(key.getBytes("UTF-8"), "AES")
 
   var iv: Array[Byte] = Array.fill[Byte](16)(0)
-  lazy val cipher = Cipher.getInstance(mode)
-
   lazy val random = new SecureRandom()
   random.nextBytes(iv)
   lazy val ivSpec = new IvParameterSpec(iv)
 
   def encrypt(plainTextBytes: Array[Byte]): Array[Byte] = {
+    lazy val cipher = Cipher.getInstance(mode)
     cipher.init(Cipher.ENCRYPT_MODE, sKeySpec, ivSpec)
     cipher.doFinal(plainTextBytes)
   }
 
   def decrypt(encryptedBytes: Array[Byte]): Array[Byte] = {
+    lazy val cipher = Cipher.getInstance(mode)
     try {
       cipher.init(Cipher.DECRYPT_MODE, sKeySpec, ivSpec)
       cipher.doFinal(encryptedBytes)
