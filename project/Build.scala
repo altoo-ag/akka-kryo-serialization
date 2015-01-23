@@ -16,7 +16,7 @@
 
 import sbt._
 import Keys._
-import com.typesafe.sbt.osgi.SbtOsgi.{ OsgiKeys, osgiSettings, defaultOsgiSettings }
+//import com.typesafe.sbt.osgi.SbtOsgi.{ OsgiKeys, osgiSettings, defaultOsgiSettings }
 
 object MinimalBuild extends Build {
 
@@ -39,6 +39,9 @@ object MinimalBuild extends Build {
     libraryDependencies += "com.typesafe.akka" %% "akka-kernel" % "2.3.3",
     libraryDependencies += "com.esotericsoftware.kryo" % "kryo" % "2.24.0",
     libraryDependencies += "net.jpountz.lz4" % "lz4" % "1.2.0",
+    libraryDependencies += "com.github.krasserm" %% "akka-persistence-testkit" % "0.3.4" % "test",
+    libraryDependencies += "commons-io" % "commons-io" % "2.4" % "test",
+    libraryDependencies += "com.github.michaelpisula" %% "akka-persistence-inmemory" % "0.2.1" % "test",
 
     libraryDependencies ++= {
       val sv = scalaVersion.value
@@ -69,7 +72,7 @@ object MinimalBuild extends Build {
       "-feature",
       "-unchecked",
       "-deprecation",
-      "-target:jvm-1.6",
+      "-target:jvm-1.7",
       "-language:existentials",
       "-optimise",
       "-Xlog-reflective-calls"
@@ -113,7 +116,7 @@ object MinimalBuild extends Build {
     </developer>
   </developers>
     ))
-    .settings(defaultOsgiSettings: _*)
+    /*.settings(defaultOsgiSettings: _*)
     .settings(
       OsgiKeys.privatePackage := Seq(
         "com.romix.akka.serialization.kryo",
@@ -129,5 +132,5 @@ object MinimalBuild extends Build {
         "scala*;version=\"[2.10.0,2.12)\"",
         "net.jpountz.lz4;resolution:=optional"
         )
-    )
+    )*/
 }
