@@ -9,27 +9,23 @@ import akka.testkit.{ImplicitSender, TestKit}
 import com.typesafe.config.ConfigFactory
 import org.apache.commons.io.FileUtils
 import org.scalatest._
-
-import scala.collection.immutable.HashMap
 import scala.concurrent.duration._
 import scala.language.postfixOps
 
-/**
- * Created by blingannagari on 22/01/15.
- */
 
 case object TakeSnapshot
 case object GetState
 case object Boom
-case class KeyValue(key: String, value: Any)
-case object RecoveryCompleted
-case object SnapshotSaved
+case object SnapshotSaveSuccess
+case object SnapshotSaveFail
+
+case class Person(fName: String, lName: String)
+case class ExampleState(received: List[Person] = Nil) {
+  def updated(s: Person): ExampleState = copy(s :: received)
+  override def toString = received.reverse.toString
+}
 
 object SnapshotRecoveryLocalStoreSpec {
-  final case class ExampleState(received: List[String] = Nil) {
-    def updated(s: String): ExampleState = copy(s :: received)
-    override def toString = received.reverse.toString
-  }
   class SnapshotTestPersistentActor(name: String, probe: ActorRef) extends PersistentActor {
     def persistenceId: String = name
 
@@ -37,24 +33,16 @@ object SnapshotRecoveryLocalStoreSpec {
 
     def receiveCommand: Receive = {
       case TakeSnapshot                          => saveSnapshot(state)
-      case SaveSnapshotSuccess(metadata)         => probe ! "save success"
-      case SaveSnapshotFailure(metadata, reason) => {
-        println("Saving snapshot failed: " + reason.getMessage)
-        probe ! "save failure"
-      }
-      case s: String =>
-        persist(s) { evt => state = state.updated(evt) }
-      case GetState => sender() ! state.received.reverse
-      case Boom => throw new Exception("Intentionally throwing exception to test persistence by restarting the actor")
+      case SaveSnapshotSuccess(metadata)         => probe ! SnapshotSaveSuccess
+      case SaveSnapshotFailure(metadata, reason) => probe ! SnapshotSaveFail
+      case s: Person                             => persist(s) { evt => state = state.updated(evt) }
+      case GetState                              => sender() ! state.received.reverse
+      case Boom                                  => throw new Exception("Intentionally throwing exception to test persistence by restarting the actor")
     }
 
     def receiveRecover: Receive = {
-      case SnapshotOffer(_, s: ExampleState) =>
-        println("offered state = " + s)
-        state = s
-        sender() ! RecoveryCompleted
-      case evt: String =>
-        state = state.updated(evt)
+      case SnapshotOffer(_, s: ExampleState)     => state = s
+      case evt: Person                           => state = state.updated(evt)
     }
   }
 }
@@ -67,29 +55,31 @@ class SnapshotRecoveryTest extends PersistenceSpec with ImplicitSender {
     
     "should get right serializer" in {
       val serialization = SerializationExtension(system) 
-      val sample = List("a", "b", "c")
+      val sample = List(Person("John", "Doe"), Person("Bruce", "Wayne"), Person("Tony", "Stark"))
+      val sampleHead: Person = sample.head
       assert(serialization.findSerializerFor(sample).getClass == classOf[KryoSerializer])
+      assert(serialization.findSerializerFor(sampleHead).getClass == classOf[KryoSerializer])
 
       val serialized = serialization.serialize(sample)
       assert(serialized.isSuccess)
 
-      val deserialized = serialization.deserialize(serialized.get, classOf[List[String]])
+      val deserialized = serialization.deserialize(serialized.get, classOf[List[Person]])
       assert(deserialized.isSuccess)
       assert(deserialized.get == sample)
     }
     
     "recover state only from its own correct snapshot file after restart" in {
-      persistentActor ! "a"
+      persistentActor ! Person("John", "Doe")
       expectNoMsg()
-      persistentActor ! "b"
+      persistentActor ! Person("Bruce", "Wayne")
       expectNoMsg()
       persistentActor ! TakeSnapshot
-      expectMsg("save success")
-      persistentActor ! "c"
+      expectMsg(SnapshotSaveSuccess)
+      persistentActor ! Person("Tony", "Stark")
       expectNoMsg()
       persistentActor ! Boom
       persistentActor ! GetState
-      expectMsg(List("a", "b", "c"))
+      expectMsg(List(Person("John", "Doe"), Person("Bruce", "Wayne"), Person("Tony", "Stark")))
     }
 
     "recover correct state after explicitly killing the actor and starting it again" in {
@@ -98,7 +88,7 @@ class SnapshotRecoveryTest extends PersistenceSpec with ImplicitSender {
       val newPersistentActor = system.actorOf(Props(classOf[SnapshotTestPersistentActor], "PersistentActor", testActor))
       within(3 seconds) {
         newPersistentActor ! GetState
-        expectMsg(List("a", "b", "c"))
+        expectMsg(List(Person("John", "Doe"), Person("Bruce", "Wayne"), Person("Tony", "Stark")))
       }
     }
   }
@@ -107,9 +97,8 @@ class SnapshotRecoveryTest extends PersistenceSpec with ImplicitSender {
 
 
 abstract class PersistenceSpec extends TestKit(ActorSystem("testSystem", ConfigFactory.parseString(TestConfig.config)))
-with WordSpecLike
-with Matchers
-with BeforeAndAfterAll {val storageLocations = List("akka.persistence.snapshot-store.local.dir").map(s => new File(system.settings.config.getString(s)))
+  with WordSpecLike with Matchers with BeforeAndAfterAll {
+  val storageLocations = List("akka.persistence.snapshot-store.local.dir").map(s => new File(system.settings.config.getString(s)))
 
   override def beforeAll() {
     storageLocations.foreach(FileUtils.deleteDirectory)
@@ -142,7 +131,10 @@ object TestConfig {
         implicit-registration-logging = true
         mappings {
           "scala.collection.immutable.$colon$colon" = 48
-          "scala.collection.immutable.List" = 49
+          "scala.collection.immutable.List" = 49 
+          "com.romix.akka.serialization.kryo.Person" = 56
+          "akka.persistence.serialization.Snapshot" = 108
+          "akka.persistence.SnapshotMetadata" = 113
         }
       }
 
@@ -150,8 +142,12 @@ object TestConfig {
         kryo = "com.romix.akka.serialization.kryo.KryoSerializer"
       }
 
-      serialization-bindings {
-        "scala.collection.immutable.List" = kryo
+      serialization-bindings { 
+          "scala.collection.immutable.$colon$colon" = kryo 
+          "scala.collection.immutable.List" = kryo 
+          "com.romix.akka.serialization.kryo.Person" = kryo
+          "akka.persistence.serialization.Snapshot" = kryo
+          "akka.persistence.SnapshotMetadata" = kryo
       }
     }
 
