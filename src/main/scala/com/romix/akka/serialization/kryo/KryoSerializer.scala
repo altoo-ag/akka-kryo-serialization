@@ -294,13 +294,13 @@ class KryoSerializer(val system: ExtendedActorSystem) extends Serializer {
     }
   }
 
-  val preSerTransformations = {
-    settings.PreSerTransformations.split(",").toList.map(transform(_))
+  val postSerTransformations = {
+    settings.PostSerTransformations.split(",").toList.map(transform(_))
   }
 
-  val kryoTransformer = new KryoTransformer(preSerTransformations)
+  val kryoTransformer = new KryoTransformer(postSerTransformations)
   locally {
-    log.debug("Got transformations: {}", settings.PreSerTransformations)
+    log.debug("Got transformations: {}", settings.PostSerTransformations)
   }
 
   val serializer = try new KryoBasedSerializer(getKryo(idStrategy, serializerType),

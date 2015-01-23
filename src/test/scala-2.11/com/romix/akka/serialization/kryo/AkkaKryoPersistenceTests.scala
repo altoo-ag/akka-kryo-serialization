@@ -121,7 +121,7 @@ object TestConfig {
         idstrategy = "incremental"
         kryo-reference-map = false
         buffer-size = 65536
-        pre-serialization-transformations = "lz4,aes"
+        post-serialization-transformations = "lz4,aes"
         encryption {
           aes {
             mode = "AES/CBC/PKCS5Padding"

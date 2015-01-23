@@ -41,7 +41,7 @@ class AkkaKryoCryptoWithCustomKeyTests extends FlatSpec {
             idstrategy = "incremental"
             kryo-reference-map = false
             buffer-size = 65536
-            pre-serialization-transformations = aes
+            post-serialization-transformations = aes
             encryption {
             aes {
               mode = "AES/CBC/PKCS5Padding"

@@ -119,7 +119,7 @@ class AkkaKryoCompressionTests211 extends FlatSpec {
             idstrategy = "incremental"
             kryo-reference-map = false
             buffer-size = 65536
-            pre-serialization-transformations = deflate
+            post-serialization-transformations = deflate
             implicit-registration-logging = true
             mappings {
               "scala.collection.immutable.HashMap$HashTrieMap"    = 30
@@ -160,7 +160,7 @@ class AkkaKryoCompressionTests211 extends FlatSpec {
             idstrategy = "incremental"
             kryo-reference-map = false
             buffer-size = 65536
-            pre-serialization-transformations = lz4
+            post-serialization-transformations = lz4
             implicit-registration-logging = true
             mappings {
               "scala.collection.immutable.HashMap$HashTrieMap"    = 30
@@ -201,7 +201,7 @@ class AkkaKryoCompressionTests211 extends FlatSpec {
             idstrategy = "incremental"
             kryo-reference-map = false
             buffer-size = 65536
-            pre-serialization-transformations = aes
+            post-serialization-transformations = aes
             encryption {
               aes {
                 mode = "AES/CBC/PKCS5Padding"
@@ -248,7 +248,7 @@ class AkkaKryoCompressionTests211 extends FlatSpec {
             idstrategy = "incremental"
             kryo-reference-map = false
             buffer-size = 65536
-            pre-serialization-transformations = "lz4,aes"
+            post-serialization-transformations = "lz4,aes"
             encryption {
             aes {
               mode = "AES/CBC/PKCS5Padding"
@@ -295,7 +295,7 @@ class AkkaKryoCompressionTests211 extends FlatSpec {
             idstrategy = "incremental"
             kryo-reference-map = false
             buffer-size = 65536
-            pre-serialization-transformations = "deflate,aes"
+            post-serialization-transformations = "deflate,aes"
             encryption {
             aes {
               mode = "AES/CBC/PKCS5Padding"

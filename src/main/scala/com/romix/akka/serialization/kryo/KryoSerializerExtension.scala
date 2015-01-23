@@ -73,7 +73,7 @@ object KryoSerialization {
 
     val AESMode = Try(config.getString(s"akka.actor.kryo.encryption.aes.mode")).getOrElse("AES/CBC/PKCS5Padding")
 
-    val PreSerTransformations:  String = Try(config.getString("akka.actor.kryo.pre-serialization-transformations")).getOrElse("off")
+    val PostSerTransformations:  String = Try(config.getString("akka.actor.kryo.post-serialization-transformations")).getOrElse("off")
 
     val KryoCustomSerializerInit: String = Try(config.getString("akka.actor.kryo.kryo-custom-serializer-init")).getOrElse(null)
 
