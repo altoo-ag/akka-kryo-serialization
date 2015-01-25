@@ -63,10 +63,6 @@ object KryoSerialization {
 
     val UseManifests: Boolean = config.getBoolean("akka.actor.kryo.use-manifests")
 
-    val Compression: String = Try(config.getString("akka.actor.kryo.compression")).getOrElse("off")
-
-    val Encryption: String = Try(config.getString("akka.actor.kryo.encryption")).getOrElse("off")
-
     val AESKeyClass: String = Try(config.getString("akka.actor.kryo.encryption.aes.custom-key-class")).getOrElse(null)
 
     val AESKey = Try(config.getString(s"akka.actor.kryo.encryption.aes.key")).getOrElse("ThisIsASecretKey")
