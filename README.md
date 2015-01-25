@@ -141,24 +141,26 @@ The following options are available for configuring this serializer:
 			# of the top-level object into each message
 			use-manifests = false
 			
-			# Enable transparent compression of serialized messages
-			# accepted values are: off | lz4 | deflate
-			compression = off
-
-			# Enable encryption of serialized messages. If compression is also enabled, then messages
-			# are compressed and then encrypted during serialization and decrypted and then decompressed
-			# during deserialization
-			# accepted values are: off | aes
-			encryption = aes
-
-			# If set, uses this key for AES encryption/decryption. If not set, aes key defaults to 'ThisIsASecretKey'
-			aeskey = j68KkRjq21ykRGAQ
-
-			# If provided, Kryo uses the class specified by a fully qualified class name
-			# to get custom AES key. Such a class should define the method 'kryoAESKey'. 
-			# This key overrides 'aeskey'. If class doesn't contain 'kryoAESKey' method,
-			# default aes key is used.
-			custom-aeskey-class = "CustomAESKeyClass"
+			# The transformations that have be done while serialization
+			# Supported transformations: compression and encryption
+			# accepted values(comma separated if multiple): off | lz4 | deflate | aes
+			# Transformations occur in the order they are specified
+			post-serialization-transformations = "lz4,aes"
+			
+			# Settings for aes encryption, if included in transformations
+			# AES algo mode, key and custom key class can be specified
+			# AES algo mode defaults to 'AES/CBC/PKCS5Padding' and key to 'ThisIsASecretKey'
+			# If custom key class is provided, Kryo uses the class specified by a fully qualified class name
+           	# to get custom AES key. Such a class should define the method 'kryoAESKey'. 
+            # This key overrides 'key'. If class doesn't contain 'kryoAESKey' method,
+            # specified key is used. If this is not present, default key is used
+			encryption {
+				aes {
+                	mode = "AES/CBC/PKCS5Padding"
+                    key = j68KkRjq21ykRGAQ
+                    custom-key-class = "CustomAESKeyClass"
+                }
+            }
 
 			# Log implicitly registered classes. Useful, if you want to know all classes
 			# which are serialized. You can then use this information in the mappings and/or 
@@ -177,7 +179,7 @@ The following options are available for configuring this serializer:
 			# Define mappings from a fully qualified class name to a numeric id.  
 			# Smaller ids lead to smaller sizes of serialized representations.  
 			#  
-			# This section is mandatory for idstartegy=explciit  
+			# This section is mandatory for idstartegy=explicit
 			# This section is optional  for idstartegy=incremental  
 			# This section is ignored   for idstartegy=default  
 			#   
@@ -279,7 +281,7 @@ How to use a custom key for aes
 
 Sometimes you need to pass a custom aes key, depending on the context you are in, instead of having a static key. For example, you might have the key in a data store, or provided by some other application. In such instances, you might want to provide the key dynamically to kryo serializer.
 You can provide the following optional parameter in the config file:
-			`custom-aeskey-class = "CustomAESKeyClass"`
+			`custom-key-class = "CustomAESKeyClass"`
 
 Where `CustomAESKeyClass` is a fully qualified class name of your custom aes key provider class. Such a class can be just any class with a method called `kryoAESKey`, which has a string return type i.e.
 
