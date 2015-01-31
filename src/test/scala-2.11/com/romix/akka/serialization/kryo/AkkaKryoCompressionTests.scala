@@ -342,7 +342,7 @@ class AkkaKryoCompressionTests211 extends FlatSpec {
             idstrategy = "incremental"
             kryo-reference-map = false
             buffer-size = 65536
-            compression = off
+            post-serialization-transformations = off
             implicit-registration-logging = true
             mappings {
               "scala.collection.immutable.HashMap$HashTrieMap"    = 30
