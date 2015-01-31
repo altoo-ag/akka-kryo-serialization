@@ -16,11 +16,11 @@
 
 import sbt._
 import Keys._
-//import com.typesafe.sbt.osgi.SbtOsgi.{ OsgiKeys, osgiSettings, defaultOsgiSettings }
+import com.typesafe.sbt.osgi.SbtOsgi.{ OsgiKeys, osgiSettings, defaultOsgiSettings }
 
 object MinimalBuild extends Build {
 
-  lazy val buildVersion = "0.3.2"
+  lazy val buildVersion = "0.3.3"
 
   lazy val typesafe = "Typesafe Repository" at "http://repo.typesafe.com/typesafe/releases/"
   lazy val typesafeSnapshot = "Typesafe Snapshots Repository" at "http://repo.typesafe.com/typesafe/snapshots/"
@@ -33,12 +33,12 @@ object MinimalBuild extends Build {
     resolvers += typesafeSnapshot,
     resolvers += sonatypeSnapshot,
     // publishArtifact in packageDoc := false,
-    crossScalaVersions := Seq("2.10.4","2.11.2"),
-    scalaVersion := "2.11.2",
-    libraryDependencies += "com.typesafe.akka" %% "akka-remote" % "2.3.3",
-    libraryDependencies += "com.typesafe.akka" %% "akka-kernel" % "2.3.3",
-    libraryDependencies += "com.esotericsoftware.kryo" % "kryo" % "2.24.0",
-    libraryDependencies += "net.jpountz.lz4" % "lz4" % "1.2.0",
+    crossScalaVersions := Seq("2.10.4","2.11.5"),
+    scalaVersion := "2.11.5",
+    libraryDependencies += "com.typesafe.akka" %% "akka-remote" % "2.3.9",
+    libraryDependencies += "com.typesafe.akka" %% "akka-kernel" % "2.3.9",
+    libraryDependencies += "com.esotericsoftware" % "kryo" % "3.0.0",
+    libraryDependencies += "net.jpountz.lz4" % "lz4" % "1.3.0",
     libraryDependencies += "com.github.krasserm" %% "akka-persistence-testkit" % "0.3.4" % "test",
     libraryDependencies += "commons-io" % "commons-io" % "2.4" % "test",
     libraryDependencies += "com.github.michaelpisula" %% "akka-persistence-inmemory" % "0.2.1" % "test",
@@ -48,11 +48,11 @@ object MinimalBuild extends Build {
       CrossVersion.partialVersion(sv) match {
         case Some((2, scalaMajor)) if scalaMajor >= 11 =>
           Seq(
-            "org.scalatest"  % "scalatest_2.11" % "2.2.0" % "test"
+            "org.scalatest"  % "scalatest_2.11" % "2.2.1" % "test"
           )
         case Some((2, scalaMajor)) if scalaMajor >= 10 =>
           Seq(
-            "org.scalatest" % "scalatest_2.10" % "2.2.0" % "test"
+            "org.scalatest" % "scalatest_2.10" % "2.2.1" % "test"
           )
       }
     },
@@ -116,21 +116,21 @@ object MinimalBuild extends Build {
     </developer>
   </developers>
     ))
-    /*.settings(defaultOsgiSettings: _*)
+    .settings(defaultOsgiSettings: _*)
     .settings(
       OsgiKeys.privatePackage := Seq(
         "com.romix.akka.serialization.kryo",
         "com.romix.scala.serialization.kryo"),
       OsgiKeys.exportPackage := Seq(
-        "com.romix.akka.serialization.kryo;version=\"0.3.2\"",
-        "com.romix.scala.serialization.kryo;version=\"0.3.2\""),
+        "com.romix.akka.serialization.kryo;version=\"0.3.3\"",
+        "com.romix.scala.serialization.kryo;version=\"0.3.3\""),
       OsgiKeys.importPackage := Seq(
-        "com.esotericsoftware.*;version=\"[2.24.0,3.0.0)\"",
+        "com.esotericsoftware.*;version=\"[3.0.0,3.1.0)\"",
         "com.typesafe.config;version=\"[1.2.0,1.3.0)\"",
         "akka*;version=\"[2.3.0,3.4.0)\"",
         "scala*;version=\"[2.10.0,2.12)\"",
         "scala*;version=\"[2.10.0,2.12)\"",
         "net.jpountz.lz4;resolution:=optional"
         )
-    )*/
+    )
 }
