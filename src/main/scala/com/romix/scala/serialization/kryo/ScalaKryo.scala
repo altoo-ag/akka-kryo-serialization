@@ -29,6 +29,14 @@ class ScalaKryo(classResolver: ClassResolver, referenceResolver: ReferenceResolv
 
   lazy val objSer = new ObjectSerializer[AnyRef]
 
+  override def getDefaultSerializer(`type`: Class[_]): Serializer[_] = {
+    if(isSingleton(`type`)) {
+      objSer
+    } else {
+      super.getDefaultSerializer(`type`)
+    }
+  }
+
   override def newDefaultSerializer(klass: Class[_]): Serializer[_] = {
     if (isSingleton(klass)) {
       objSer
