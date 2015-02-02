@@ -18,49 +18,63 @@
 
 package com.romix.akka.serialization.kryo
 
-import akka.serialization._
-import akka.actor.ExtendedActorSystem
-import akka.actor.ActorRef
+import java.io.UnsupportedEncodingException
+import java.security.{NoSuchAlgorithmException, InvalidAlgorithmParameterException, InvalidKeyException, SecureRandom}
+import java.util.zip.{Deflater, Inflater}
+import javax.crypto.{NoSuchPaddingException, BadPaddingException, IllegalBlockSizeException, Cipher}
+import javax.crypto.spec.{SecretKeySpec, IvParameterSpec}
+
+import akka.actor.{ActorRef, ExtendedActorSystem}
 import akka.event.Logging
-import com.typesafe.config.ConfigFactory
-import scala.collection.JavaConversions._
+import akka.serialization._
 import com.esotericsoftware.kryo.Kryo
-import com.esotericsoftware.kryo.io.Input
-import com.esotericsoftware.kryo.io.Output
+import com.esotericsoftware.kryo.io.{Input, Output}
 import com.esotericsoftware.kryo.serializers.FieldSerializer
-import org.objenesis.strategy.StdInstantiatorStrategy
 import com.esotericsoftware.kryo.util._
-import com.romix.scala.serialization.kryo._
-import scala.util.{ Try, Success, Failure }
-import KryoSerialization._
-import com.esotericsoftware.minlog.{ Log => MiniLog }
-import com.romix.scala.serialization.kryo.ScalaKryo
+import com.esotericsoftware.minlog.{Log => MiniLog}
+import com.romix.scala.serialization.kryo.{ScalaKryo, _}
 import net.jpountz.lz4.LZ4Factory
-import java.util.zip.{ Deflater, Inflater }
+import org.objenesis.strategy.StdInstantiatorStrategy
+
+import scala.collection.JavaConversions._
 import scala.collection.mutable.ArrayBuilder
+import scala.util.{Failure, Success, Try}
 
-trait KryoCompressor {
-  def compress(inputBuff: Array[Byte]): Array[Byte]
-  def decompress(inputBuff: Array[Byte]): Array[Byte]
+trait Transformation {
+  def toBinary(inputBuff: Array[Byte]): Array[Byte]
+  def fromBinary(inputBuff: Array[Byte]): Array[Byte]
 }
 
-class NoKryoComressor extends KryoCompressor {
-  def compress(inputBuff: Array[Byte]) = inputBuff
-  def decompress(inputBuff: Array[Byte]) = inputBuff
+class NoKryoTransformer extends Transformation {
+  def toBinary(inputBuff: Array[Byte]) = inputBuff
+  def fromBinary(inputBuff: Array[Byte]) = inputBuff
 }
 
-class LZ4KryoComressor extends KryoCompressor {
+class KryoTransformer(transformations: List[Transformation]) {
+  val toPipeLine = transformations.map(x => x.toBinary _)
+  val fromPipeLine = transformations.map(x => x.fromBinary _).reverse
+
+  def toBinary(inputBuff: Array[Byte]): Array[Byte] = {
+    toPipeLine.reduceLeft(_ andThen _)(inputBuff)
+  }
+
+  def fromBinary(inputBuff: Array[Byte]) = {
+    fromPipeLine.reduceLeft(_ andThen _)(inputBuff)
+  }
+}
+
+class LZ4KryoCompressor extends Transformation {
 
   lazy val lz4factory = LZ4Factory.fastestInstance
 
-  def compress(inputBuff: Array[Byte]): Array[Byte] = {
+  def toBinary(inputBuff: Array[Byte]): Array[Byte] = {
     val inputSize = inputBuff.length
     val lz4 = lz4factory.fastCompressor
     val maxOutputSize = lz4.maxCompressedLength(inputSize);
     val outputBuff = new Array[Byte](maxOutputSize + 4)
     val outputSize = lz4.compress(inputBuff, 0, inputSize, outputBuff, 4, maxOutputSize)
 
-    // encode 32 bit lenght in the first bytes
+    // encode 32 bit length in the first bytes
     outputBuff(0) = (inputSize & 0xff).toByte
     outputBuff(1) = (inputSize >> 8 & 0xff).toByte
     outputBuff(2) = (inputSize >> 16 & 0xff).toByte
@@ -68,7 +82,7 @@ class LZ4KryoComressor extends KryoCompressor {
     outputBuff.take(outputSize + 4)
   }
 
-  def decompress(inputBuff: Array[Byte]): Array[Byte] = {
+  def fromBinary(inputBuff: Array[Byte]): Array[Byte] = {
     // the first 4 bytes are the original size
     val size: Int = (inputBuff(0).asInstanceOf[Int] & 0xff) |
       (inputBuff(1).asInstanceOf[Int] & 0xff) << 8 |
@@ -81,12 +95,12 @@ class LZ4KryoComressor extends KryoCompressor {
   }
 }
 
-class ZipKryoComressor extends KryoCompressor {
+class ZipKryoCompressor extends Transformation {
 
   lazy val deflater = new Deflater(Deflater.BEST_SPEED)
   lazy val inflater = new Inflater()
 
-  def compress(inputBuff: Array[Byte]): Array[Byte] = {
+  def toBinary(inputBuff: Array[Byte]): Array[Byte] = {
     val inputSize = inputBuff.length
     val outputBuff = new ArrayBuilder.ofByte
     outputBuff += (inputSize & 0xff).toByte
@@ -106,7 +120,7 @@ class ZipKryoComressor extends KryoCompressor {
     outputBuff.result
   }
 
-  def decompress(inputBuff: Array[Byte]): Array[Byte] = {
+  def fromBinary(inputBuff: Array[Byte]): Array[Byte] = {
     val size: Int = (inputBuff(0).asInstanceOf[Int] & 0xff) |
       (inputBuff(1).asInstanceOf[Int] & 0xff) << 8 |
       (inputBuff(2).asInstanceOf[Int] & 0xff) << 16 |
@@ -119,9 +133,44 @@ class ZipKryoComressor extends KryoCompressor {
   }
 }
 
+class KryoCryptographer(key: String, mode: String) extends Transformation {
+  lazy val sKeySpec = new SecretKeySpec(key.getBytes("UTF-8"), "AES")
+
+  var iv: Array[Byte] = Array.fill[Byte](16)(0)
+  lazy val random = new SecureRandom()
+  random.nextBytes(iv)
+  lazy val ivSpec = new IvParameterSpec(iv)
+
+  def encrypt(plainTextBytes: Array[Byte]): Array[Byte] = {
+    lazy val cipher = Cipher.getInstance(mode)
+    cipher.init(Cipher.ENCRYPT_MODE, sKeySpec, ivSpec)
+    cipher.doFinal(plainTextBytes)
+  }
+
+  def decrypt(encryptedBytes: Array[Byte]): Array[Byte] = {
+    lazy val cipher = Cipher.getInstance(mode)
+    try {
+      cipher.init(Cipher.DECRYPT_MODE, sKeySpec, ivSpec)
+      cipher.doFinal(encryptedBytes)
+    } catch {
+      case e @ (_: IllegalBlockSizeException | _: BadPaddingException | _: UnsupportedEncodingException |
+                _: InvalidKeyException | _: InvalidAlgorithmParameterException | _: NoSuchPaddingException |
+                _: NoSuchAlgorithmException) =>
+        throw new Exception(e.getMessage)
+    }
+  }
+
+  override def toBinary(inputBuff: Array[Byte]): Array[Byte]  = {
+    encrypt(inputBuff)
+  }
+  override def fromBinary(inputBuff: Array[Byte]): Array[Byte] = {
+    decrypt(inputBuff)
+  }
+}
+
 class KryoSerializer(val system: ExtendedActorSystem) extends Serializer {
 
-  import KryoSerialization._
+  import com.romix.akka.serialization.kryo.KryoSerialization._
   val log = Logging(system, getClass.getName)
 
   val settings = new Settings(system.settings.config)
@@ -203,13 +252,55 @@ class KryoSerializer(val system: ExtendedActorSystem) extends Serializer {
   locally {
     log.debug("Got customizer method: {}", customizerMethod)
   }
-  val compressor: KryoCompressor = settings.Compression match {
-    case "lz4" => new LZ4KryoComressor
-    case "deflate" => new ZipKryoComressor
-    case _ => new NoKryoComressor
-  }
+
+  val customAESKeyClassName = settings.AESKeyClass
   locally {
-    log.debug("Got compression: {}", settings.Compression)
+    log.debug("Got custom aes key class: {}", customAESKeyClassName)
+  }
+
+  val customAESKeyClass =
+    if (customAESKeyClassName == null) null else
+      system.dynamicAccess.getClassFor[AnyRef](customAESKeyClassName) match {
+        case Success(clazz) => Some(clazz)
+        case Failure(e) => {
+          log.error("Class could not be loaded {} ", customAESKeyClassName)
+          throw e
+        }
+      }
+  locally {
+    log.debug("Got custom key class: {}", customAESKeyClass)
+  }
+
+  val customAESKeyInstance = Try(customAESKeyClass.map(_.newInstance))
+  locally {
+    log.debug("Got custom aes key instance: {}", customAESKeyInstance)
+  }
+
+  val aesKeyMethod = Try(customAESKeyClass.map(_.getMethod("kryoAESKey")))
+  locally {
+    log.debug("Got custom aes key method: {}", customAESKeyInstance)
+  }
+
+  val aesKey = Try(aesKeyMethod.get.get.invoke(customAESKeyInstance.get.get).asInstanceOf[String])
+    .getOrElse(settings.AESKey)
+
+  val transform = (typ: String) => {
+    typ match {
+      case "lz4" => new LZ4KryoCompressor
+      case "deflate" => new ZipKryoCompressor
+      case "aes" => new KryoCryptographer(aesKey, settings.AESMode)
+      case "off" => new NoKryoTransformer
+      case x => throw new Exception(s"Could not recognise the transformer: [${x}]")
+    }
+  }
+
+  val postSerTransformations = {
+    settings.PostSerTransformations.split(",").toList.map(transform(_))
+  }
+
+  val kryoTransformer = new KryoTransformer(postSerTransformations)
+  locally {
+    log.debug("Got transformations: {}", settings.PostSerTransformations)
   }
 
   val serializer = try new KryoBasedSerializer(getKryo(idStrategy, serializerType),
@@ -239,12 +330,12 @@ class KryoSerializer(val system: ExtendedActorSystem) extends Serializer {
     val ser = getSerializer
     val bin = ser.toBinary(obj)
     releaseSerializer(ser)
-    compressor.compress(bin)
+    kryoTransformer.toBinary(bin)
   }
 
   def fromBinary(bytes: Array[Byte], clazz: Option[Class[_]]): AnyRef = {
     val ser = getSerializer
-    val obj = ser.fromBinary(compressor.decompress(bytes), clazz)
+    val obj = ser.fromBinary(kryoTransformer.fromBinary(bytes), clazz)
     releaseSerializer(ser)
     obj
   }
@@ -429,9 +520,8 @@ class KryoBasedSerializer(
 
 }
 
-import java.util.concurrent.ArrayBlockingQueue
+import java.util.concurrent.{ArrayBlockingQueue, TimeUnit}
 import java.util.concurrent.atomic.AtomicInteger
-import java.util.concurrent.TimeUnit
 
 // Support pooling of objects. Useful if you want to reduce
 // the GC overhead and memory pressure.

@@ -119,7 +119,7 @@ class AkkaKryoCompressionTests211 extends FlatSpec {
             idstrategy = "incremental"
             kryo-reference-map = false
             buffer-size = 65536
-            compression = deflate
+            post-serialization-transformations = deflate
             implicit-registration-logging = true
             mappings {
               "scala.collection.immutable.HashMap$HashTrieMap"    = 30
@@ -160,7 +160,7 @@ class AkkaKryoCompressionTests211 extends FlatSpec {
             idstrategy = "incremental"
             kryo-reference-map = false
             buffer-size = 65536
-            compression = lz4
+            post-serialization-transformations = lz4
             implicit-registration-logging = true
             mappings {
               "scala.collection.immutable.HashMap$HashTrieMap"    = 30
@@ -192,6 +192,147 @@ class AkkaKryoCompressionTests211 extends FlatSpec {
       }
   """)
 
+  testConfig("AES", """
+      akka {
+        extensions = ["com.romix.akka.serialization.kryo.KryoSerializationExtension$"]
+        actor {
+          kryo {
+            type = "nograph"
+            idstrategy = "incremental"
+            kryo-reference-map = false
+            buffer-size = 65536
+            post-serialization-transformations = aes
+            encryption {
+              aes {
+                mode = "AES/CBC/PKCS5Padding"
+                key = j68KkRjq21ykRGAQ
+                }
+              }
+            implicit-registration-logging = true
+            mappings {
+              "scala.collection.immutable.HashMap$HashTrieMap"    = 30
+              "[Lscala.collection.immutable.HashMap$HashTrieMap;" = 31
+              "scala.collection.mutable.AnyRefMap"                = 34
+              "[Lscala.collection.mutable.AnyRefMap;"             = 35
+              "scala.collection.mutable.LongMap"                  = 36
+              "[Lscala.collection.mutable.LongMap;"               = 37
+              "[J" = 50
+              "[D" = 51
+              "[Z" = 52
+              "[Ljava.lang.Object;" = 53
+              "[Ljava.lang.String;" = 54
+              "scala.math.Ordering$String$" = 100
+            }
+
+          }
+         serializers {
+            kryo = "com.romix.akka.serialization.kryo.KryoSerializer"
+          }
+
+          serialization-bindings {
+            "scala.collection.mutable.AnyRefMap" = kryo
+            "[Lscala.collection.mutable.AnyRefMap;" = kryo
+            "scala.collection.mutable.LongMap" = kryo
+            "[Lscala.collection.mutable.LongMap;" = kryo
+          }
+        }
+      }
+                    """)
+
+  testConfig("LZ4AES", """
+      akka {
+        extensions = ["com.romix.akka.serialization.kryo.KryoSerializationExtension$"]
+        actor {
+          kryo {
+            type = "nograph"
+            idstrategy = "incremental"
+            kryo-reference-map = false
+            buffer-size = 65536
+            post-serialization-transformations = "lz4,aes"
+            encryption {
+            aes {
+              mode = "AES/CBC/PKCS5Padding"
+              key = j68KkRjq21ykRGAQ
+                }
+              }
+            implicit-registration-logging = true
+            mappings {
+              "scala.collection.immutable.HashMap$HashTrieMap"    = 30
+              "[Lscala.collection.immutable.HashMap$HashTrieMap;" = 31
+              "scala.collection.mutable.AnyRefMap"                = 34
+              "[Lscala.collection.mutable.AnyRefMap;"             = 35
+              "scala.collection.mutable.LongMap"                  = 36
+              "[Lscala.collection.mutable.LongMap;"               = 37
+              "[J" = 50
+              "[D" = 51
+              "[Z" = 52
+              "[Ljava.lang.Object;" = 53
+              "[Ljava.lang.String;" = 54
+              "scala.math.Ordering$String$" = 100
+            }
+
+          }
+         serializers {
+            kryo = "com.romix.akka.serialization.kryo.KryoSerializer"
+          }
+
+          serialization-bindings {
+            "scala.collection.mutable.AnyRefMap" = kryo
+            "[Lscala.collection.mutable.AnyRefMap;" = kryo
+            "scala.collection.mutable.LongMap" = kryo
+            "[Lscala.collection.mutable.LongMap;" = kryo
+          }
+        }
+      }
+                    """)
+
+  testConfig("ZipAES", """
+      akka {
+        extensions = ["com.romix.akka.serialization.kryo.KryoSerializationExtension$"]
+        actor {
+          kryo {
+            type = "nograph"
+            idstrategy = "incremental"
+            kryo-reference-map = false
+            buffer-size = 65536
+            post-serialization-transformations = "deflate,aes"
+            encryption {
+            aes {
+              mode = "AES/CBC/PKCS5Padding"
+              key = j68KkRjq21ykRGAQ
+                }
+              }
+            implicit-registration-logging = true
+            mappings {
+              "scala.collection.immutable.HashMap$HashTrieMap"    = 30
+              "[Lscala.collection.immutable.HashMap$HashTrieMap;" = 31
+              "scala.collection.mutable.AnyRefMap"                = 34
+              "[Lscala.collection.mutable.AnyRefMap;"             = 35
+              "scala.collection.mutable.LongMap"                  = 36
+              "[Lscala.collection.mutable.LongMap;"               = 37
+              "[J" = 50
+              "[D" = 51
+              "[Z" = 52
+              "[Ljava.lang.Object;" = 53
+              "[Ljava.lang.String;" = 54
+              "scala.math.Ordering$String$" = 100
+            }
+
+          }
+         serializers {
+            kryo = "com.romix.akka.serialization.kryo.KryoSerializer"
+          }
+
+          serialization-bindings {
+            "scala.collection.mutable.AnyRefMap" = kryo
+            "[Lscala.collection.mutable.AnyRefMap;" = kryo
+            "scala.collection.mutable.LongMap" = kryo
+            "[Lscala.collection.mutable.LongMap;" = kryo
+          }
+        }
+      }
+                        """)
+
   testConfig("Off", """
       akka {
         extensions = ["com.romix.akka.serialization.kryo.KryoSerializationExtension$"]
@@ -201,7 +342,7 @@ class AkkaKryoCompressionTests211 extends FlatSpec {
             idstrategy = "incremental"
             kryo-reference-map = false
             buffer-size = 65536
-            compression = off
+            post-serialization-transformations = off
             implicit-registration-logging = true
             mappings {
               "scala.collection.immutable.HashMap$HashTrieMap"    = 30

@@ -39,6 +39,9 @@ object MinimalBuild extends Build {
     libraryDependencies += "com.typesafe.akka" %% "akka-kernel" % "2.3.9",
     libraryDependencies += "com.esotericsoftware" % "kryo" % "3.0.0",
     libraryDependencies += "net.jpountz.lz4" % "lz4" % "1.3.0",
+    libraryDependencies += "com.github.krasserm" %% "akka-persistence-testkit" % "0.3.4" % "test",
+    libraryDependencies += "commons-io" % "commons-io" % "2.4" % "test",
+    libraryDependencies += "com.github.michaelpisula" %% "akka-persistence-inmemory" % "0.2.1" % "test",
 
     libraryDependencies ++= {
       val sv = scalaVersion.value
@@ -74,6 +77,9 @@ object MinimalBuild extends Build {
       "-optimise",
       "-Xlog-reflective-calls"
     ),
+
+    //Enabling hardware AES support if available
+    javaOptions in run += "-XX:+UseAES -XX:+UseAESIntrinsics",
 
     publishTo := {
 	val nexus = "https://oss.sonatype.org/"
