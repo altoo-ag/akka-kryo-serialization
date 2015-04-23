@@ -23,7 +23,7 @@ How to use this library in your project
 To use this serializer, you need to do two things:
 *   Include a dependency on this library into your project:
 
-	`libraryDependencies += "com.github.romix.akka" % "akka-kryo-serialization" % "0.3.3"`
+	`libraryDependencies += "com.github.romix.akka" %% "akka-kryo-serialization" % "0.3.3"`
     
 *   Add some new elements to your Akka configuration file, e.g. `application.conf`
 
