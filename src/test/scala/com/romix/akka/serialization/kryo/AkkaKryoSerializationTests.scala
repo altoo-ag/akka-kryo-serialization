@@ -159,12 +159,12 @@ class AkkaKryoSerializationTests extends FlatSpec with Matchers {
   }
 
   it should "be selected for ActorRef" in {
-    val serializer = serialization.findSerializerFor(system.actorFor("akka://test-system/test-actor"))
+    val serializer = serialization.findSerializerFor(system.actorSelection("akka://test-system/test-actor"))
     serializer.getClass.equals(classOf[KryoSerializer]) should be(true)
   }
 
   it should "serialize and deserialize ActorRef successfully" in {
-    val actorRef = system.actorFor("akka://test-system/test-actor")
+    val actorRef = system.actorSelection("akka://test-system/test-actor")
 
     val serialized = serialization.serialize(actorRef)
     serialized.isSuccess should be(true)
