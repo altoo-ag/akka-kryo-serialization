@@ -41,7 +41,6 @@ object MinimalBuild extends Build {
     libraryDependencies += "net.jpountz.lz4" % "lz4" % "1.3.0",
     libraryDependencies += "com.github.krasserm" %% "akka-persistence-testkit" % "0.3.4" % "test",
     libraryDependencies += "commons-io" % "commons-io" % "2.4" % "test",
-    libraryDependencies += "com.github.michaelpisula" %% "akka-persistence-inmemory" % "0.2.1" % "test",
 
     libraryDependencies ++= {
       val sv = scalaVersion.value
