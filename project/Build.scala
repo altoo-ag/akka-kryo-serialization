@@ -26,7 +26,7 @@ object MinimalBuild extends Build {
   lazy val typesafeSnapshot = "Typesafe Snapshots Repository" at "http://repo.typesafe.com/typesafe/snapshots/"
   lazy val sonatypeSnapshot = "Sonatype Snapshots Repository" at "https://oss.sonatype.org/content/repositories/snapshots/"
 
-  lazy val root = Project(id = "akka-kryo-serialization", base = file("."), settings = Project.defaultSettings).settings(
+  lazy val root = Project(id = "akka-kryo-serialization", base = file("."), settings = Project.coreDefaultSettings).settings(
     version := buildVersion,
     organization := "com.github.romix.akka",
     resolvers += typesafe,
@@ -44,7 +44,7 @@ object MinimalBuild extends Build {
 
     parallelExecution in Test := false,
 
-    scalacOptions         := Seq(
+    scalacOptions := Seq(
       "-encoding", "utf8",
       "-feature",
       "-unchecked",
