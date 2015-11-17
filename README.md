@@ -10,13 +10,13 @@ of such Scala types like Option, Tuple, Enumeration and most of Scala's collecti
 Features
 --------
 
-*   It is more efficient than Java serialization - both in size and speed
-*   Does not require any additional build steps like compiling proto files, when using protobuf serialization
-*   Almost any Scala and Java class can be serialized using it without any additional configuration or code changes
-*   Efficient serialization of such Scala types like Option, Tuple, Enumeration, most of Scala's collection types
-*   Greatly improves performance of Akka's remoting
-*   Supports transparent AES encryption and different modes of compression
-*   Apache 2.0 license
+* It is more efficient than Java serialization - both in size and speed
+* Does not require any additional build steps like compiling proto files, when using protobuf serialization
+* Almost any Scala and Java class can be serialized using it without any additional configuration or code changes
+* Efficient serialization of such Scala types like Option, Tuple, Enumeration, most of Scala's collection types
+* Greatly improves performance of Akka's remoting
+* Supports transparent AES encryption and different modes of compression
+* Apache 2.0 license
 
 
 How to use this library in your project
@@ -30,15 +30,15 @@ We provide two versions of the libraray:
 
 To use this serializer, you need to do two things:
 
-*   Include a dependency on this library into your project:
+* Include a dependency on this library into your project:
 
     `libraryDependencies += "com.github.romix.akka" %% "akka-kryo-serialization" % "0.4.0"`
 
-    // or if you are building for Akka-2.3:
+  or if you are building for Akka-2.3:
 
     `libraryDependencies += "com.github.romix.akka" %% "akka-kryo-serialization" % "0.3.3"`
 
-*   Add some new elements to your Akka configuration file, e.g. `application.conf`
+* Add some new elements to your Akka configuration file, e.g. `application.conf`
 
 Which Maven repository contains this library?
 ---------------------------------------------
@@ -109,11 +109,11 @@ Configuration of akka-kryo-serialization
 
 The following options are available for configuring this serializer:
 
-*   You need to add a following line to the list of your Akka extensions:
+* You need to add a following line to the list of your Akka extensions:
 
     `extensions = ["com.romix.akka.serialization.kryo.KryoSerializationExtension$"]`
 
-*   You need to add a new `kryo` section to the akka.actor part of configuration
+* You need to add a new `kryo` section to the akka.actor part of configuration
 
     kryo  {
         # Possibles values for type are: graph or nograph
@@ -232,7 +232,7 @@ The following options are available for configuring this serializer:
     }
 
 
-*   You should declare in the Akka `serializers` section a new kind of serializer:
+* You should declare in the Akka `serializers` section a new kind of serializer:
 
     serializers {
         java = "akka.serialization.JavaSerializer"
@@ -240,7 +240,7 @@ The following options are available for configuring this serializer:
         kryo = "com.romix.akka.serialization.kryo.KryoSerializer"
     }
 
-*    As usual, you should declare in the Akka `serialization-bindings` section which
+* As usual, you should declare in the Akka `serialization-bindings` section which
 classes should use kryo serialization. One thing to keep in mind is that classes that
 you register in this section are supposed to be *TOP-LEVEL* classes that you wish to
 serialize. I.e. this is a class of object that you send over the wire. It should not
