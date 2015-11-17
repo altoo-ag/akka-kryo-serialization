@@ -20,7 +20,7 @@ import com.typesafe.sbt.osgi.SbtOsgi.{ OsgiKeys, osgiSettings, defaultOsgiSettin
 
 object MinimalBuild extends Build {
 
-  lazy val buildVersion = "0.3.4-SNAPSHOT"
+  lazy val buildVersion = "0.4.0"
 
   lazy val typesafe = "Typesafe Repository" at "http://repo.typesafe.com/typesafe/releases/"
   lazy val typesafeSnapshot = "Typesafe Snapshots Repository" at "http://repo.typesafe.com/typesafe/snapshots/"
@@ -34,35 +34,13 @@ object MinimalBuild extends Build {
     resolvers += sonatypeSnapshot,
     // publishArtifact in packageDoc := false,
     scalaVersion := "2.11.7",
-    crossScalaVersions := Seq("2.10.4", scalaVersion.value),
+    crossScalaVersions := Seq(scalaVersion.value),
     libraryDependencies += "com.typesafe.akka" %% "akka-remote" % "2.4.0",
-    libraryDependencies += "com.typesafe.akka" %% "akka-kernel" % "2.4.0",
-    libraryDependencies += "com.esotericsoftware" % "kryo" % "3.0.0",
+    libraryDependencies += "com.esotericsoftware" % "kryo" % "3.0.3",
     libraryDependencies += "net.jpountz.lz4" % "lz4" % "1.3.0",
     libraryDependencies += "com.github.krasserm" %% "akka-persistence-testkit" % "0.3.4" % "test",
     libraryDependencies += "commons-io" % "commons-io" % "2.4" % "test",
-
-    libraryDependencies ++= {
-      val sv = scalaVersion.value
-      CrossVersion.partialVersion(sv) match {
-        case Some((2, scalaMajor)) if scalaMajor >= 11 =>
-          Seq(
-            "org.scalatest"  % "scalatest_2.11" % "2.2.1" % "test"
-          )
-        case Some((2, scalaMajor)) if scalaMajor >= 10 =>
-          Seq(
-            "org.scalatest" % "scalatest_2.10" % "2.2.1" % "test"
-          )
-      }
-    },
-
-    // Conditional compilation depening on scala version
-    unmanagedSourceDirectories in Compile <++= (scalaBinaryVersion, baseDirectory) {
-      (sv, bd) => Seq(bd / "src" / "main" / ("scala-"+sv)) },
-
-    unmanagedSourceDirectories in Test <++= (scalaBinaryVersion, baseDirectory) {
-      (sv, bd) => Seq(bd / "src" / "test" / ("scala-"+sv)) },
-
+    libraryDependencies += "org.scalatest" %% "scalatest" % "2.2.4" % "test",
 
     parallelExecution in Test := false,
 
@@ -71,7 +49,6 @@ object MinimalBuild extends Build {
       "-feature",
       "-unchecked",
       "-deprecation",
-      "-target:jvm-1.7",
       "-language:existentials",
       "-optimise",
       "-Xlog-reflective-calls"
@@ -121,14 +98,14 @@ object MinimalBuild extends Build {
         "com.romix.akka.serialization.kryo",
         "com.romix.scala.serialization.kryo"),
       OsgiKeys.exportPackage := Seq(
-        "com.romix.akka.serialization.kryo;version=\"0.3.3\"",
-        "com.romix.scala.serialization.kryo;version=\"0.3.3\""),
+        "com.romix.akka.serialization.kryo;version=\"0.4.0\"",
+        "com.romix.scala.serialization.kryo;version=\"0.4.0\""),
       OsgiKeys.importPackage := Seq(
         "com.esotericsoftware.*;version=\"[3.0.0,3.1.0)\"",
         "com.typesafe.config;version=\"[1.2.0,1.3.0)\"",
-        "akka*;version=\"[2.3.0,3.4.0)\"",
-        "scala*;version=\"[2.10.0,2.12)\"",
-        "scala*;version=\"[2.10.0,2.12)\"",
+        "akka*;version=\"[2.4.0,3.4.0)\"",
+        "scala*;version=\"[2.11.0,2.12)\"",
+        "scala*;version=\"[2.11.0,2.12)\"",
         "net.jpountz.lz4;resolution:=optional"
         )
     )
