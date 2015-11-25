@@ -26,7 +26,8 @@ object MinimalBuild extends Build {
   lazy val typesafeSnapshot = "Typesafe Snapshots Repository" at "http://repo.typesafe.com/typesafe/snapshots/"
   lazy val sonatypeSnapshot = "Sonatype Snapshots Repository" at "https://oss.sonatype.org/content/repositories/snapshots/"
 
-  lazy val root = Project(id = "akka-kryo-serialization", base = file("."), settings = Project.coreDefaultSettings).settings(
+  lazy val root = Project(id = "akka-kryo-serialization", base = file(".")).settings(
+
     version := buildVersion,
     organization := "com.github.romix.akka",
     resolvers += typesafe,
@@ -38,9 +39,10 @@ object MinimalBuild extends Build {
     libraryDependencies += "com.typesafe.akka" %% "akka-remote" % "2.4.0",
     libraryDependencies += "com.esotericsoftware" % "kryo" % "3.0.3",
     libraryDependencies += "net.jpountz.lz4" % "lz4" % "1.3.0",
-    libraryDependencies += "com.github.krasserm" %% "akka-persistence-testkit" % "0.3.4" % "test",
     libraryDependencies += "commons-io" % "commons-io" % "2.4" % "test",
     libraryDependencies += "org.scalatest" %% "scalatest" % "2.2.4" % "test",
+    libraryDependencies += "com.typesafe.akka" %% "akka-persistence" % "2.4.0" % "test",
+    libraryDependencies += "com.typesafe.akka" %% "akka-testkit" % "2.4.0" % "test",
 
     parallelExecution in Test := false,
 
