@@ -152,7 +152,8 @@ object TestConfig {
     }
 
     persistence {
-      journal.plugin = "in-memory-journal"
+      journal.plugin = "akka.persistence.journal.inmem"
+      snapshot-store.plugin = "akka.persistence.snapshot-store.local"
       snapshot-store.local.dir = "target/test-snapshots"
     }
   }

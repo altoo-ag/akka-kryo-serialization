@@ -26,6 +26,10 @@ import scala.collection.immutable.TreeMap
 import scala.collection.immutable.HashMap
 import com.esotericsoftware.minlog.Log
 
+import scala.concurrent.duration._
+import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.Future
+
 class AkkaKryoSerializationTests extends FlatSpec with Matchers {
 
   Log.ERROR()
@@ -159,20 +163,27 @@ class AkkaKryoSerializationTests extends FlatSpec with Matchers {
   }
 
   it should "be selected for ActorRef" in {
-    val serializer = serialization.findSerializerFor(system.actorFor("akka://test-system/test-actor"))
-    serializer.getClass.equals(classOf[KryoSerializer]) should be(true)
+    val selection = system.actorSelection("akka://test-system/test-actor")
+    val actorRefFuture: Future[ActorRef] = selection.resolveOne(5.seconds)
+    // val actorRefFuture = Await.ready(f, 5.seconds)
+    actorRefFuture .map { actorRef =>
+      val serializer = serialization.findSerializerFor(actorRef)
+      serializer.getClass.equals(classOf[KryoSerializer]) should be(true)
+    }
   }
 
   it should "serialize and deserialize ActorRef successfully" in {
-    val actorRef = system.actorFor("akka://test-system/test-actor")
+    val selection = system.actorSelection("akka://test-system/test-actor")
+    val actorRefFuture: Future[ActorRef] = selection.resolveOne(5.seconds)
+    actorRefFuture .map { actorRef =>
+      val serialized = serialization.serialize(actorRef)
+      serialized.isSuccess should be(true)
 
-    val serialized = serialization.serialize(actorRef)
-    serialized.isSuccess should be(true)
+      val deserialized = serialization.deserialize(serialized.get, classOf[ActorRef])
+      deserialized.isSuccess should be(true)
 
-    val deserialized = serialization.deserialize(serialized.get, classOf[ActorRef])
-    deserialized.isSuccess should be(true)
-
-    deserialized.get.equals(actorRef) should be(true)
+      deserialized.get.equals(actorRef) should be(true)
+    }
   }
 
   def serializeDeserialize(serialization: Serialization, obj: AnyRef): Int = {

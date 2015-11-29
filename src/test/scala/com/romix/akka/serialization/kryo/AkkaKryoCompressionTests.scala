@@ -7,6 +7,8 @@ import akka.serialization._
 import com.typesafe.config.ConfigFactory
 import scala.collection.immutable.HashMap
 import scala.collection.immutable.TreeMap
+import scala.collection.mutable.AnyRefMap
+import scala.collection.mutable.LongMap
 
 class AkkaKryoCompressionTests extends FlatSpec {
   val defaultConfig = ConfigFactory.parseString("""
@@ -44,6 +46,12 @@ class AkkaKryoCompressionTests extends FlatSpec {
               "scala.collection.immutable.BitSet$BitSet2"         = 50
               "scala.collection.immutable.BitSet$BitSetN"         = 51
               "scala.collection.immutable.BitSet$BitSet1"         = 52
+              "scala.collection.mutable.AnyRefMap"                = 53
+              "[Lscala.collection.mutable.AnyRefMap;"             = 54
+              "scala.collection.mutable.LongMap"                  = 55
+              "[Lscala.collection.mutable.LongMap;"               = 56
+              "scala.collection.immutable.LongMap"                = 57
+              "[Lscala.collection.immutable.LongMap;"             = 58
 
               "[J" = 150
               "[D" = 151
@@ -69,6 +77,15 @@ class AkkaKryoCompressionTests extends FlatSpec {
 
             "scala.collection.immutable.HashMap" = kryo
             "[Lscala.collection.immutable.HashMap;" = kryo
+
+            "scala.collection.mutable.AnyRefMap" = kryo
+            "[Lscala.collection.mutable.AnyRefMap;" = kryo
+
+            "scala.collection.immutable.LongMap" = kryo
+            "[Lscala.collection.immutable.LongMap;" = kryo
+
+            "scala.collection.mutable.LongMap" = kryo
+            "[Lscala.collection.mutable.LongMap;" = kryo
 
             "scala.collection.immutable.HashSet" = kryo
             "[Lscala.collection.immutable.HashSet;" = kryo
@@ -141,6 +158,23 @@ class AkkaKryoCompressionTests extends FlatSpec {
       assert(serialized.isSuccess)
 
       val deserialized = serialization.deserialize(serialized.get, classOf[HashMap[String, Any]])
+      assert(deserialized.isSuccess)
+      assert(deserialized.get == tm)
+    }
+
+    it should "serialize and deserialize mutable AnyRefMap[String,Any] successfully" in {
+      val r = new scala.util.Random(0L)
+      val tm = AnyRefMap[String, Any](
+        "foo" -> r.nextDouble,
+        "bar" -> "foo,bar,baz",
+        "baz" -> 124L,
+        "hash" -> HashMap[Int, Int](r.nextInt -> r.nextInt, 5 -> 500, 10 -> r.nextInt))
+
+      assert(serialization.findSerializerFor(tm).getClass == classOf[KryoSerializer])
+      val serialized = serialization.serialize(tm)
+      assert(serialized.isSuccess)
+
+      val deserialized = serialization.deserialize(serialized.get, classOf[AnyRefMap[String, Any]])
       assert(deserialized.isSuccess)
       assert(deserialized.get == tm)
     }
@@ -278,6 +312,70 @@ class AkkaKryoCompressionTests extends FlatSpec {
       timeIt("Immutable TreeMap Deserialize: ", iterations)(serialization.deserialize(bytes, classOf[Array[TreeMap[String, Any]]]))
     }
 
+    it should "serialize and deserialize Array[immutable.LongMap[Any]] timings (with compression)" in {
+      val iterations = 500
+      val listLength = 500
+
+      val r = new scala.util.Random(0L)
+      val atm = (List.fill(listLength) {
+        LongMap[Any](
+          1L -> r.nextDouble,
+          2L -> "foo,bar,baz",
+          3L -> 124L,
+          4L -> HashMap[Int, Int](r.nextInt -> r.nextInt, 5 -> 500, 10 -> r.nextInt))
+      }).toArray
+
+      assert(serialization.findSerializerFor(atm).getClass === classOf[KryoSerializer])
+
+      val serialized = serialization.serialize(atm)
+      assert(serialized.isSuccess)
+
+      val deserialized = serialization.deserialize(serialized.get, classOf[Array[collection.immutable.LongMap[Any]]])
+      assert(deserialized.isSuccess)
+
+      val bytes = serialized.get
+      println(s"Serialized to ${bytes.length} bytes")
+
+      timeIt("Immutable LongMap Serialize:   ", iterations) { serialization.serialize(atm) }
+      timeIt("Immutable LongMap Serialize:   ", iterations) { serialization.serialize(atm) }
+      timeIt("Immutable LongMap Serialize:   ", iterations) { serialization.serialize(atm) }
+      timeIt("Immutable LongMap Deserialize: ", iterations)(serialization.deserialize(bytes, classOf[Array[collection.immutable.LongMap[Any]]]))
+      timeIt("Immutable LongMap Deserialize: ", iterations)(serialization.deserialize(bytes, classOf[Array[collection.immutable.LongMap[Any]]]))
+      timeIt("Immutable LongMap Deserialize: ", iterations)(serialization.deserialize(bytes, classOf[Array[collection.immutable.LongMap[Any]]]))
+    }
+
+    it should "serialize and deserialize Array[AnyRefMap[String,Any]] timings (with compression)" in {
+      val iterations = 500
+      val listLength = 500
+
+      val r = new scala.util.Random(0L)
+      val atm = (List.fill(listLength) {
+        AnyRefMap[String, Any](
+          "foo" -> r.nextDouble,
+          "bar" -> "foo,bar,baz",
+          "baz" -> 124L,
+          "hash" -> HashMap[Int, Int](r.nextInt -> r.nextInt, 5 -> 500, 10 -> r.nextInt))
+      }).toArray
+
+      assert(serialization.findSerializerFor(atm).getClass === classOf[KryoSerializer])
+
+      val serialized = serialization.serialize(atm)
+      assert(serialized.isSuccess)
+
+      val deserialized = serialization.deserialize(serialized.get, classOf[Array[AnyRefMap[String, Any]]])
+      assert(deserialized.isSuccess)
+
+      val bytes = serialized.get
+      println(s"Serialized to ${bytes.length} bytes")
+
+      timeIt("Mutable AnyRefMap Serialize:   ", iterations) { serialization.serialize(atm) }
+      timeIt("Mutable AnyRefMap Serialize:   ", iterations) { serialization.serialize(atm) }
+      timeIt("Mutable AnyRefMap Serialize:   ", iterations) { serialization.serialize(atm) }
+      timeIt("Mutable AnyRefMap Deserialize: ", iterations)(serialization.deserialize(bytes, classOf[Array[AnyRefMap[String, Any]]]))
+      timeIt("Mutable AnyRefMap Deserialize: ", iterations)(serialization.deserialize(bytes, classOf[Array[AnyRefMap[String, Any]]]))
+      timeIt("Mutable AnyRefMap Deserialize: ", iterations)(serialization.deserialize(bytes, classOf[Array[AnyRefMap[String, Any]]]))
+    }
+
     it should "serialize and deserialize Array[mutable.HashMap[String,Any]] timings (with compression)" in {
       val r = new scala.util.Random(0L)
       val atm = (List.fill(listLength) {
@@ -306,6 +404,38 @@ class AkkaKryoCompressionTests extends FlatSpec {
       timeIt("Mutable HashMap Deserialize: ", iterations)(serialization.deserialize(bytes, classOf[Array[scala.collection.mutable.HashMap[String, Any]]]))
       timeIt("Mutable HashMap Deserialize: ", iterations)(serialization.deserialize(bytes, classOf[Array[scala.collection.mutable.HashMap[String, Any]]]))
       timeIt("Mutable HashMap Deserialize: ", iterations)(serialization.deserialize(bytes, classOf[Array[scala.collection.mutable.HashMap[String, Any]]]))
+    }
+
+    it should "serialize and deserialize Array[mutable.LongMap[Any]] timings (with compression)" in {
+      val iterations = 500
+      val listLength = 500
+
+      val r = new scala.util.Random(0L)
+      val atm = (List.fill(listLength) {
+        LongMap[Any](
+          1L -> r.nextDouble,
+          2L -> "foo,bar,baz",
+          3L -> 124L,
+          4L -> HashMap[Int, Int](r.nextInt -> r.nextInt, 5 -> 500, 10 -> r.nextInt))
+      }).toArray
+
+      assert(serialization.findSerializerFor(atm).getClass === classOf[KryoSerializer])
+
+      val serialized = serialization.serialize(atm)
+      assert(serialized.isSuccess)
+
+      val deserialized = serialization.deserialize(serialized.get, classOf[Array[LongMap[Any]]])
+      assert(deserialized.isSuccess)
+
+      val bytes = serialized.get
+      println(s"Serialized to ${bytes.length} bytes")
+
+      timeIt("Mutable LongMap Serialize:   ", iterations) { serialization.serialize(atm) }
+      timeIt("Mutable LongMap Serialize:   ", iterations) { serialization.serialize(atm) }
+      timeIt("Mutable LongMap Serialize:   ", iterations) { serialization.serialize(atm) }
+      timeIt("Mutable LongMap Deserialize: ", iterations)(serialization.deserialize(bytes, classOf[Array[LongMap[Any]]]))
+      timeIt("Mutable LongMap Deserialize: ", iterations)(serialization.deserialize(bytes, classOf[Array[LongMap[Any]]]))
+      timeIt("Mutable LongMap Deserialize: ", iterations)(serialization.deserialize(bytes, classOf[Array[LongMap[Any]]]))
     }
 
     // Timing Sets
