@@ -143,8 +143,7 @@ The following options are available for configuring this serializer:
             # and "classes" sections. If class is not pre-registered, it will be
             # registered dynamically by picking a next available id To guarantee
             # that both sender and receiver use the same numeric ids for the same
-            # classes it is advised to pre-register them using at least the
-            "classes" section.
+            # classes it is advised to pre-register them using at least the "classes" section.
 
             idstrategy = "incremental"
 
