@@ -20,15 +20,12 @@ import com.typesafe.sbt.osgi._
 
 object Build extends sbt.Build {
 
-  lazy val buildVersion = "0.4.0"
-
   lazy val typesafe = "Typesafe Repository" at "http://repo.typesafe.com/typesafe/releases/"
   lazy val typesafeSnapshot = "Typesafe Snapshots Repository" at "http://repo.typesafe.com/typesafe/snapshots/"
   lazy val sonatypeSnapshot = "Sonatype Snapshots Repository" at "https://oss.sonatype.org/content/repositories/snapshots/"
 
   lazy val root = Project(id = "akka-kryo-serialization", base = file(".")).settings(
 
-    version := buildVersion,
     organization := "com.github.romix.akka",
     resolvers += typesafe,
     resolvers += typesafeSnapshot,
@@ -61,7 +58,7 @@ object Build extends sbt.Build {
 
     publishTo := {
       val nexus = "https://oss.sonatype.org/"
-      if (buildVersion.trim.endsWith("SNAPSHOT"))
+      if (version.value.trim.endsWith("SNAPSHOT"))
         Some("snapshots" at nexus + "content/repositories/snapshots")
       else
         Some("releases" at nexus + "service/local/staging/deploy/maven2")
