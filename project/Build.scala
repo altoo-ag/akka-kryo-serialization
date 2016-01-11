@@ -16,11 +16,9 @@
 
 import sbt._
 import Keys._
-import com.typesafe.sbt.osgi.SbtOsgi.{ OsgiKeys, osgiSettings, defaultOsgiSettings }
+import com.typesafe.sbt.osgi._
 
-object MinimalBuild extends Build {
-
-  lazy val buildVersion = "0.4.0"
+object Build extends sbt.Build {
 
   lazy val typesafe = "Typesafe Repository" at "http://repo.typesafe.com/typesafe/releases/"
   lazy val typesafeSnapshot = "Typesafe Snapshots Repository" at "http://repo.typesafe.com/typesafe/snapshots/"
@@ -28,7 +26,6 @@ object MinimalBuild extends Build {
 
   lazy val root = Project(id = "akka-kryo-serialization", base = file(".")).settings(
 
-    version := buildVersion,
     organization := "com.github.romix.akka",
     resolvers += typesafe,
     resolvers += typesafeSnapshot,
@@ -60,12 +57,12 @@ object MinimalBuild extends Build {
     javaOptions in run += "-XX:+UseAES -XX:+UseAESIntrinsics",
 
     publishTo := {
-	val nexus = "https://oss.sonatype.org/"
-	if (buildVersion.trim.endsWith("SNAPSHOT"))
-	    Some("snapshots" at nexus + "content/repositories/snapshots")
-	else
-	    Some("releases" at nexus + "service/local/staging/deploy/maven2")
-	},
+      val nexus = "https://oss.sonatype.org/"
+      if (version.value.trim.endsWith("SNAPSHOT"))
+        Some("snapshots" at nexus + "content/repositories/snapshots")
+      else
+        Some("releases" at nexus + "service/local/staging/deploy/maven2")
+    },
 
     publishMavenStyle := true,
 
@@ -73,42 +70,28 @@ object MinimalBuild extends Build {
 
     pomIncludeRepository := { _ => false },
 
-    pomExtra := (
-  <url>https://github.com/romix/akka-kryo-serialization</url>
-  <licenses>
-    <license>
-      <name>The Apache Software License, Version 2.0</name>
-      <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
-      <distribution>repo</distribution>
-    </license>
-  </licenses>
-  <scm>
-    <url>git@github.com:romix/akka-kryo-serialization.git</url>
-    <connection>scm:git:git@github.com:romix/akka-kryo-serialization.git</connection>
-  </scm>
-  <developers>
-    <developer>
-      <id>romix</id>
-      <name>Roman Levenstein</name>
-      <email>romixlev@gmail.com</email>
-    </developer>
-  </developers>
-    ))
-    .settings(defaultOsgiSettings: _*)
+    pomExtra := <url>https://github.com/romix/akka-kryo-serialization</url>
+      <licenses>
+        <license>
+          <name>The Apache Software License, Version 2.0</name>
+          <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+          <distribution>repo</distribution>
+        </license>
+      </licenses>
+      <scm>
+        <url>git@github.com:romix/akka-kryo-serialization.git</url>
+        <connection>scm:git:git@github.com:romix/akka-kryo-serialization.git</connection>
+      </scm>
+      <developers>
+        <developer>
+          <id>romix</id>
+          <name>Roman Levenstein</name>
+          <email>romixlev@gmail.com</email>
+        </developer>
+      </developers>)
+    .settings(SbtOsgi.osgiSettings: _*)
     .settings(
-      OsgiKeys.privatePackage := Seq(
-        "com.romix.akka.serialization.kryo",
-        "com.romix.scala.serialization.kryo"),
-      OsgiKeys.exportPackage := Seq(
-        "com.romix.akka.serialization.kryo;version=\"0.4.0\"",
-        "com.romix.scala.serialization.kryo;version=\"0.4.0\""),
-      OsgiKeys.importPackage := Seq(
-        "com.esotericsoftware.*;version=\"[3.0.0,3.1.0)\"",
-        "com.typesafe.config;version=\"[1.2.0,1.3.0)\"",
-        "akka*;version=\"[2.4.0,3.4.0)\"",
-        "scala*;version=\"[2.11.0,2.12)\"",
-        "scala*;version=\"[2.11.0,2.12)\"",
-        "net.jpountz.lz4;resolution:=optional"
-        )
+      OsgiKeys.privatePackage := Nil,
+      OsgiKeys.exportPackage := Seq("com.romix.*")
     )
 }
