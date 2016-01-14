@@ -36,8 +36,7 @@ class ByteStringTest extends WordSpecLike with Matchers {
   val serialization = SerializationExtension(system)
 
   "ScalaKryo" should {
-    "handle Vectors" in {
-      val obj = Vector("foo")
+    def test(obj: AnyRef): Unit = {
       val serializer = serialization.findSerializerFor(obj)
       Console.println("Object of class " + obj.getClass.getName + " got serializer of class " + serializer.getClass.getName)
       serializer.getClass.equals(classOf[KryoSerializer]) should be(true)
@@ -51,20 +50,11 @@ class ByteStringTest extends WordSpecLike with Matchers {
       deserialized.get.equals(obj) should be(true)
       deserialized.get.getClass.equals(obj.getClass) should be(true)
     }
+    "handle Vectors" in {
+      test(Vector("foo"))
+    }
     "handle compact ByteStrings" in {
-      val obj = ByteString("foo").compact
-      val serializer = serialization.findSerializerFor(obj)
-      Console.println("Object of class " + obj.getClass.getName + " got serializer of class " + serializer.getClass.getName)
-      serializer.getClass.equals(classOf[KryoSerializer]) should be(true)
-      // Check serialization/deserialization
-      val serialized = serialization.serialize(obj)
-      serialized.isSuccess should be(true)
-
-      val deserialized = serialization.deserialize(serialized.get, obj.getClass)
-      deserialized.isSuccess should be(true)
-
-      deserialized.get.equals(obj) should be(true)
-      deserialized.get.getClass.equals(obj.getClass) should be(true)
+      test(ByteString("foo").compact)
     }
   }
 }
