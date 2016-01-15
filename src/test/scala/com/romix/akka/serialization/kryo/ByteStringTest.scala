@@ -36,15 +36,16 @@ class ByteStringTest extends WordSpecLike with Matchers {
   "ScalaKryo" should {
     def test(obj: AnyRef): Unit = {
       val serializer = serialization.findSerializerFor(obj)
-      Console.println("Object of class " + obj.getClass.getName + " got serializer of class " + serializer.getClass.getName)
-      serializer.getClass.equals(classOf[KryoSerializer]) should be(true)
+      (serializer.getClass == classOf[KryoSerializer]) should be(true)
       // Check serialization/deserialization
       val serialized = serialization.serialize(obj)
       serialized.isSuccess should be(true)
 
       val deserialized = serialization.deserialize(serialized.get, obj.getClass)
       deserialized.isSuccess should be(true)
-      deserialized.get.equals(obj) should be(true)
+      (deserialized.get == obj) should be(true)
+      deserialized.get.getClass.isAssignableFrom(obj.getClass) should be(true)
+      obj.getClass.isAssignableFrom(deserialized.get.getClass) should be(true)
     }
 
     "handle Vectors" in {
