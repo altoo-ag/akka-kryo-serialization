@@ -62,6 +62,7 @@ class AkkaKryoCompressionTests extends FlatSpec {
             }
           }
          serializers {
+            java = "akka.serialization.JavaSerializer"
             kryo = "com.romix.akka.serialization.kryo.KryoSerializer"
           }
 
@@ -134,7 +135,10 @@ class AkkaKryoCompressionTests extends FlatSpec {
         "boom" -> true,
         "hash" -> HashMap[Int, Int](1 -> 200, 2 -> 300, 500 -> 3))
 
-      assert(serialization.findSerializerFor(tm).getClass == classOf[KryoSerializer])
+      if (systemName != "Java")
+        assert(serialization.findSerializerFor(tm).getClass == classOf[KryoSerializer])
+      else
+        assert(serialization.findSerializerFor(tm).getClass != classOf[KryoSerializer])
 
       val serialized = serialization.serialize(tm)
       assert(serialized.isSuccess)
@@ -152,7 +156,10 @@ class AkkaKryoCompressionTests extends FlatSpec {
         "boom" -> true,
         "hash" -> HashMap[Int, Int](1 -> 200, 2 -> 300, 500 -> 3))
 
-      assert(serialization.findSerializerFor(tm).getClass == classOf[KryoSerializer])
+      if (systemName != "Java")
+        assert(serialization.findSerializerFor(tm).getClass == classOf[KryoSerializer])
+      else
+        assert(serialization.findSerializerFor(tm).getClass != classOf[KryoSerializer])
 
       val serialized = serialization.serialize(tm)
       assert(serialized.isSuccess)
@@ -163,20 +170,23 @@ class AkkaKryoCompressionTests extends FlatSpec {
     }
 
     it should "serialize and deserialize mutable AnyRefMap[String,Any] successfully" in {
-      val r = new scala.util.Random(0L)
-      val tm = AnyRefMap[String, Any](
-        "foo" -> r.nextDouble,
-        "bar" -> "foo,bar,baz",
-        "baz" -> 124L,
-        "hash" -> HashMap[Int, Int](r.nextInt -> r.nextInt, 5 -> 500, 10 -> r.nextInt))
+      if (systemName != "Java") {
+        val r = new scala.util.Random(0L)
+        val tm = AnyRefMap[String, Any](
+          "foo" -> r.nextDouble,
+          "bar" -> "foo,bar,baz",
+          "baz" -> 124L,
+          "hash" -> HashMap[Int, Int](r.nextInt -> r.nextInt, 5 -> 500, 10 -> r.nextInt))
 
-      assert(serialization.findSerializerFor(tm).getClass == classOf[KryoSerializer])
-      val serialized = serialization.serialize(tm)
-      assert(serialized.isSuccess)
+        assert(serialization.findSerializerFor(tm).getClass == classOf[KryoSerializer])
 
-      val deserialized = serialization.deserialize(serialized.get, classOf[AnyRefMap[String, Any]])
-      assert(deserialized.isSuccess)
-      assert(deserialized.get == tm)
+        val serialized = serialization.serialize(tm)
+        assert(serialized.isSuccess)
+
+        val deserialized = serialization.deserialize(serialized.get, classOf[AnyRefMap[String, Any]])
+        assert(deserialized.isSuccess)
+        assert(deserialized.get == tm)
+      }
     }
 
     it should "serialize and deserialize mutable HashMap[String,Any] successfully" in {
@@ -187,7 +197,10 @@ class AkkaKryoCompressionTests extends FlatSpec {
         "boom" -> true,
         "hash" -> HashMap[Int, Int](1 -> 200, 2 -> 300, 500 -> 3))
 
-      assert(serialization.findSerializerFor(tm).getClass == classOf[KryoSerializer])
+      if (systemName != "Java")
+        assert(serialization.findSerializerFor(tm).getClass == classOf[KryoSerializer])
+      else
+        assert(serialization.findSerializerFor(tm).getClass != classOf[KryoSerializer])
 
       val serialized = serialization.serialize(tm)
       assert(serialized.isSuccess)
@@ -201,7 +214,10 @@ class AkkaKryoCompressionTests extends FlatSpec {
     it should "serialize and deserialize immutable HashSet[String] successfully" in {
       val tm = scala.collection.immutable.HashSet[String]("foo", "bar", "baz", "boom")
 
-      assert(serialization.findSerializerFor(tm).getClass == classOf[KryoSerializer])
+      if (systemName != "Java")
+        assert(serialization.findSerializerFor(tm).getClass == classOf[KryoSerializer])
+      else
+        assert(serialization.findSerializerFor(tm).getClass != classOf[KryoSerializer])
 
       val serialized = serialization.serialize(tm)
       assert(serialized.isSuccess)
@@ -214,7 +230,10 @@ class AkkaKryoCompressionTests extends FlatSpec {
     it should "serialize and deserialize immutable TreeSet[String] successfully" in {
       val tm = scala.collection.immutable.TreeSet[String]("foo", "bar", "baz", "boom")
 
-      assert(serialization.findSerializerFor(tm).getClass == classOf[KryoSerializer])
+      if (systemName != "Java")
+        assert(serialization.findSerializerFor(tm).getClass == classOf[KryoSerializer])
+      else
+        assert(serialization.findSerializerFor(tm).getClass != classOf[KryoSerializer])
 
       val serialized = serialization.serialize(tm)
       assert(serialized.isSuccess)
@@ -227,7 +246,10 @@ class AkkaKryoCompressionTests extends FlatSpec {
     it should "serialize and deserialize mutable HashSet[String] successfully" in {
       val tm = scala.collection.mutable.HashSet[String]("foo", "bar", "baz", "boom")
 
-      assert(serialization.findSerializerFor(tm).getClass == classOf[KryoSerializer])
+      if (systemName != "Java")
+        assert(serialization.findSerializerFor(tm).getClass == classOf[KryoSerializer])
+      else
+        assert(serialization.findSerializerFor(tm).getClass != classOf[KryoSerializer])
 
       val serialized = serialization.serialize(tm)
       assert(serialized.isSuccess)
@@ -240,7 +262,10 @@ class AkkaKryoCompressionTests extends FlatSpec {
     it should "serialize and deserialize mutable TreeSet[String] successfully" in {
       val tm = scala.collection.mutable.TreeSet[String]("foo", "bar", "baz", "boom")
 
-      assert(serialization.findSerializerFor(tm).getClass == classOf[KryoSerializer])
+      if (systemName != "Java")
+        assert(serialization.findSerializerFor(tm).getClass == classOf[KryoSerializer])
+      else
+        assert(serialization.findSerializerFor(tm).getClass != classOf[KryoSerializer])
 
       val serialized = serialization.serialize(tm)
       assert(serialized.isSuccess)
@@ -262,7 +287,10 @@ class AkkaKryoCompressionTests extends FlatSpec {
           "hash" -> HashMap[Int, Int](r.nextInt -> r.nextInt, 5 -> 500, 10 -> r.nextInt))
       }).toArray
 
-      assert(serialization.findSerializerFor(atm).getClass === classOf[KryoSerializer])
+      if (systemName != "Java")
+        assert(serialization.findSerializerFor(atm).getClass == classOf[KryoSerializer])
+      else
+        assert(serialization.findSerializerFor(atm).getClass != classOf[KryoSerializer])
 
       val serialized = serialization.serialize(atm)
       assert(serialized.isSuccess)
@@ -292,7 +320,10 @@ class AkkaKryoCompressionTests extends FlatSpec {
           "hash" -> HashMap[Int, Int](r.nextInt -> r.nextInt, 5 -> 500, 10 -> r.nextInt))
       }).toArray
 
-      assert(serialization.findSerializerFor(atm).getClass === classOf[KryoSerializer])
+      if (systemName != "Java")
+        assert(serialization.findSerializerFor(atm).getClass == classOf[KryoSerializer])
+      else
+        assert(serialization.findSerializerFor(atm).getClass != classOf[KryoSerializer])
 
       val serialized = serialization.serialize(atm)
       assert(serialized.isSuccess)
@@ -325,7 +356,10 @@ class AkkaKryoCompressionTests extends FlatSpec {
           4L -> HashMap[Int, Int](r.nextInt -> r.nextInt, 5 -> 500, 10 -> r.nextInt))
       }).toArray
 
-      assert(serialization.findSerializerFor(atm).getClass === classOf[KryoSerializer])
+      if (systemName != "Java")
+        assert(serialization.findSerializerFor(atm).getClass == classOf[KryoSerializer])
+      else
+        assert(serialization.findSerializerFor(atm).getClass != classOf[KryoSerializer])
 
       val serialized = serialization.serialize(atm)
       assert(serialized.isSuccess)
@@ -345,35 +379,37 @@ class AkkaKryoCompressionTests extends FlatSpec {
     }
 
     it should "serialize and deserialize Array[AnyRefMap[String,Any]] timings (with compression)" in {
-      val iterations = 500
-      val listLength = 500
+      if (systemName != "Java") { // AnyRefMap can't be serialized by the Java serializer
+        val iterations = 500
+        val listLength = 500
 
-      val r = new scala.util.Random(0L)
-      val atm = (List.fill(listLength) {
-        AnyRefMap[String, Any](
-          "foo" -> r.nextDouble,
-          "bar" -> "foo,bar,baz",
-          "baz" -> 124L,
-          "hash" -> HashMap[Int, Int](r.nextInt -> r.nextInt, 5 -> 500, 10 -> r.nextInt))
-      }).toArray
+        val r = new scala.util.Random(0L)
+        val atm = (List.fill(listLength) {
+          AnyRefMap[String, Any](
+            "foo" -> r.nextDouble,
+            "bar" -> "foo,bar,baz",
+            "baz" -> 124L,
+            "hash" -> HashMap[Int, Int](r.nextInt -> r.nextInt, 5 -> 500, 10 -> r.nextInt))
+        }).toArray
 
-      assert(serialization.findSerializerFor(atm).getClass === classOf[KryoSerializer])
+        assert(serialization.findSerializerFor(atm).getClass == classOf[KryoSerializer])
 
-      val serialized = serialization.serialize(atm)
-      assert(serialized.isSuccess)
+        val serialized = serialization.serialize(atm)
+        assert(serialized.isSuccess)
 
-      val deserialized = serialization.deserialize(serialized.get, classOf[Array[AnyRefMap[String, Any]]])
-      assert(deserialized.isSuccess)
+        val deserialized = serialization.deserialize(serialized.get, classOf[Array[AnyRefMap[String, Any]]])
+        assert(deserialized.isSuccess)
 
-      val bytes = serialized.get
-      println(s"Serialized to ${bytes.length} bytes")
+        val bytes = serialized.get
+        println(s"Serialized to ${bytes.length} bytes")
 
-      timeIt("Mutable AnyRefMap Serialize:   ", iterations) { serialization.serialize(atm) }
-      timeIt("Mutable AnyRefMap Serialize:   ", iterations) { serialization.serialize(atm) }
-      timeIt("Mutable AnyRefMap Serialize:   ", iterations) { serialization.serialize(atm) }
-      timeIt("Mutable AnyRefMap Deserialize: ", iterations)(serialization.deserialize(bytes, classOf[Array[AnyRefMap[String, Any]]]))
-      timeIt("Mutable AnyRefMap Deserialize: ", iterations)(serialization.deserialize(bytes, classOf[Array[AnyRefMap[String, Any]]]))
-      timeIt("Mutable AnyRefMap Deserialize: ", iterations)(serialization.deserialize(bytes, classOf[Array[AnyRefMap[String, Any]]]))
+        timeIt("Mutable AnyRefMap Serialize:   ", iterations) { serialization.serialize(atm) }
+        timeIt("Mutable AnyRefMap Serialize:   ", iterations) { serialization.serialize(atm) }
+        timeIt("Mutable AnyRefMap Serialize:   ", iterations) { serialization.serialize(atm) }
+        timeIt("Mutable AnyRefMap Deserialize: ", iterations)(serialization.deserialize(bytes, classOf[Array[AnyRefMap[String, Any]]]))
+        timeIt("Mutable AnyRefMap Deserialize: ", iterations)(serialization.deserialize(bytes, classOf[Array[AnyRefMap[String, Any]]]))
+        timeIt("Mutable AnyRefMap Deserialize: ", iterations)(serialization.deserialize(bytes, classOf[Array[AnyRefMap[String, Any]]]))
+      }
     }
 
     it should "serialize and deserialize Array[mutable.HashMap[String,Any]] timings (with compression)" in {
@@ -386,7 +422,10 @@ class AkkaKryoCompressionTests extends FlatSpec {
           "hash" -> HashMap[Int, Int](r.nextInt -> r.nextInt, 5 -> 500, 10 -> r.nextInt))
       }).toArray
 
-      assert(serialization.findSerializerFor(atm).getClass === classOf[KryoSerializer])
+      if (systemName != "Java")
+        assert(serialization.findSerializerFor(atm).getClass == classOf[KryoSerializer])
+      else
+        assert(serialization.findSerializerFor(atm).getClass != classOf[KryoSerializer])
 
       val serialized = serialization.serialize(atm)
       assert(serialized.isSuccess)
@@ -419,7 +458,10 @@ class AkkaKryoCompressionTests extends FlatSpec {
           4L -> HashMap[Int, Int](r.nextInt -> r.nextInt, 5 -> 500, 10 -> r.nextInt))
       }).toArray
 
-      assert(serialization.findSerializerFor(atm).getClass === classOf[KryoSerializer])
+      if (systemName != "Java")
+        assert(serialization.findSerializerFor(atm).getClass == classOf[KryoSerializer])
+      else
+        assert(serialization.findSerializerFor(atm).getClass != classOf[KryoSerializer])
 
       val serialized = serialization.serialize(atm)
       assert(serialized.isSuccess)
@@ -447,7 +489,10 @@ class AkkaKryoCompressionTests extends FlatSpec {
           "foo", "bar", "foo,bar,baz", "baz", r.nextString(10))
       }).toArray
 
-      assert(serialization.findSerializerFor(orig).getClass === classOf[KryoSerializer])
+      if (systemName != "Java")
+        assert(serialization.findSerializerFor(orig).getClass == classOf[KryoSerializer])
+      else
+        assert(serialization.findSerializerFor(orig).getClass != classOf[KryoSerializer])
 
       val serialized = serialization.serialize(orig)
       assert(serialized.isSuccess)
@@ -474,7 +519,10 @@ class AkkaKryoCompressionTests extends FlatSpec {
           "foo", "bar", "foo,bar,baz", "baz", r.nextString(10))
       }).toArray
 
-      assert(serialization.findSerializerFor(orig).getClass === classOf[KryoSerializer])
+      if (systemName != "Java")
+        assert(serialization.findSerializerFor(orig).getClass == classOf[KryoSerializer])
+      else
+        assert(serialization.findSerializerFor(orig).getClass != classOf[KryoSerializer])
 
       val serialized = serialization.serialize(orig)
       assert(serialized.isSuccess)
@@ -502,7 +550,10 @@ class AkkaKryoCompressionTests extends FlatSpec {
         )
       }).toArray
 
-      assert(serialization.findSerializerFor(orig).getClass === classOf[KryoSerializer])
+      if (systemName != "Java")
+        assert(serialization.findSerializerFor(orig).getClass == classOf[KryoSerializer])
+      else
+        assert(serialization.findSerializerFor(orig).getClass != classOf[KryoSerializer])
 
       val serialized = serialization.serialize(orig)
       assert(serialized.isSuccess)
@@ -529,7 +580,10 @@ class AkkaKryoCompressionTests extends FlatSpec {
           "foo", "bar", "foo,bar,baz", "baz", r.nextString(10))
       }).toArray
 
-      assert(serialization.findSerializerFor(orig).getClass === classOf[KryoSerializer])
+      if (systemName != "Java")
+        assert(serialization.findSerializerFor(orig).getClass == classOf[KryoSerializer])
+      else
+        assert(serialization.findSerializerFor(orig).getClass != classOf[KryoSerializer])
 
       val serialized = serialization.serialize(orig)
       assert(serialized.isSuccess)
@@ -556,7 +610,10 @@ class AkkaKryoCompressionTests extends FlatSpec {
           "foo", "bar", "foo,bar,baz", "baz", r.nextString(10))
       }).toArray
 
-      assert(serialization.findSerializerFor(orig).getClass === classOf[KryoSerializer])
+      if (systemName != "Java")
+        assert(serialization.findSerializerFor(orig).getClass == classOf[KryoSerializer])
+      else
+        assert(serialization.findSerializerFor(orig).getClass != classOf[KryoSerializer])
 
       val serialized = serialization.serialize(orig)
       assert(serialized.isSuccess)
@@ -584,7 +641,10 @@ class AkkaKryoCompressionTests extends FlatSpec {
         )
       }).toArray
 
-      assert(serialization.findSerializerFor(orig).getClass === classOf[KryoSerializer])
+      if (systemName != "Java")
+        assert(serialization.findSerializerFor(orig).getClass == classOf[KryoSerializer])
+      else
+        assert(serialization.findSerializerFor(orig).getClass != classOf[KryoSerializer])
 
       val serialized = serialization.serialize(orig)
       assert(serialized.isSuccess)
@@ -617,4 +677,34 @@ class AkkaKryoCompressionTests extends FlatSpec {
       |akka.actor.kryo.encryption.aes.key = j68KkRjq21ykRGAQ
     """.stripMargin)
   testConfig("Off", "")
+  testConfig("Java",
+    """akka.actor.serialization-bindings {
+      |"scala.Product" = java
+      |"akka.actor.ActorRef" = java
+      |"scala.collection.immutable.TreeMap" = java
+      |"[Lscala.collection.immutable.TreeMap;" = java
+      |"scala.collection.mutable.HashMap" = java
+      |"[Lscala.collection.mutable.HashMap;" = java
+      |"scala.collection.immutable.HashMap" = java
+      |"[Lscala.collection.immutable.HashMap;" = java
+      |"scala.collection.mutable.AnyRefMap" = java
+      |"[Lscala.collection.mutable.AnyRefMap;" = java
+      |"scala.collection.immutable.LongMap" = java
+      |"[Lscala.collection.immutable.LongMap;" = java
+      |"scala.collection.mutable.LongMap" = java
+      |"[Lscala.collection.mutable.LongMap;" = java
+      |"scala.collection.immutable.HashSet" = java
+      |"[Lscala.collection.immutable.HashSet;" = java
+      |"scala.collection.immutable.TreeSet" = java
+      |"[Lscala.collection.immutable.TreeSet;" = java
+      |"scala.collection.immutable.BitSet" = java
+      |"[Lscala.collection.immutable.BitSet;" = java
+      |"scala.collection.mutable.HashSet" = java
+      |"[Lscala.collection.mutable.HashSet;" = java
+      |"scala.collection.mutable.TreeSet" = java
+      |"[Lscala.collection.mutable.TreeSet;" = java
+      |"scala.collection.mutable.BitSet" = java
+      |"[Lscala.collection.mutable.BitSet;" = java
+      |}
+      |""".stripMargin)
 }
