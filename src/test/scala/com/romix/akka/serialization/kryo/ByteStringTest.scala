@@ -12,7 +12,6 @@ class ByteStringTest extends WordSpecLike with Matchers {
   val system = ActorSystem("example", ConfigFactory.parseString(
     """
     akka {
-      loglevel = "DEBUG"
       actor {
 	kryo {
 	  trace = true
