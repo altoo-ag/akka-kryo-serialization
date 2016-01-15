@@ -24,7 +24,7 @@ import com.esotericsoftware.kryo.Kryo
 import com.esotericsoftware.kryo.Serializer
 import com.esotericsoftware.kryo.io.Input
 import com.esotericsoftware.kryo.io.Output
-import akka.util.{ByteString, ByteStringBuilder}
+import akka.util.ByteString
 
 /**
  * *
@@ -38,9 +38,7 @@ class AkkaByteStringSerializer() extends Serializer[ByteString] {
 
   override def read(kryo: Kryo, input: Input, typ: Class[ByteString]): ByteString = {
     val len = input.readInt(true)
-    val builder = new ByteStringBuilder
-    builder ++= input.readBytes(len)
-    builder.result
+    ByteString(input.readBytes(len))
   }
 
   override def write(kryo: Kryo, output: Output, obj: ByteString) = {
