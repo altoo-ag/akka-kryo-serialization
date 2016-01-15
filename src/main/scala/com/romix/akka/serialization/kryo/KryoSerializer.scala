@@ -198,7 +198,7 @@ class KryoSerializer(val system: ExtendedActorSystem) extends Serializer {
   locally {
     log.debug("Got max-buffer-size: {}", maxBufferSize)
   }
-  
+
   val serializerPoolSize = settings.SerializerPoolSize
 
   val idStrategy = settings.IdStrategy
@@ -393,6 +393,7 @@ class KryoSerializer(val system: ExtendedActorSystem) extends Serializer {
     kryo.addDefaultSerializer(classOf[scala.collection.generic.MapFactory[scala.collection.Map]], classOf[ScalaImmutableMapSerializer])
     kryo.addDefaultSerializer(classOf[scala.collection.generic.SetFactory[scala.collection.Set]], classOf[ScalaImmutableSetSerializer])
 
+    kryo.addDefaultSerializer(classOf[akka.util.ByteString], classOf[AkkaByteStringSerializer])
     kryo.addDefaultSerializer(classOf[scala.collection.Traversable[_]], classOf[ScalaCollectionSerializer])
     kryo.addDefaultSerializer(classOf[ActorRef], new ActorRefSerializer(system))
 
@@ -475,7 +476,7 @@ class KryoSerializer(val system: ExtendedActorSystem) extends Serializer {
  * Kryo-based serializer backend
  */
 class KryoBasedSerializer(
-    val kryo: Kryo, 
+    val kryo: Kryo,
     val bufferSize: Int,
     val maxBufferSize: Int,
     val bufferPoolSize: Int,
