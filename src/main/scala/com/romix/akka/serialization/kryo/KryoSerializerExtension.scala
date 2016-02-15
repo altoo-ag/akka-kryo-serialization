@@ -42,7 +42,7 @@ object KryoSerialization {
     val SerializerType: String = config.getString("akka.actor.kryo.type")
 
     val BufferSize: Int = config.getInt("akka.actor.kryo.buffer-size")
-    
+
     val MaxBufferSize: Int = config.getInt("akka.actor.kryo.max-buffer-size")
 
     val SerializerPoolSize: Int = config.getInt("akka.actor.kryo.serializer-pool-size")
@@ -68,6 +68,8 @@ object KryoSerialization {
     val AESKey = Try(config.getString(s"akka.actor.kryo.encryption.aes.key")).getOrElse("ThisIsASecretKey")
 
     val AESMode = Try(config.getString(s"akka.actor.kryo.encryption.aes.mode")).getOrElse("AES/CBC/PKCS5Padding")
+
+    val AESIVLength = Try(config.getInt(s"akka.actor.kryo.encryption.aes.IV-length")).getOrElse(16)
 
     val PostSerTransformations:  String = Try(config.getString("akka.actor.kryo.post-serialization-transformations")).getOrElse("off")
 

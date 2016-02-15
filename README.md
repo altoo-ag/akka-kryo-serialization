@@ -183,6 +183,7 @@ The following options are available for configuring this serializer:
                 aes {
                     mode = "AES/CBC/PKCS5Padding"
                     key = j68KkRjq21ykRGAQ
+                    IV-length = 16
                     custom-key-class = "CustomAESKeyClass"
                 }
             }
