@@ -133,31 +133,24 @@ class ZipKryoCompressor extends Transformation {
   }
 }
 
-class KryoCryptographer(key: String, mode: String) extends Transformation {
-  lazy val sKeySpec = new SecretKeySpec(key.getBytes("UTF-8"), "AES")
-
-  var iv: Array[Byte] = Array.fill[Byte](16)(0)
-  lazy val random = new SecureRandom()
-  random.nextBytes(iv)
-  lazy val ivSpec = new IvParameterSpec(iv)
+class KryoCryptographer(key: String, mode: String, ivLength: Int) extends Transformation {
+  private[this] val sKeySpec = new SecretKeySpec(key.getBytes("UTF-8"), "AES")
+  private[this] var iv: Array[Byte] = Array.fill[Byte](ivLength)(0)
+  private lazy val random = new SecureRandom()
 
   def encrypt(plainTextBytes: Array[Byte]): Array[Byte] = {
-    lazy val cipher = Cipher.getInstance(mode)
+    val cipher = Cipher.getInstance(mode)
+    random.nextBytes(iv)
+    val ivSpec = new IvParameterSpec(iv)
     cipher.init(Cipher.ENCRYPT_MODE, sKeySpec, ivSpec)
-    cipher.doFinal(plainTextBytes)
+    iv ++ cipher.doFinal(plainTextBytes)
   }
 
   def decrypt(encryptedBytes: Array[Byte]): Array[Byte] = {
-    lazy val cipher = Cipher.getInstance(mode)
-    try {
-      cipher.init(Cipher.DECRYPT_MODE, sKeySpec, ivSpec)
-      cipher.doFinal(encryptedBytes)
-    } catch {
-      case e @ (_: IllegalBlockSizeException | _: BadPaddingException | _: UnsupportedEncodingException |
-                _: InvalidKeyException | _: InvalidAlgorithmParameterException | _: NoSuchPaddingException |
-                _: NoSuchAlgorithmException) =>
-        throw new Exception(e.getMessage)
-    }
+    val cipher = Cipher.getInstance(mode)
+    val ivSpec = new IvParameterSpec(encryptedBytes, 0, ivLength)
+    cipher.init(Cipher.DECRYPT_MODE, sKeySpec, ivSpec)
+    cipher.doFinal(encryptedBytes, ivLength, encryptedBytes.length - ivLength)
   }
 
   override def toBinary(inputBuff: Array[Byte]): Array[Byte]  = {
@@ -288,7 +281,7 @@ class KryoSerializer(val system: ExtendedActorSystem) extends Serializer {
     typ match {
       case "lz4" => new LZ4KryoCompressor
       case "deflate" => new ZipKryoCompressor
-      case "aes" => new KryoCryptographer(aesKey, settings.AESMode)
+      case "aes" => new KryoCryptographer(aesKey, settings.AESMode, settings.AESIVLength)
       case "off" => new NoKryoTransformer
       case x => throw new Exception(s"Could not recognise the transformer: [${x}]")
     }
