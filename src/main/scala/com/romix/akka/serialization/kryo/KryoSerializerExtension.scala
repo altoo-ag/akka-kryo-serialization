@@ -18,18 +18,11 @@
 
 package com.romix.akka.serialization.kryo
 
-import akka.actor.Extension
-import akka.actor.ExtensionId
-import akka.actor.ExtensionIdProvider
-import akka.actor.ExtendedActorSystem
+import akka.actor.{ActorSystem, ExtendedActorSystem, Extension, ExtensionId, ExtensionIdProvider}
+import akka.event.Logging
 import com.typesafe.config.Config
 
-import akka.actor.{ ActorSystem, Extension, ExtendedActorSystem, Address, DynamicAccess }
-import akka.event.Logging
-import java.util.concurrent.ConcurrentHashMap
-import scala.collection.mutable.ArrayBuffer
-import scala.util.{ Try, Success, Failure }
-import java.io.NotSerializableException
+import scala.util.Try
 
 object KryoSerialization {
 
@@ -44,8 +37,6 @@ object KryoSerialization {
     val BufferSize: Int = config.getInt("akka.actor.kryo.buffer-size")
 
     val MaxBufferSize: Int = config.getInt("akka.actor.kryo.max-buffer-size")
-
-    val SerializerPoolSize: Int = config.getInt("akka.actor.kryo.serializer-pool-size")
 
     // Each entry should be: FQCN -> integer id
     val ClassNameMappings: Map[String, String] = configToMap(getConfig("akka.actor.kryo.mappings"))
@@ -74,6 +65,8 @@ object KryoSerialization {
     val PostSerTransformations:  String = Try(config.getString("akka.actor.kryo.post-serialization-transformations")).getOrElse("off")
 
     val KryoCustomSerializerInit: String = Try(config.getString("akka.actor.kryo.kryo-custom-serializer-init")).getOrElse(null)
+
+    val CustomQueueBuilder: String = Try(config.getString("akka.actor.kryo.custom-queue-builder")).getOrElse(null)
 
     private def configToMap(cfg: Config): Map[String, String] =
       cfg.root.unwrapped.asScala.toMap.map { case (k, v) => (k, v.toString) }

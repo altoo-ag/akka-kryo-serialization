@@ -147,11 +147,13 @@ The following options are available for configuring this serializer:
 
             idstrategy = "incremental"
 
-            # Define a default size for serializer pool
-            # Try to define the size to be at least as big as the max possible
-            # number of threads that may be used for serialization, i.e. max
-            # number of threads allowed for the scheduler
-            serializer-pool-size = 16
+            # Define a default queue builder, by default ConcurrentLinkedQueue is used.
+            # To pass your own queue builder implement the trait KryoSerializer.QueueBuilder
+            # useful for paranoid GC users that want to use JCtools MpmcArrayQueue for example.
+            # If you pass a bounded queue make sure its capacity will be equal or greater than
+            # the concurrent threads your application will ever have running concurrently:
+            #
+            # custom-queue-builder = "a.b.c.KryoQueueBuilder"
 
             # Define a default size for byte buffers used during serialization
             buffer-size = 4096
@@ -248,6 +250,41 @@ be a class that is used internally by a top-level class. The reason for it: Akka
 only an object of a top-level class to be sent. It picks a matching serializer for
 this top-level class, e.g. a default Java serializer, and then it serializes the
 whole object graph with this object as a root using this Java serializer.
+
+Kryo queue builder examples:
+----------------------------
+
+* Scala bounded queue builder with a capacity of 32:
+
+        package a.b.c
+
+        import akka.serialization.Serializer
+        import com.romix.akka.serialization.kryo.QueueBuilder
+        import org.jctools.queues.MpmcArrayQueue
+        import java.util.Queue
+
+        class KryoQueueBuilder extends QueueBuilder {
+          def build: Queue[Serializer] = {
+            new MpmcArrayQueue[Serializer](32)
+          }
+        }
+
+* Java bounded queue builder with a capacity of 32:
+
+        package a.b.c;
+
+        import akka.serialization.Serializer;
+        import com.romix.akka.serialization.kryo.QueueBuilder;
+        import org.jctools.queues.MpmcArrayQueue;
+        import java.util.Queue;
+
+        public class KryoQueueBuilder implements QueueBuilder {
+
+          @Override
+          public Queue<Serializer> build() {
+            return new MpmcArrayQueue<>(32);
+          }
+        }
 
 
 How do you create mappings or classes sections with proper content?
