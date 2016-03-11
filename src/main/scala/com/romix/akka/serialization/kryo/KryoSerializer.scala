@@ -18,11 +18,12 @@
 
 package com.romix.akka.serialization.kryo
 
-import java.io.UnsupportedEncodingException
-import java.security.{NoSuchAlgorithmException, InvalidAlgorithmParameterException, InvalidKeyException, SecureRandom}
+import java.security.SecureRandom
+import java.util
+import java.util.concurrent.ConcurrentLinkedQueue
 import java.util.zip.{Deflater, Inflater}
-import javax.crypto.{NoSuchPaddingException, BadPaddingException, IllegalBlockSizeException, Cipher}
-import javax.crypto.spec.{SecretKeySpec, IvParameterSpec}
+import javax.crypto.Cipher
+import javax.crypto.spec.{IvParameterSpec, SecretKeySpec}
 
 import akka.actor.{ActorRef, ExtendedActorSystem}
 import akka.event.Logging
@@ -192,8 +193,6 @@ class KryoSerializer(val system: ExtendedActorSystem) extends Serializer {
     log.debug("Got max-buffer-size: {}", maxBufferSize)
   }
 
-  val serializerPoolSize = settings.SerializerPoolSize
-
   val idStrategy = settings.IdStrategy
 
   locally {
@@ -296,10 +295,21 @@ class KryoSerializer(val system: ExtendedActorSystem) extends Serializer {
     log.debug("Got transformations: {}", settings.PostSerTransformations)
   }
 
+  val queueBuilder: QueueBuilder =
+    if (settings.CustomQueueBuilder == null) null
+    else system.dynamicAccess.getClassFor[AnyRef](settings.CustomQueueBuilder) match {
+        case Success(clazz) => clazz.newInstance().asInstanceOf[QueueBuilder]
+        case Failure(e) =>
+          log.error("Class could not be loaded: {} ", settings.CustomQueueBuilder)
+          throw e
+    }
+  locally {
+    log.debug("Got queue builder: {}", queueBuilder)
+  }
+
   val serializer = try new KryoBasedSerializer(getKryo(idStrategy, serializerType),
     bufferSize,
     maxBufferSize,
-    serializerPoolSize,
     useManifests)
   catch {
     case e: Exception => {
@@ -333,11 +343,10 @@ class KryoSerializer(val system: ExtendedActorSystem) extends Serializer {
     obj
   }
 
-  val serializerPool = new ObjectPool[Serializer](serializerPoolSize, () => {
+  val serializerPool = new SerializerPool(queueBuilder, () => {
     new KryoBasedSerializer(getKryo(idStrategy, serializerType),
       bufferSize,
       maxBufferSize,
-      serializerPoolSize,
       useManifests)
   })
 
@@ -473,7 +482,6 @@ class KryoBasedSerializer(
     val kryo: Kryo,
     val bufferSize: Int,
     val maxBufferSize: Int,
-    val bufferPoolSize: Int,
     val useManifests: Boolean) extends Serializer {
 
   // This is whether "fromBinary" requires a "clazz" or not
@@ -515,51 +523,38 @@ class KryoBasedSerializer(
 
 }
 
-import java.util.concurrent.{ArrayBlockingQueue, TimeUnit}
-import java.util.concurrent.atomic.AtomicInteger
+/**
+  * Returns a SerializerPool, useful to reduce GC overhead.
+  *
+  * @param queueBuilder     queue builder.
+  * @param newInstance Akka serializer instance creator.
+  */
+class SerializerPool(queueBuilder: QueueBuilder, newInstance: () => Serializer) {
 
-// Support pooling of objects. Useful if you want to reduce
-// the GC overhead and memory pressure.
-class ObjectPool[T](number: Int, newInstance: () => T) {
+  private val pool = if (queueBuilder == null) new ConcurrentLinkedQueue[Serializer] else queueBuilder.build
 
-  private val size = new AtomicInteger(0)
-  private val pool = new ArrayBlockingQueue[T](number)
-
-  def fetch(): T = {
+  def fetch(): Serializer = {
     pool.poll() match {
       case o if o != null => o
-      case null => createOrBlock
+      case null => newInstance()
     }
   }
 
-  def release(o: T): Unit = {
+  def release(o: Serializer): Unit = {
     pool.offer(o)
   }
 
-  def add(o: T): Unit = {
+  def add(o: Serializer): Unit = {
     pool.add(o)
   }
+}
 
-  private def createOrBlock: T = {
-    size.get match {
-      case e: Int if e == number => block
-      case _ => create
-    }
-  }
+/**
+  * Kryo custom queue builder, to replace ConcurrentLinkedQueue for another Queue,
+  * Notice that it must be a multiple producer and multiple consumer queue type,
+  * you could use for example JCtools MpmcArrayQueue.
+  */
+trait QueueBuilder {
 
-  private def create: T = {
-    size.incrementAndGet match {
-      case e: Int if e > number =>
-        size.decrementAndGet; fetch()
-      case e: Int => newInstance()
-    }
-  }
-
-  private def block: T = {
-    val timeout = 5000
-    pool.poll(timeout, TimeUnit.MILLISECONDS) match {
-      case o if o != null => o
-      case _ => throw new Exception("Couldn't acquire object in %d milliseconds.".format(timeout))
-    }
-  }
+  def build: util.Queue[Serializer]
 }
