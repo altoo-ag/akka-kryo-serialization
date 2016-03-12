@@ -3,10 +3,8 @@ package com.romix.akka.serialization.kryo
 import akka.actor.ActorSystem
 import akka.serialization.SerializationExtension
 import akka.util.ByteString
-import com.esotericsoftware.kryo.util.{DefaultClassResolver, DefaultStreamFactory, ListReferenceResolver}
-import com.romix.scala.serialization.kryo.{ScalaKryo, SpecCase}
 import com.typesafe.config.ConfigFactory
-import org.scalatest.{WordSpecLike, Matchers, FlatSpec, Outcome}
+import org.scalatest.{Matchers, WordSpecLike}
 
 class ByteStringTest extends WordSpecLike with Matchers {
   val system = ActorSystem("example", ConfigFactory.parseString(

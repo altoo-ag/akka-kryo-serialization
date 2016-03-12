@@ -2,18 +2,15 @@
 package com.romix.scala.serialization.kryo
 
 import com.esotericsoftware.kryo.Kryo
-import com.esotericsoftware.kryo.Serializer
-import com.esotericsoftware.kryo.io.Input
-import com.esotericsoftware.kryo.io.Output
-import com.romix.scala.serialization.kryo._
+import com.esotericsoftware.kryo.io.{Input, Output}
 
 /** @author romix */
 // @Ignore
 class EnumarationSerializationTest extends SpecCase {
 
   "Enumerations" should "serialize and deseialize" in {
-    import WeekDay._
     import Time._
+    import WeekDay._
     kryo.setRegistrationRequired(false)
     kryo.addDefaultSerializer(classOf[scala.Enumeration#Value], classOf[EnumerationSerializer])
     kryo.register(Class.forName("scala.Enumeration$Val"))

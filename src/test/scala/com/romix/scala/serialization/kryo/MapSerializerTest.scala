@@ -1,22 +1,13 @@
 package com.romix.scala.serialization.kryo
 
-import java.util.Arrays;
-import java.util.HashMap
-import java.util.Random
-import java.util.TreeMap
+import java.util.{HashMap, Random, TreeMap}
 import java.util.concurrent.ConcurrentHashMap
 
-import scala.collection.immutable.Map
-import scala.collection.immutable.Set
-import scala.collection.immutable.Vector
-
 import com.esotericsoftware.kryo.Kryo
-import com.esotericsoftware.kryo.Serializer
-import com.esotericsoftware.kryo.io.Input
-import com.esotericsoftware.kryo.io.Output
+import com.esotericsoftware.kryo.io.{Input, Output}
 import com.esotericsoftware.kryo.serializers.MapSerializer
 
-import com.romix.scala.serialization.kryo._
+import scala.collection.immutable.{Map, Set, Vector}
 
 class MapSerializerTest extends SpecCase {
 
@@ -190,9 +181,9 @@ class MapSerializerTest extends SpecCase {
 
     0 until hugeCollectionSize foreach { case i => map1 += ("k" + i) }
 
-    val map2 = map1 + ("Moscow")
-    val map3 = map2 + ("Berlin")
-    val map4 = map3 + ("Germany") + ("Russia")
+    val map2 = map1 + "Moscow"
+    val map3 = map2 + "Berlin"
+    val map4 = map3 + "Germany" + "Russia"
     roundTrip(52, map1)
     roundTrip(35, map2)
     roundTrip(35, map3)
@@ -272,7 +263,7 @@ class MapSerializerTest extends SpecCase {
     kryo.writeClassAndObject(output, map)
     output.close()
 
-    val input = new Input(output.toBytes())
+    val input = new Input(output.toBytes)
     val deserialized = kryo.readClassAndObject(input)
     input.close()
 

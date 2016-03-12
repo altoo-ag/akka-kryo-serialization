@@ -19,13 +19,13 @@
 package com.romix.scala.serialization.kryo
 
 import com.esotericsoftware.kryo.util.DefaultClassResolver
-import com.esotericsoftware.kryo.Registration;
+import com.esotericsoftware.kryo.Registration
 
 class KryoClassResolver(val logImplicits: Boolean) extends DefaultClassResolver {
   override def registerImplicit(typ: Class[_]): Registration = {
-    if (kryo.isRegistrationRequired()) {
-      throw new IllegalArgumentException("Class is not registered: " + typ.getName()
-        + "\nNote: To register this class use: kryo.register(" + typ.getName() + ".class);")
+    if (kryo.isRegistrationRequired) {
+      throw new IllegalArgumentException("Class is not registered: " + typ.getName
+        + "\nNote: To register this class use: kryo.register(" + typ.getName + ".class);")
     }
     // registerInternal(new Registration(typ, kryo.getDefaultSerializer(typ), DefaultClassResolver.NAME))
     /* TODO: This does not work if sender and receiver are

@@ -18,14 +18,12 @@
 
 package com.romix.scala.serialization.kryo
 
-import scala.collection.Map
-import scala.collection.immutable
 import java.lang.reflect.Constructor
 
-import com.esotericsoftware.kryo.Kryo
-import com.esotericsoftware.kryo.Serializer
-import com.esotericsoftware.kryo.io.Input
-import com.esotericsoftware.kryo.io.Output
+import com.esotericsoftware.kryo.{Kryo, Serializer}
+import com.esotericsoftware.kryo.io.{Input, Output}
+
+import scala.collection.immutable
 
 /**
  * *
@@ -44,7 +42,7 @@ class ScalaProductSerializer(val kryo: Kryo) extends Serializer[Product] {
   var class2constuctor = immutable.Map[Class[_], Constructor[_]]()
 
   /**
-   * @param elementsCanBeNull False if all elements are not null. This saves 1 byte per element if elementClass is set. True if it
+   * @param _elementsCanBeNull False if all elements are not null. This saves 1 byte per element if elementClass is set. True if it
    *           is not known (default).
    */
   def setElementsCanBeNull(_elementsCanBeNull: Boolean) = {
@@ -52,12 +50,12 @@ class ScalaProductSerializer(val kryo: Kryo) extends Serializer[Product] {
   }
 
   /**
-   * @param elementClass The concrete class of each element. This saves 1-2 bytes per element. The serializer registered for the
+   * @param _elementClass The concrete class of each element. This saves 1-2 bytes per element. The serializer registered for the
    *           specified class will be used. Set to null if the class is not known or varies per element (default).
    */
   def setElementClass(_elementClass: Class[_]) = {
     elementClass = _elementClass
-    serializer = if (elementClass == null) null else kryo.getRegistration(elementClass).getSerializer()
+    serializer = if (elementClass == null) null else kryo.getRegistration(elementClass).getSerializer
   }
 
   /** Sets the number of objects in the collection. Saves 1-2 bytes. */
@@ -66,9 +64,9 @@ class ScalaProductSerializer(val kryo: Kryo) extends Serializer[Product] {
   }
 
   /**
-   * @param elementClass The concrete class of each element. This saves 1-2 bytes per element. Set to null if the class is not
+   * @param _elementClass The concrete class of each element. This saves 1-2 bytes per element. Set to null if the class is not
    *           known or varies per element (default).
-   * @param serializer The serializer to use for each element.
+   * @param _serializer The serializer to use for each element.
    */
   def setElementClass(_elementClass: Class[_], _serializer: Serializer[_]) = {
     elementClass = _elementClass
@@ -81,13 +79,12 @@ class ScalaProductSerializer(val kryo: Kryo) extends Serializer[Product] {
     val elems: Array[Any] = new Array(len)
 
     val constructor =
-      class2constuctor.get(typ) getOrElse
-        {
-          val constrs = typ.getDeclaredConstructors
-          val constr = constrs(0)
-          class2constuctor += typ -> constr
-          constr
-        }
+      class2constuctor.getOrElse(typ, {
+        val constrs = typ.getDeclaredConstructors
+        val constr = constrs(0)
+        class2constuctor += typ -> constr
+        constr
+      })
 
     if (len != 0) {
       if (serializer != null) {

@@ -16,19 +16,15 @@ limitations under the License.
 
 package com.romix.akka.serialization.kryo
 
+import akka.actor.{ActorRef, ActorSystem}
+import akka.serialization.{Serialization, _}
+import com.esotericsoftware.minlog.Log
+import com.typesafe.config.ConfigFactory
 import org.scalatest._
 
-import akka.actor.{ ActorRef, ActorSystem }
-import akka.serialization._
-import com.typesafe.config.ConfigFactory
-import akka.serialization.Serialization
-import scala.collection.immutable.TreeMap
-import scala.collection.immutable.HashMap
-import com.esotericsoftware.minlog.Log
-
-import scala.concurrent.duration._
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
+import scala.concurrent.duration._
 
 class AkkaKryoSerializationTests extends FlatSpec with Matchers {
 
@@ -198,7 +194,7 @@ class AkkaKryoSerializationTests extends FlatSpec with Matchers {
     deserialized.isSuccess should be(true)
 
     deserialized.get.equals(obj) should be(true)
-    serialized.get.size
+    serialized.get.length
   }
 
   it should "produce smaller serialized List representation when compression is enabled" in {

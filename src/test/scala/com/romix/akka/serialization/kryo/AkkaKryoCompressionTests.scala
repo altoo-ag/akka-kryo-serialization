@@ -1,14 +1,12 @@
 package com.romix.akka.serialization.kryo
 
-import org.scalatest.FlatSpec
-
-import akka.actor.{ ActorRef, ActorSystem }
+import akka.actor.ActorSystem
 import akka.serialization._
 import com.typesafe.config.ConfigFactory
-import scala.collection.immutable.HashMap
-import scala.collection.immutable.TreeMap
-import scala.collection.mutable.AnyRefMap
-import scala.collection.mutable.LongMap
+import org.scalatest.FlatSpec
+
+import scala.collection.immutable.{HashMap, TreeMap}
+import scala.collection.mutable.{AnyRefMap, LongMap}
 
 class AkkaKryoCompressionTests extends FlatSpec {
   val defaultConfig = ConfigFactory.parseString("""
@@ -279,13 +277,13 @@ class AkkaKryoCompressionTests extends FlatSpec {
 
     it should "serialize and deserialize Array[HashMap[String,Any]] timings (with compression)" in {
       val r = new scala.util.Random(0L)
-      val atm = (List.fill(listLength) {
+      val atm = List.fill(listLength) {
         HashMap[String, Any](
           "foo" -> r.nextDouble,
           "bar" -> "foo,bar,baz",
           "baz" -> 124L,
           "hash" -> HashMap[Int, Int](r.nextInt -> r.nextInt, 5 -> 500, 10 -> r.nextInt))
-      }).toArray
+      }.toArray
 
       if (systemName != "Java")
         assert(serialization.findSerializerFor(atm).getClass == classOf[KryoSerializer])
@@ -312,13 +310,13 @@ class AkkaKryoCompressionTests extends FlatSpec {
 
     it should "serialize and deserialize Array[TreeMap[String,Any]] timings (with compression)" in {
       val r = new scala.util.Random(0L)
-      val atm = (List.fill(listLength) {
+      val atm = List.fill(listLength) {
         TreeMap[String, Any](
           "foo" -> r.nextDouble,
           "bar" -> "foo,bar,baz",
           "baz" -> 124L,
           "hash" -> HashMap[Int, Int](r.nextInt -> r.nextInt, 5 -> 500, 10 -> r.nextInt))
-      }).toArray
+      }.toArray
 
       if (systemName != "Java")
         assert(serialization.findSerializerFor(atm).getClass == classOf[KryoSerializer])
@@ -348,13 +346,13 @@ class AkkaKryoCompressionTests extends FlatSpec {
       val listLength = 500
 
       val r = new scala.util.Random(0L)
-      val atm = (List.fill(listLength) {
+      val atm = List.fill(listLength) {
         LongMap[Any](
           1L -> r.nextDouble,
           2L -> "foo,bar,baz",
           3L -> 124L,
           4L -> HashMap[Int, Int](r.nextInt -> r.nextInt, 5 -> 500, 10 -> r.nextInt))
-      }).toArray
+      }.toArray
 
       if (systemName != "Java")
         assert(serialization.findSerializerFor(atm).getClass == classOf[KryoSerializer])
@@ -384,13 +382,13 @@ class AkkaKryoCompressionTests extends FlatSpec {
         val listLength = 500
 
         val r = new scala.util.Random(0L)
-        val atm = (List.fill(listLength) {
+        val atm = List.fill(listLength) {
           AnyRefMap[String, Any](
             "foo" -> r.nextDouble,
             "bar" -> "foo,bar,baz",
             "baz" -> 124L,
             "hash" -> HashMap[Int, Int](r.nextInt -> r.nextInt, 5 -> 500, 10 -> r.nextInt))
-        }).toArray
+        }.toArray
 
         assert(serialization.findSerializerFor(atm).getClass == classOf[KryoSerializer])
 
@@ -414,13 +412,13 @@ class AkkaKryoCompressionTests extends FlatSpec {
 
     it should "serialize and deserialize Array[mutable.HashMap[String,Any]] timings (with compression)" in {
       val r = new scala.util.Random(0L)
-      val atm = (List.fill(listLength) {
+      val atm = List.fill(listLength) {
         scala.collection.mutable.HashMap[String, Any](
           "foo" -> r.nextDouble,
           "bar" -> "foo,bar,baz",
           "baz" -> 124L,
           "hash" -> HashMap[Int, Int](r.nextInt -> r.nextInt, 5 -> 500, 10 -> r.nextInt))
-      }).toArray
+      }.toArray
 
       if (systemName != "Java")
         assert(serialization.findSerializerFor(atm).getClass == classOf[KryoSerializer])
@@ -450,13 +448,13 @@ class AkkaKryoCompressionTests extends FlatSpec {
       val listLength = 500
 
       val r = new scala.util.Random(0L)
-      val atm = (List.fill(listLength) {
+      val atm = List.fill(listLength) {
         LongMap[Any](
           1L -> r.nextDouble,
           2L -> "foo,bar,baz",
           3L -> 124L,
           4L -> HashMap[Int, Int](r.nextInt -> r.nextInt, 5 -> 500, 10 -> r.nextInt))
-      }).toArray
+      }.toArray
 
       if (systemName != "Java")
         assert(serialization.findSerializerFor(atm).getClass == classOf[KryoSerializer])
@@ -484,10 +482,10 @@ class AkkaKryoCompressionTests extends FlatSpec {
 
     it should "serialize and deserialize Array[immutable.HashSet[String]] timings (with compression)" in {
       val r = new scala.util.Random(0L)
-      val orig = (List.fill(listLength) {
+      val orig = List.fill(listLength) {
         scala.collection.immutable.HashSet[String](
           "foo", "bar", "foo,bar,baz", "baz", r.nextString(10))
-      }).toArray
+      }.toArray
 
       if (systemName != "Java")
         assert(serialization.findSerializerFor(orig).getClass == classOf[KryoSerializer])
@@ -514,10 +512,10 @@ class AkkaKryoCompressionTests extends FlatSpec {
 
     it should "serialize and deserialize Array[immutable.TreeSet[String]] timings (with compression)" in {
       val r = new scala.util.Random(0L)
-      val orig = (List.fill(listLength) {
+      val orig = List.fill(listLength) {
         scala.collection.immutable.TreeSet[String](
           "foo", "bar", "foo,bar,baz", "baz", r.nextString(10))
-      }).toArray
+      }.toArray
 
       if (systemName != "Java")
         assert(serialization.findSerializerFor(orig).getClass == classOf[KryoSerializer])
@@ -544,11 +542,11 @@ class AkkaKryoCompressionTests extends FlatSpec {
 
     it should "serialize and deserialize Array[immutable.BitSet timings (with compression)" in {
       val r = new scala.util.Random(0L)
-      val orig = (List.fill(listLength) {
+      val orig = List.fill(listLength) {
         scala.collection.immutable.BitSet(
-          1, 4, r.nextInt().abs % 32, r.nextInt().abs % 64, r.nextInt().abs % 64, r.nextInt().abs % 128 , r.nextInt().abs % 128,r.nextInt().abs % 256
+          1, 4, r.nextInt().abs % 32, r.nextInt().abs % 64, r.nextInt().abs % 64, r.nextInt().abs % 128, r.nextInt().abs % 128, r.nextInt().abs % 256
         )
-      }).toArray
+      }.toArray
 
       if (systemName != "Java")
         assert(serialization.findSerializerFor(orig).getClass == classOf[KryoSerializer])
@@ -575,10 +573,10 @@ class AkkaKryoCompressionTests extends FlatSpec {
 
     it should "serialize and deserialize Array[mutable.HashSet[String]] timings (with compression)" in {
       val r = new scala.util.Random(0L)
-      val orig = (List.fill(listLength) {
+      val orig = List.fill(listLength) {
         scala.collection.mutable.HashSet[String](
           "foo", "bar", "foo,bar,baz", "baz", r.nextString(10))
-      }).toArray
+      }.toArray
 
       if (systemName != "Java")
         assert(serialization.findSerializerFor(orig).getClass == classOf[KryoSerializer])
@@ -605,10 +603,10 @@ class AkkaKryoCompressionTests extends FlatSpec {
 
     it should "serialize and deserialize Array[mutable.TreeSet[String]] timings (with compression)" in {
       val r = new scala.util.Random(0L)
-      val orig = (List.fill(listLength) {
+      val orig = List.fill(listLength) {
         scala.collection.mutable.TreeSet[String](
           "foo", "bar", "foo,bar,baz", "baz", r.nextString(10))
-      }).toArray
+      }.toArray
 
       if (systemName != "Java")
         assert(serialization.findSerializerFor(orig).getClass == classOf[KryoSerializer])
@@ -635,11 +633,11 @@ class AkkaKryoCompressionTests extends FlatSpec {
 
     it should "serialize and deserialize Array[mutable.BitSet timings (with compression)" in {
       val r = new scala.util.Random(0L)
-      val orig = (List.fill(listLength) {
+      val orig = List.fill(listLength) {
         scala.collection.mutable.BitSet(
-          1, 4, r.nextInt().abs % 32, r.nextInt().abs % 64, r.nextInt().abs % 64, r.nextInt().abs % 128 , r.nextInt().abs % 128,r.nextInt().abs % 256
+          1, 4, r.nextInt().abs % 32, r.nextInt().abs % 64, r.nextInt().abs % 64, r.nextInt().abs % 128, r.nextInt().abs % 128, r.nextInt().abs % 256
         )
-      }).toArray
+      }.toArray
 
       if (systemName != "Java")
         assert(serialization.findSerializerFor(orig).getClass == classOf[KryoSerializer])

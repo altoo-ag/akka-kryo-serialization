@@ -1,18 +1,6 @@
 
 package com.romix.scala.serialization.kryo
 
-import java.lang.reflect.TypeVariable;
-import java.util.Arrays;
-
-import com.esotericsoftware.kryo.Kryo
-import com.esotericsoftware.kryo.Serializer
-import com.esotericsoftware.kryo.io.Input
-import com.esotericsoftware.kryo.io.Output
-import com.esotericsoftware.kryo.serializers.MapSerializer
-import com.romix.scala.serialization.kryo._
-
-//import com.romix.akka.serialization.kryo.KryoTestCase
-
 /** @author romix */
 // @Ignore
 class TupleSerializationTest extends SpecCase {

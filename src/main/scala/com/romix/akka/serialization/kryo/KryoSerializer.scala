@@ -71,7 +71,7 @@ class LZ4KryoCompressor extends Transformation {
   def toBinary(inputBuff: Array[Byte]): Array[Byte] = {
     val inputSize = inputBuff.length
     val lz4 = lz4factory.fastCompressor
-    val maxOutputSize = lz4.maxCompressedLength(inputSize);
+    val maxOutputSize = lz4.maxCompressedLength(inputSize)
     val outputBuff = new Array[Byte](maxOutputSize + 4)
     val outputSize = lz4.compress(inputBuff, 0, inputSize, outputBuff, 4, maxOutputSize)
 
@@ -110,14 +110,14 @@ class ZipKryoCompressor extends Transformation {
     outputBuff += (inputSize >> 24 & 0xff).toByte
 
     deflater.setInput(inputBuff)
-    deflater.finish
+    deflater.finish()
     val buff = new Array[Byte](4096)
 
     while (!deflater.finished) {
       val n = deflater.deflate(buff)
       outputBuff ++= buff.take(n)
     }
-    deflater.reset
+    deflater.reset()
     outputBuff.result
   }
 
@@ -129,7 +129,7 @@ class ZipKryoCompressor extends Transformation {
     val outputBuff = new Array[Byte](size)
     inflater.setInput(inputBuff, 4, inputBuff.length - 4)
     inflater.inflate(outputBuff)
-    inflater.reset
+    inflater.reset()
     outputBuff
   }
 }
@@ -224,10 +224,9 @@ class KryoSerializer(val system: ExtendedActorSystem) extends Serializer {
     if (customSerializerInitClassName == null) null else
       system.dynamicAccess.getClassFor[AnyRef](customSerializerInitClassName) match {
         case Success(clazz) => Some(clazz)
-        case Failure(e) => {
+        case Failure(e) =>
           log.error("Class could not be loaded and/or registered: {} ", customSerializerInitClassName)
           throw e
-        }
       }
 
   locally {
@@ -254,10 +253,9 @@ class KryoSerializer(val system: ExtendedActorSystem) extends Serializer {
     if (customAESKeyClassName == null) null else
       system.dynamicAccess.getClassFor[AnyRef](customAESKeyClassName) match {
         case Success(clazz) => Some(clazz)
-        case Failure(e) => {
+        case Failure(e) =>
           log.error("Class could not be loaded {} ", customAESKeyClassName)
           throw e
-        }
       }
   locally {
     log.debug("Got custom key class: {}", customAESKeyClass)
@@ -282,12 +280,12 @@ class KryoSerializer(val system: ExtendedActorSystem) extends Serializer {
       case "deflate" => new ZipKryoCompressor
       case "aes" => new KryoCryptographer(aesKey, settings.AESMode, settings.AESIVLength)
       case "off" => new NoKryoTransformer
-      case x => throw new Exception(s"Could not recognise the transformer: [${x}]")
+      case x => throw new Exception(s"Could not recognise the transformer: [$x]")
     }
   }
 
   val postSerTransformations = {
-    settings.PostSerTransformations.split(",").toList.map(transform(_))
+    settings.PostSerTransformations.split(",").toList.map(transform)
   }
 
   val kryoTransformer = new KryoTransformer(postSerTransformations)
@@ -312,10 +310,9 @@ class KryoSerializer(val system: ExtendedActorSystem) extends Serializer {
     maxBufferSize,
     useManifests)
   catch {
-    case e: Exception => {
+    case e: Exception =>
       log.error("exception caught during akka-kryo-serialization startup: {}", e)
       throw e
-    }
   }
 
   locally {
@@ -350,7 +347,7 @@ class KryoSerializer(val system: ExtendedActorSystem) extends Serializer {
       useManifests)
   })
 
-  private def getSerializer = serializerPool.fetch
+  private def getSerializer = serializerPool.fetch()
   private def releaseSerializer(ser: Serializer) = serializerPool.release(ser)
 
   private def getKryo(strategy: String, serializerType: String): Kryo = {
@@ -361,17 +358,16 @@ class KryoSerializer(val system: ExtendedActorSystem) extends Serializer {
     val kryo = new ScalaKryo(classResolver, referenceResolver, new DefaultStreamFactory())
     kryo.setClassLoader(system.dynamicAccess.classLoader)
     // Support deserialization of classes without no-arg constructors
-    val instStrategy = kryo.getInstantiatorStrategy().asInstanceOf[Kryo.DefaultInstantiatorStrategy]
+    val instStrategy = kryo.getInstantiatorStrategy.asInstanceOf[Kryo.DefaultInstantiatorStrategy]
     instStrategy.setFallbackInstantiatorStrategy(new StdInstantiatorStrategy())
     kryo.setInstantiatorStrategy(instStrategy)
     // Support serialization of some standard or often used Scala classes
     kryo.addDefaultSerializer(classOf[scala.Enumeration#Value], classOf[EnumerationSerializer])
     system.dynamicAccess.getClassFor[AnyRef]("scala.Enumeration$Val") match {
       case Success(clazz) => kryo.register(clazz)
-      case Failure(e) => {
+      case Failure(e) =>
         log.error("Class could not be loaded and/or registered: {} ", "scala.Enumeration$Val")
         throw e
-      }
     }
     kryo.register(classOf[scala.Enumeration#Value])
     // mutable maps
@@ -404,9 +400,9 @@ class KryoSerializer(val system: ExtendedActorSystem) extends Serializer {
       MiniLog.TRACE()
 
     strategy match {
-      case "default" => {}
+      case "default" =>
 
-      case "incremental" => {
+      case "incremental" =>
         kryo.setRegistrationRequired(false)
 
         for ((fqcn: String, idNum: String) <- mappings) {
@@ -414,10 +410,9 @@ class KryoSerializer(val system: ExtendedActorSystem) extends Serializer {
           // Load class
           system.dynamicAccess.getClassFor[AnyRef](fqcn) match {
             case Success(clazz) => kryo.register(clazz, id)
-            case Failure(e) => {
+            case Failure(e) =>
               log.error("Class could not be loaded and/or registered: {} ", fqcn)
               throw e
-            }
           }
         }
 
@@ -425,15 +420,13 @@ class KryoSerializer(val system: ExtendedActorSystem) extends Serializer {
           // Load class
           system.dynamicAccess.getClassFor[AnyRef](classname) match {
             case Success(clazz) => kryo.register(clazz)
-            case Failure(e) => {
+            case Failure(e) =>
               log.warning("Class could not be loaded and/or registered: {} ", classname)
               /* throw e */
-            }
           }
         }
-      }
 
-      case "explicit" => {
+      case "explicit" =>
         kryo.setRegistrationRequired(false)
 
         for ((fqcn: String, idNum: String) <- mappings) {
@@ -441,10 +434,9 @@ class KryoSerializer(val system: ExtendedActorSystem) extends Serializer {
           // Load class
           system.dynamicAccess.getClassFor[AnyRef](fqcn) match {
             case Success(clazz) => kryo.register(clazz, id)
-            case Failure(e) => {
+            case Failure(e) =>
               log.error("Class could not be loaded and/or registered: {} ", fqcn)
               throw e
-            }
           }
         }
 
@@ -452,14 +444,12 @@ class KryoSerializer(val system: ExtendedActorSystem) extends Serializer {
           // Load class
           system.dynamicAccess.getClassFor[AnyRef](classname) match {
             case Success(clazz) => kryo.register(clazz)
-            case Failure(e) => {
+            case Failure(e) =>
               log.warning("Class could not be loaded and/or registered: {} ", classname)
               /* throw e */
-            }
           }
         }
         kryo.setRegistrationRequired(true)
-      }
     }
 
     serializerType match {
@@ -498,7 +488,7 @@ class KryoBasedSerializer(
         kryo.writeClassAndObject(buffer, obj)
       else
         kryo.writeObject(buffer, obj)
-      buffer.toBytes()
+      buffer.toBytes
     } finally
       releaseBuffer(buffer)
   }
@@ -508,7 +498,7 @@ class KryoBasedSerializer(
   // into the optionally provided classLoader.
   def fromBinary(bytes: Array[Byte], clazz: Option[Class[_]]): AnyRef = {
     if (!useManifests)
-      kryo.readClassAndObject(new Input(bytes)).asInstanceOf[AnyRef]
+      kryo.readClassAndObject(new Input(bytes))
     else {
       clazz match {
         case Some(c) => kryo.readObject(new Input(bytes), c).asInstanceOf[AnyRef]
