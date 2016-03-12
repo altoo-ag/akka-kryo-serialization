@@ -18,13 +18,12 @@ class AkkaKryoCryptoWithCustomKeyTests extends FlatSpec {
     val serialization = SerializationExtension(system)
 
     s"$systemName" should "read the aes key from the custom class specified" in {
-      val atm = (List {
+      val atm = List {
         AnyRefMap[String, Any](
           "foo" -> "foo",
           "bar" -> "foo,bar,baz",
           "baz" -> 124L)
-      }).toArray
-
+      }.toArray
 
       val serializer = serialization.findSerializerFor(atm)
       assert(serializer.isInstanceOf[KryoSerializer])

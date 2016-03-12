@@ -18,13 +18,9 @@
 
 package com.romix.scala.serialization.kryo
 
-import scala.collection.Traversable
-
-import com.esotericsoftware.kryo.Kryo
-import com.esotericsoftware.kryo.Serializer
-import com.esotericsoftware.kryo.io.Input
-import com.esotericsoftware.kryo.io.Output
 import akka.util.ByteString
+import com.esotericsoftware.kryo.{Kryo, Serializer}
+import com.esotericsoftware.kryo.io.{Input, Output}
 
 /**
  * *
@@ -44,7 +40,7 @@ class AkkaByteStringSerializer() extends Serializer[ByteString] {
   override def write(kryo: Kryo, output: Output, obj: ByteString) = {
     val len = obj.size
     output.writeInt(len, true)
-    obj.foreach { output.writeByte(_) }
+    obj.foreach { output.writeByte }
   }
 }
 

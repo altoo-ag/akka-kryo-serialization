@@ -43,11 +43,11 @@ class ScalaImmutableSortedSetSerializer() extends Serializer[imSSet[_]] {
       implicit val setOrdering = kryo.readClassAndObject(input).asInstanceOf[scala.math.Ordering[Any]]
       try {
         val constructor =
-          class2constuctor.get(typ) getOrElse {
+          class2constuctor.getOrElse(typ, {
             val constr = typ.getDeclaredConstructor(classOf[scala.math.Ordering[_]])
             class2constuctor += typ -> constr
             constr
-          }
+          })
         constructor.newInstance(setOrdering).asInstanceOf[imSSet[Any]].empty
       } catch {
         case _: Throwable => kryo.newInstance(typ).asInstanceOf[imSSet[Any]].empty
@@ -110,11 +110,11 @@ class ScalaMutableSortedSetSerializer() extends Serializer[mSSet[_]] {
       implicit val setOrdering = kryo.readClassAndObject(input).asInstanceOf[scala.math.Ordering[Any]]
       try {
         val constructor =
-          class2constuctor.get(typ) getOrElse {
+          class2constuctor.getOrElse(typ, {
             val constr = typ.getDeclaredConstructor(classOf[scala.math.Ordering[_]])
             class2constuctor += typ -> constr
             constr
-          }
+          })
         constructor.newInstance(setOrdering).asInstanceOf[mSSet[Any]].empty
       } catch {
         case _: Throwable => kryo.newInstance(typ).asInstanceOf[mSSet[Any]].empty

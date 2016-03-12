@@ -148,10 +148,12 @@ The following options are available for configuring this serializer:
             idstrategy = "incremental"
 
             # Define a default queue builder, by default ConcurrentLinkedQueue is used.
-            # To pass your own queue builder implement the trait KryoSerializer.QueueBuilder
+            # Create your own queue builder by implementing the trait QueueBuilder,
             # useful for paranoid GC users that want to use JCtools MpmcArrayQueue for example.
-            # If you pass a bounded queue make sure its capacity will be equal or greater than
-            # the concurrent threads your application will ever have running concurrently:
+            #
+            # If you pass a bounded queue make sure its capacity is equal or greater than the
+            # maximum concurrent remote dispatcher threads your application will ever have
+            # running; failing to do this will have a negative performance impact:
             #
             # custom-queue-builder = "a.b.c.KryoQueueBuilder"
 

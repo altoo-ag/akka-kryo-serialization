@@ -109,11 +109,11 @@ class ScalaSortedMapSerializer() extends Serializer[SortedMap[_, _]] {
     implicit val mapOrdering = kryo.readClassAndObject(input).asInstanceOf[scala.math.Ordering[Any]]
     var coll: SortedMap[Any, Any] =
       try {
-        val constructor = class2constuctor.get(typ) getOrElse {
+        val constructor = class2constuctor.getOrElse(typ, {
           val constr = typ.getDeclaredConstructor(classOf[scala.math.Ordering[_]])
           class2constuctor += typ -> constr
           constr
-        }
+        })
         constructor.newInstance(mapOrdering).asInstanceOf[SortedMap[Any, Any]].empty
       } catch {
         case _: Throwable => kryo.newInstance(typ).asInstanceOf[SortedMap[Any, Any]].empty
