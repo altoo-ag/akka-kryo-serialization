@@ -492,12 +492,16 @@ class KryoBasedSerializer(
 /**
   * Returns a SerializerPool, useful to reduce GC overhead.
   *
-  * @param queueBuilder     queue builder.
-  * @param newInstance Akka serializer instance creator.
+  * @param queueBuilder queue builder.
+  * @param newInstance  Serializer instance builder.
   */
 class SerializerPool(queueBuilder: QueueBuilder, newInstance: () => Serializer) {
 
-  private val pool = if (queueBuilder == null) new ConcurrentLinkedQueue[Serializer] else queueBuilder.build
+  private val pool =
+    if (queueBuilder == null)
+      new ConcurrentLinkedQueue[Serializer]
+    else
+      queueBuilder.build
 
   def fetch(): Serializer = {
     pool.poll() match {
