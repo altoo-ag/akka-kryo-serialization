@@ -274,7 +274,7 @@ class KryoSerializer(val system: ExtendedActorSystem) extends Serializer {
   val aesKey = Try(aesKeyMethod.get.get.invoke(customAESKeyInstance.get.get).asInstanceOf[String])
     .getOrElse(settings.AESKey)
 
-  val transform = (typ: String) => {
+  val transform = (typ: String) =>
     typ match {
       case "lz4" => new LZ4KryoCompressor
       case "deflate" => new ZipKryoCompressor
@@ -282,7 +282,6 @@ class KryoSerializer(val system: ExtendedActorSystem) extends Serializer {
       case "off" => new NoKryoTransformer
       case x => throw new Exception(s"Could not recognise the transformer: [$x]")
     }
-  }
 
   val postSerTransformations = {
     settings.PostSerTransformations.split(",").toList.map(transform)
@@ -328,24 +327,26 @@ class KryoSerializer(val system: ExtendedActorSystem) extends Serializer {
   // Delegate to a real serializer
   def toBinary(obj: AnyRef): Array[Byte] = {
     val ser = getSerializer
-    val bin = ser.toBinary(obj)
-    releaseSerializer(ser)
-    kryoTransformer.toBinary(bin)
+    try
+      kryoTransformer.toBinary(ser.toBinary(obj))
+    finally
+      releaseSerializer(ser)
   }
 
   def fromBinary(bytes: Array[Byte], clazz: Option[Class[_]]): AnyRef = {
     val ser = getSerializer
-    val obj = ser.fromBinary(kryoTransformer.fromBinary(bytes), clazz)
-    releaseSerializer(ser)
-    obj
+    try
+      ser.fromBinary(kryoTransformer.fromBinary(bytes), clazz)
+    finally
+      releaseSerializer(ser)
   }
 
-  val serializerPool = new SerializerPool(queueBuilder, () => {
+  val serializerPool = new SerializerPool(queueBuilder, () =>
     new KryoBasedSerializer(getKryo(idStrategy, serializerType),
       bufferSize,
       maxBufferSize,
       useManifests)
-  })
+  )
 
   private def getSerializer = serializerPool.fetch()
   private def releaseSerializer(ser: Serializer) = serializerPool.release(ser)
@@ -484,10 +485,10 @@ class KryoBasedSerializer(
   def toBinary(obj: AnyRef): Array[Byte] = {
     val buffer = getBuffer
     try {
-      if (!useManifests)
-        kryo.writeClassAndObject(buffer, obj)
-      else
+      if (useManifests)
         kryo.writeObject(buffer, obj)
+      else
+        kryo.writeClassAndObject(buffer, obj)
       buffer.toBytes
     } finally
       releaseBuffer(buffer)
@@ -497,14 +498,13 @@ class KryoBasedSerializer(
   // using the type hint (if any, see "includeManifest" above)
   // into the optionally provided classLoader.
   def fromBinary(bytes: Array[Byte], clazz: Option[Class[_]]): AnyRef = {
-    if (!useManifests)
-      kryo.readClassAndObject(new Input(bytes))
-    else {
+    if (useManifests)
       clazz match {
         case Some(c) => kryo.readObject(new Input(bytes), c).asInstanceOf[AnyRef]
         case _ => throw new RuntimeException("Object of unknown class cannot be deserialized")
       }
-    }
+    else
+      kryo.readClassAndObject(new Input(bytes))
   }
 
   val buf = new Output(bufferSize, maxBufferSize)
