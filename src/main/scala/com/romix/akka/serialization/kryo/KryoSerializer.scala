@@ -400,57 +400,32 @@ class KryoSerializer(val system: ExtendedActorSystem) extends Serializer {
     if (settings.KryoTrace)
       MiniLog.TRACE()
 
-    strategy match {
-      case "default" =>
+    kryo.setRegistrationRequired(strategy == "explicit")
 
-      case "incremental" =>
-        kryo.setRegistrationRequired(false)
+    if (strategy != "default") {
 
-        for ((fqcn: String, idNum: String) <- mappings) {
-          val id = idNum.toInt
-          // Load class
-          system.dynamicAccess.getClassFor[AnyRef](fqcn) match {
-            case Success(clazz) => kryo.register(clazz, id)
-            case Failure(e) =>
-              log.error("Class could not be loaded and/or registered: {} ", fqcn)
-              throw e
-          }
+      // register the class mappings and classes
+      for ((fqcn: String, idNum: String) <- mappings) {
+        val id = idNum.toInt
+        // Load class
+        system.dynamicAccess.getClassFor[AnyRef](fqcn) match {
+          case Success(clazz) => kryo.register(clazz, id)
+          case Failure(e) =>
+            log.error("Class could not be loaded and/or registered: {} ", fqcn)
+            throw e
         }
+      }
 
-        for (classname <- classnames) {
-          // Load class
-          system.dynamicAccess.getClassFor[AnyRef](classname) match {
-            case Success(clazz) => kryo.register(clazz)
-            case Failure(e) =>
-              log.warning("Class could not be loaded and/or registered: {} ", classname)
-              /* throw e */
-          }
+      for (classname <- classnames) {
+        // Load class
+        system.dynamicAccess.getClassFor[AnyRef](classname) match {
+          case Success(clazz) => kryo.register(clazz)
+          case Failure(e) =>
+            log.warning("Class could not be loaded and/or registered: {} ", classname)
+            /* throw e */
         }
+      }
 
-      case "explicit" =>
-        kryo.setRegistrationRequired(false)
-
-        for ((fqcn: String, idNum: String) <- mappings) {
-          val id = idNum.toInt
-          // Load class
-          system.dynamicAccess.getClassFor[AnyRef](fqcn) match {
-            case Success(clazz) => kryo.register(clazz, id)
-            case Failure(e) =>
-              log.error("Class could not be loaded and/or registered: {} ", fqcn)
-              throw e
-          }
-        }
-
-        for (classname <- classnames) {
-          // Load class
-          system.dynamicAccess.getClassFor[AnyRef](classname) match {
-            case Success(clazz) => kryo.register(clazz)
-            case Failure(e) =>
-              log.warning("Class could not be loaded and/or registered: {} ", classname)
-              /* throw e */
-          }
-        }
-        kryo.setRegistrationRequired(true)
     }
 
     serializerType match {
@@ -462,6 +437,7 @@ class KryoSerializer(val system: ExtendedActorSystem) extends Serializer {
 
     kryo
   }
+
 
 }
 
