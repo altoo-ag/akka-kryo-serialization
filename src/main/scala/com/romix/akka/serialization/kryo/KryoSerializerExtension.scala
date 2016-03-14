@@ -43,7 +43,7 @@ object KryoSerialization {
 
     val ClassNames: java.util.List[String] = config.getStringList("akka.actor.kryo.classes")
 
-    // Strategy: default, explicit, incremental
+    // Strategy: default, explicit, incremental, automatic
     val IdStrategy: String = config.getString("akka.actor.kryo.idstrategy")
 
     val ImplicitRegistrationLogging: Boolean = config.getBoolean("akka.actor.kryo.implicit-registration-logging")

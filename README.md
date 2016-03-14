@@ -124,12 +124,12 @@ The following options are available for configuring this serializer:
             type = "graph"
 
             # Possible values for idstrategy are:
-            # default, explicit, incremental
+            # default, explicit, incremental, automatic
             #
             # default - slowest and produces bigger serialized representation.
             # Contains fully-qualified class names (FQCNs) for each class. Note
             # that selecting this strategy does not work in version 0.3.2, but
-            # is available on master and from 0.3.3 onward.
+            # is available from 0.3.3 onward.
             #
             # explicit - fast and produces compact serialized representation.
             # Requires that all classes that will be serialized are pre-registered
@@ -144,6 +144,11 @@ The following options are available for configuring this serializer:
             # registered dynamically by picking a next available id To guarantee
             # that both sender and receiver use the same numeric ids for the same
             # classes it is advised to pre-register them using at least the "classes" section.
+            #
+            # automatic -  use the pre-registered classes with fallback to FQCNs
+            # Contains fully-qualified class names (FQCNs) for each non pre-registered
+            # class in the "mappings" and "classes" sections. That this strategy was
+            # added in version 0.4.1 and will not work with the previous versions
 
             idstrategy = "incremental"
 
@@ -209,9 +214,10 @@ The following options are available for configuring this serializer:
             # Define mappings from a fully qualified class name to a numeric id.
             # Smaller ids lead to smaller sizes of serialized representations.
             #
-            # This section is mandatory for idstartegy=explicit
-            # This section is optional  for idstartegy=incremental
-            # This section is ignored   for idstartegy=default
+            # This section is:
+            # - mandatory for idstrategy="explicit"
+            # - ignored   for idstrategy="default"
+            # - optional  for incremental and automatic
             #
             # The smallest possible id should start at 20 (or even higher), because
             # ids below it are used by Kryo internally e.g. for built-in Java and
@@ -226,9 +232,8 @@ The following options are available for configuring this serializer:
             # The ids for those classes will be assigned automatically,
             # but respecting the order of declaration in this section
             #
-            # This section is optional  for idstartegy=incremental
-            # This section is ignored   for idstartegy=default
-            # This section is optional  for idstartegy=explicit
+            # This section is ignored for idstrategy="default" and optional for
+            # all other.
             classes = [
                 "package3.name3.className3",
                 "package4.name4.className4"
