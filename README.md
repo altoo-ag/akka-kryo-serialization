@@ -111,7 +111,9 @@ The following options are available for configuring this serializer:
 
 * You need to add a following line to the list of your Akka extensions:
 
-    extensions = ["com.romix.akka.serialization.kryo.KryoSerializationExtension$"]
+```
+extensions = ["com.romix.akka.serialization.kryo.KryoSerializationExtension$"]
+```
 
 * You need to add a new `kryo` section to the akka.actor part of configuration
 
@@ -241,13 +243,15 @@ The following options are available for configuring this serializer:
         }
 
 
-* You should declare in the Akka `serializers` section a new kind of serializer:
+* You should declare in the `akka.actor.serializers` section a new kind of serializer:
 
-    serializers {
-        java = "akka.serialization.JavaSerializer"
-        # Define kryo serializer
-        kryo = "com.romix.akka.serialization.kryo.KryoSerializer"
-    }
+```
+serializers {
+    java = "akka.serialization.JavaSerializer"
+    # Define kryo serializer
+    kryo = "com.romix.akka.serialization.kryo.KryoSerializer"
+}
+```
 
 * As usual, you should declare in the Akka `serialization-bindings` section which
 classes should use kryo serialization. One thing to keep in mind is that classes that
