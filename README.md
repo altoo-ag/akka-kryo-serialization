@@ -213,20 +213,20 @@ extensions = ["com.romix.akka.serialization.kryo.KryoSerializationExtension$"]
             # addition to what is done automatically based on the config file.
             kryo-custom-serializer-init = "CustomKryoSerializerInitFQCN"
 			
-			# If enabled, allows Kryo to resolve subclasses of registered Types.
-			#
-			# This is primarily useful when idstrategy is set to "explicit". In this
-			# case, all classes to be serialized must be explicitly registered. The
-			# problem is that a large number of common Scala and Akka types (such as
-			# Map and ActorRef) are actually traits that mask a large number of
-			# specialized classes that deal with various situations and optimizations.
-			# It isn't straightforward to register all of these, so you can instead
-			# register a single supertype, with a serializer that can handle *all* of
-			# the subclasses, and the subclasses get serialized with that.
-			#
-			# Use this with care: you should only rely on this when you are confident
-			# that the superclass serializer covers all of the special cases properly. 
-			resolve-subclasses = false
+            # If enabled, allows Kryo to resolve subclasses of registered Types.
+            #
+            # This is primarily useful when idstrategy is set to "explicit". In this
+            # case, all classes to be serialized must be explicitly registered. The
+            # problem is that a large number of common Scala and Akka types (such as
+            # Map and ActorRef) are actually traits that mask a large number of
+            # specialized classes that deal with various situations and optimizations.
+            # It isn't straightforward to register all of these, so you can instead
+            # register a single supertype, with a serializer that can handle *all* of
+            # the subclasses, and the subclasses get serialized with that.
+            #
+            # Use this with care: you should only rely on this when you are confident
+            # that the superclass serializer covers all of the special cases properly. 
+            resolve-subclasses = false
 
             # Define mappings from a fully qualified class name to a numeric id.
             # Smaller ids lead to smaller sizes of serialized representations.
@@ -330,7 +330,7 @@ You may need to repeat the process several times until you see no further log
 messages about implicitly registered classes.
 
 Another useful trick is to provide your own custom initializer for Kryo (see
-below) and inside it you register classes of a few objects that are typically
+below) and inside it you registerclasses of a few objects that are typically
 used by your application, for example:
 
 ```scala
@@ -363,7 +363,7 @@ This is possible by providing the following optional parameter in the config fil
 Where `CustomKryoSerializerInitFQCN` is a fully qualified class name of your custom
 serializer class. And custom serializer class can be just any class with a default
 no-arg constructor and a method called `customize`, which takes one parameter of
-type Kryo and has a void return type, i.e.
+type Kryo and has a voidreturn type, i.e.
 
 ```scala
     public void customize(Kryo kryo); // for Java
