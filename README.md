@@ -212,6 +212,21 @@ extensions = ["com.romix.akka.serialization.kryo.KryoSerializationExtension$"]
             # class name to perform a custom initialization of Kryo instances in
             # addition to what is done automatically based on the config file.
             kryo-custom-serializer-init = "CustomKryoSerializerInitFQCN"
+			
+			# If enabled, allows Kryo to resolve subclasses of registered Types.
+			#
+			# This is primarily useful when idstrategy is set to "explicit". In this
+			# case, all classes to be serialized must be explicitly registered. The
+			# problem is that a large number of common Scala and Akka types (such as
+			# Map and ActorRef) are actually traits that mask a large number of
+			# specialized classes that deal with various situations and optimizations.
+			# It isn't straightforward to register all of these, so you can instead
+			# register a single supertype, with a serializer that can handle *all* of
+			# the subclasses, and the subclasses get serialized with that.
+			#
+			# Use this with care: you should only rely on this when you are confident
+			# that the superclass serializer covers all of the special cases properly. 
+			resolve-subclasses = false
 
             # Define mappings from a fully qualified class name to a numeric id.
             # Smaller ids lead to smaller sizes of serialized representations.
@@ -398,6 +413,52 @@ An example of such a custom aes-key supplier class could be something like this:
         }
     }
 ```
+
+Resolving Subclasses
+--------------------
+
+If you are using `idstrategy="explicit"`, you may find that some of the standard Scala and
+Akka types are a bit hard to register properly. This is because these types are exposed in
+the API as simple traits or abstract classes, but they are actually implemented as many
+specialized subclasses that are used as necessary. Examples include:
+
+* scala.collection.immutable.Map
+* scala.collection.immutable.Set
+* akka.actor.ActorRef
+* akka.actor.ActorPath
+
+The problem is that Kryo thinks in terms of the *exact* class being serialized, but you are
+rarely working with the actual implementation class -- the application code only cares about
+the more abstract trait. The implementation class often isn't obvious, and is sometimes
+private to the library it comes from. This isn't an issue for idstrategies that add registrations
+when needed, or which use the class name, but in `explicit` you must register every class to be
+serialized, and that may turn out to be more than you expect.
+
+For cases like these, you can use the `SubclassResolver`. This is a variant of the standard
+Kryo ClassResolver, which is able to deal with subclasses of the registered types. You turn it
+on by setting 
+
+    resolve-subclasses = true
+    
+With that turned on, unregistered subclasses of a registered supertype are serialized as that
+supertype. So for example, if you have registered `immutable.Set`, and the object being serialized
+is actually an `immutable.Set.Set3` (the subclass used for Sets of 3 elements), it will serialize and
+deserialize that as an `immutable.Set`.
+
+If you register `immutable.Map`, you should use the `ScalaImmutableAbstractMapSerializer` with it.
+If you register `immutable.Set`, you should use the `ScalaImmutableAbstractSetSerializer`. These
+serializers are specifically designed to work with those traits.
+
+The `SubclassResolver` approach should only be used in cases where the implementation types are completely
+opaque, chosen by the implementation library, and not used explicitly in application code. If you have
+subclasses that have their own distinct semantics, such as `immutable.ListMap`, you should register
+those separately. You can register both a higher-level class like `immutable.Map` and a subclass
+like `immutable.ListMap` -- the resolver will choose the more-specific one when appropriate.
+
+`SubclassResolver` should be used with care -- even when it is turned on, you should define and
+register most of your classes explicitly, as usual. But it is a helpful way to tame the complexity
+of some class hierarchies, when that complexity can be treated as an implementation detail and all
+of the subclasses can be serialized and deserialized identically. 
 
 Usage as a general purpose Scala serialization library
 ------------------------------------------------------

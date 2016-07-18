@@ -10,10 +10,15 @@ import org.scalatest.FlatSpec
 
 abstract class SpecCase extends FlatSpec {
   var kryo: Kryo = null
+  
+  val useSubclassResolver:Boolean = false
 
   override def withFixture(test: NoArgTest) = {
     val referenceResolver = new MapReferenceResolver()
-    kryo = new Kryo(referenceResolver)
+    if (useSubclassResolver)
+      kryo = new Kryo(new SubclassResolver(), referenceResolver)
+    else
+      kryo = new Kryo(referenceResolver)
     kryo.setReferences(true)
     kryo.setAutoReset(false)
     // Support deserialization of classes without no-arg constructors
