@@ -98,6 +98,38 @@ class ScalaImmutableMapSerializer() extends Serializer[IMap[_, _]] {
   }
 }
 
+class ScalaImmutableAbstractMapSerializer() extends Serializer[IMap[_, _]] {
+
+  setImmutable(true)
+
+  override def read(kryo: Kryo, input: Input, typ: Class[IMap[_, _]]): IMap[_, _] = {
+    val len = input.readInt(true)
+    var coll: IMap[Any, Any] = IMap.empty
+
+    if (len != 0) {
+      var i = 0
+      while (i < len) {
+        coll += kryo.readClassAndObject(input) -> kryo.readClassAndObject(input)
+        i += 1
+      }
+    }
+    coll
+  }
+
+  override def write(kryo: Kryo, output: Output, collection: IMap[_, _]) = {
+    val len = collection.size
+    output.writeInt(len, true)
+    if (len != 0) {
+      val it = collection.iterator
+      while (it.hasNext) {
+        val t = it.next
+        kryo.writeClassAndObject(output, t._1)
+        kryo.writeClassAndObject(output, t._2)
+      }
+    }
+  }
+}
+
 class ScalaSortedMapSerializer() extends Serializer[SortedMap[_, _]] {
   private var class2constuctor = IMap[Class[_], Constructor[_]]()
 

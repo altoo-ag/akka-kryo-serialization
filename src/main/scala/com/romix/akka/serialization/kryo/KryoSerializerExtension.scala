@@ -67,6 +67,8 @@ object KryoSerialization {
     val KryoCustomSerializerInit: String = Try(config.getString("akka.actor.kryo.kryo-custom-serializer-init")).getOrElse(null)
 
     val CustomQueueBuilder: String = Try(config.getString("akka.actor.kryo.custom-queue-builder")).getOrElse(null)
+    
+    val ResolveSubclasses: Boolean = config.getBoolean("akka.actor.kryo.resolve-subclasses")
 
     private def configToMap(cfg: Config): Map[String, String] =
       cfg.root.unwrapped.asScala.toMap.map { case (k, v) => (k, v.toString) }

@@ -317,6 +317,12 @@ class KryoSerializer(val system: ExtendedActorSystem) extends Serializer {
   locally {
     log.debug("Got serializer: {}", serializer)
   }
+  
+  val resolveSubclasses = settings.ResolveSubclasses
+  
+  locally {
+    log.debug("Got resolveSubclasses: {}", resolveSubclasses)
+  }
 
   // This is whether "fromBinary" requires a "clazz" or not
   def includeManifest: Boolean = useManifests
@@ -355,6 +361,7 @@ class KryoSerializer(val system: ExtendedActorSystem) extends Serializer {
     val referenceResolver = if (settings.KryoReferenceMap) new MapReferenceResolver() else new ListReferenceResolver()
     val classResolver =
       if (settings.IdStrategy == "incremental") new KryoClassResolver(implicitRegistrationLogging)
+      else if (resolveSubclasses) new SubclassResolver()
       else new DefaultClassResolver()
     val kryo = new ScalaKryo(classResolver, referenceResolver, new DefaultStreamFactory())
     kryo.setClassLoader(system.dynamicAccess.classLoader)
@@ -434,6 +441,12 @@ class KryoSerializer(val system: ExtendedActorSystem) extends Serializer {
     }
 
     Try(customizerMethod.get.get.invoke(customizerInstance.get.get, kryo))
+    
+    classResolver match {
+      // Now that we're done with registration, turn on the SubclassResolver:
+      case resolver:SubclassResolver => resolver.enable()
+      case _ =>
+    }
 
     kryo
   }

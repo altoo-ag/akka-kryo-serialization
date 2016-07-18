@@ -99,6 +99,30 @@ class ScalaImmutableSetSerializer() extends Serializer[imSet[_]] {
   }
 }
 
+class ScalaImmutableAbstractSetSerializer() extends Serializer[imSet[_]] {
+
+  setImmutable(true)
+
+  override def read(kryo: Kryo, input: Input, typ: Class[imSet[_]]): imSet[_] = {
+    val len = input.readInt(true)
+    var coll: imSet[Any] = Set.empty
+    var i = 0
+    while (i < len) {
+      coll += kryo.readClassAndObject(input)
+      i += 1
+    }
+    coll
+  }
+
+  override def write(kryo: Kryo, output: Output, collection: imSet[_]) = {
+    output.writeInt(collection.size, true)
+    val it = collection.iterator
+    while (it.hasNext) {
+      kryo.writeClassAndObject(output, it.next)
+    }
+  }
+}
+
 class ScalaMutableSortedSetSerializer() extends Serializer[mSSet[_]] {
   var class2constuctor = Map[Class[_], Constructor[_]]()
 
