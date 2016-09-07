@@ -29,7 +29,7 @@ import akka.actor.{ActorRef, ExtendedActorSystem}
 import akka.event.Logging
 import akka.serialization._
 import com.esotericsoftware.kryo.Kryo
-import com.esotericsoftware.kryo.io.{Input, Output}
+import com.esotericsoftware.kryo.io.{Input, Output, UnsafeInput, UnsafeOutput}
 import com.esotericsoftware.kryo.serializers.FieldSerializer
 import com.esotericsoftware.kryo.util._
 import com.esotericsoftware.minlog.{Log => MiniLog}
@@ -215,6 +215,11 @@ class KryoSerializer(val system: ExtendedActorSystem) extends Serializer {
     log.debug("Got use manifests: {}", useManifests)
   }
 
+  val useUnsafe = settings.UseUnsafe
+  locally {
+    log.debug("Got use unsafe: {}", useUnsafe)
+  }
+
   val customSerializerInitClassName = settings.KryoCustomSerializerInit
   locally {
     log.debug("Got custom serializer init class: {}", customSerializerInitClassName)
@@ -307,7 +312,8 @@ class KryoSerializer(val system: ExtendedActorSystem) extends Serializer {
   val serializer = try new KryoBasedSerializer(getKryo(idStrategy, serializerType),
     bufferSize,
     maxBufferSize,
-    useManifests)
+    useManifests,
+    useUnsafe)
   catch {
     case e: Exception =>
       log.error("exception caught during akka-kryo-serialization startup: {}", e)
@@ -317,9 +323,9 @@ class KryoSerializer(val system: ExtendedActorSystem) extends Serializer {
   locally {
     log.debug("Got serializer: {}", serializer)
   }
-  
+
   val resolveSubclasses = settings.ResolveSubclasses
-  
+
   locally {
     log.debug("Got resolveSubclasses: {}", resolveSubclasses)
   }
@@ -351,7 +357,8 @@ class KryoSerializer(val system: ExtendedActorSystem) extends Serializer {
     new KryoBasedSerializer(getKryo(idStrategy, serializerType),
       bufferSize,
       maxBufferSize,
-      useManifests)
+      useManifests,
+      useUnsafe)
   )
 
   private def getSerializer = serializerPool.fetch()
@@ -390,11 +397,9 @@ class KryoSerializer(val system: ExtendedActorSystem) extends Serializer {
     kryo.addDefaultSerializer(classOf[scala.collection.immutable.SortedSet[_]], classOf[ScalaImmutableSortedSetSerializer])
     kryo.addDefaultSerializer(classOf[scala.collection.immutable.Set[_]], classOf[ScalaImmutableSetSerializer])
 
-
     kryo.addDefaultSerializer(classOf[scala.collection.mutable.BitSet], classOf[FieldSerializer[scala.collection.mutable.BitSet]])
     kryo.addDefaultSerializer(classOf[scala.collection.mutable.SortedSet[_]], classOf[ScalaMutableSortedSetSerializer])
     kryo.addDefaultSerializer(classOf[scala.collection.mutable.Set[_]], classOf[ScalaMutableSetSerializer])
-
 
     // Map/Set Factories
     kryo.addDefaultSerializer(classOf[scala.collection.generic.MapFactory[scala.collection.Map]], classOf[ScalaImmutableMapSerializer])
@@ -441,7 +446,7 @@ class KryoSerializer(val system: ExtendedActorSystem) extends Serializer {
     }
 
     Try(customizerMethod.get.get.invoke(customizerInstance.get.get, kryo))
-    
+
     classResolver match {
       // Now that we're done with registration, turn on the SubclassResolver:
       case resolver:SubclassResolver => resolver.enable()
@@ -462,42 +467,51 @@ class KryoBasedSerializer(
     val kryo: Kryo,
     val bufferSize: Int,
     val maxBufferSize: Int,
-    val useManifests: Boolean) extends Serializer {
-
-  // This is whether "fromBinary" requires a "clazz" or not
-  def includeManifest: Boolean = useManifests
+    val includeManifest: Boolean,
+    val useUnsafe: Boolean) extends Serializer {
 
   // A unique identifier for this Serializer
   def identifier = 12454323
 
   // "toBinary" serializes the given object to an Array of Bytes
   def toBinary(obj: AnyRef): Array[Byte] = {
-    val buffer = getBuffer
+    val buffer = getOutput
     try {
-      if (useManifests)
+      if (includeManifest)
         kryo.writeObject(buffer, obj)
       else
         kryo.writeClassAndObject(buffer, obj)
       buffer.toBytes
-    } finally
+    } finally {
       releaseBuffer(buffer)
+    }
   }
 
   // "fromBinary" deserializes the given array,
   // using the type hint (if any, see "includeManifest" above)
   // into the optionally provided classLoader.
   def fromBinary(bytes: Array[Byte], clazz: Option[Class[_]]): AnyRef = {
-    if (useManifests)
+    if (includeManifest)
       clazz match {
-        case Some(c) => kryo.readObject(new Input(bytes), c).asInstanceOf[AnyRef]
+        case Some(c) => kryo.readObject(getInput(bytes), c).asInstanceOf[AnyRef]
         case _ => throw new RuntimeException("Object of unknown class cannot be deserialized")
       }
     else
-      kryo.readClassAndObject(new Input(bytes))
+      kryo.readClassAndObject(getInput(bytes))
   }
 
-  val buf = new Output(bufferSize, maxBufferSize)
-  private def getBuffer = buf
+  private[this] val getOutput =
+    if (useUnsafe)
+      new UnsafeOutput(bufferSize, maxBufferSize)
+    else
+      new Output(bufferSize, maxBufferSize)
+
+  private def getInput(bytes: Array[Byte]): Input =
+    if (useUnsafe)
+      new UnsafeInput(bytes)
+    else
+      new Input(bytes)
+
   private def releaseBuffer(buffer: Output) = { buffer.clear() }
 
 }

@@ -54,6 +54,8 @@ object KryoSerialization {
 
     val UseManifests: Boolean = config.getBoolean("akka.actor.kryo.use-manifests")
 
+    val UseUnsafe: Boolean = config.getBoolean("akka.actor.kryo.use-unsafe")
+
     val AESKeyClass: String = Try(config.getString("akka.actor.kryo.encryption.aes.custom-key-class")).getOrElse(null)
 
     val AESKey = Try(config.getString(s"akka.actor.kryo.encryption.aes.key")).getOrElse("ThisIsASecretKey")
@@ -67,7 +69,7 @@ object KryoSerialization {
     val KryoCustomSerializerInit: String = Try(config.getString("akka.actor.kryo.kryo-custom-serializer-init")).getOrElse(null)
 
     val CustomQueueBuilder: String = Try(config.getString("akka.actor.kryo.custom-queue-builder")).getOrElse(null)
-    
+
     val ResolveSubclasses: Boolean = config.getBoolean("akka.actor.kryo.resolve-subclasses")
 
     private def configToMap(cfg: Config): Map[String, String] =
