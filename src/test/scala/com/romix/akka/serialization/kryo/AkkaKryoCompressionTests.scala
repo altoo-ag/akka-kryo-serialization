@@ -50,13 +50,17 @@ class AkkaKryoCompressionTests extends FlatSpec {
               "[Lscala.collection.mutable.LongMap;"               = 56
               "scala.collection.immutable.LongMap"                = 57
               "[Lscala.collection.immutable.LongMap;"             = 58
+              "scala.collection.immutable.Vector"                 = 59
+              "[Lscala.collection.immutable.Vector;"              = 60
 
               "[J" = 150
-              "[D" = 151
-              "[Z" = 152
-              "[Ljava.lang.Object;" = 153
-              "[Ljava.lang.String;" = 154
-              "scala.math.Ordering$String$" = 155
+              "[I" = 151
+              "[[I" = 152
+              "[D" = 153
+              "[Z" = 154
+              "[Ljava.lang.Object;" = 155
+              "[Ljava.lang.String;" = 156
+              "scala.math.Ordering$String$" = 157
             }
           }
          serializers {
@@ -99,6 +103,12 @@ class AkkaKryoCompressionTests extends FlatSpec {
             "[Lscala.collection.mutable.TreeSet;" = kryo
             "scala.collection.mutable.BitSet" = kryo
             "[Lscala.collection.mutable.BitSet;" = kryo
+
+            "scala.collection.immutable.Vector" = kryo
+            "[Lscala.collection.immutable.Vector;" = kryo
+
+            "[Ljava.lang.Object;" = kryo
+            "[[I" = kryo
           }
         }
       }
@@ -107,7 +117,7 @@ class AkkaKryoCompressionTests extends FlatSpec {
   def testConfig(systemName: String, config: String): Unit = {
     val system = ActorSystem(systemName, ConfigFactory.parseString(config).withFallback(defaultConfig))
 
-    val iterations = 500
+    val iterations = 1000
     val listLength = 500
 
     def timeIt[A](name: String, loops: Int)(a: => A) = {
@@ -118,7 +128,7 @@ class AkkaKryoCompressionTests extends FlatSpec {
         i += 1
       }
       val ms = (System.nanoTime - now) / 1000000
-      println(s"$systemName $name:\t$ms\tms\t=\t${loops * listLength / ms}\tops/ms")
+      println(s"$systemName $name\t$ms\tms\t=\t${loops * listLength / ms}\tops/ms")
     }
 
     // Get the Serialization Extension
@@ -281,8 +291,8 @@ class AkkaKryoCompressionTests extends FlatSpec {
         HashMap[String, Any](
           "foo" -> r.nextDouble,
           "bar" -> "foo,bar,baz",
-          "baz" -> 124L,
-          "hash" -> HashMap[Int, Int](r.nextInt -> r.nextInt, 5 -> 500, 10 -> r.nextInt))
+          "baz" -> 124L
+        )
       }
 
       if (systemName != "Java")
@@ -314,8 +324,8 @@ class AkkaKryoCompressionTests extends FlatSpec {
         TreeMap[String, Any](
           "foo" -> r.nextDouble,
           "bar" -> "foo,bar,baz",
-          "baz" -> 124L,
-          "hash" -> HashMap[Int, Int](r.nextInt -> r.nextInt, 5 -> 500, 10 -> r.nextInt))
+          "baz" -> 124L
+        )
       }
 
       if (systemName != "Java")
@@ -348,8 +358,8 @@ class AkkaKryoCompressionTests extends FlatSpec {
         LongMap[Any](
           1L -> r.nextDouble,
           2L -> "foo,bar,baz",
-          3L -> 124L,
-          4L -> HashMap[Int, Int](r.nextInt -> r.nextInt, 5 -> 500, 10 -> r.nextInt))
+          3L -> 124L
+        )
       }
 
       if (systemName != "Java")
@@ -382,8 +392,8 @@ class AkkaKryoCompressionTests extends FlatSpec {
           AnyRefMap[String, Any](
             "foo" -> r.nextDouble,
             "bar" -> "foo,bar,baz",
-            "baz" -> 124L,
-            "hash" -> HashMap[Int, Int](r.nextInt -> r.nextInt, 5 -> 500, 10 -> r.nextInt))
+            "baz" -> 124L
+          )
         }
 
         assert(serialization.findSerializerFor(atm).getClass == classOf[KryoSerializer])
@@ -412,8 +422,8 @@ class AkkaKryoCompressionTests extends FlatSpec {
         scala.collection.mutable.HashMap[String, Any](
           "foo" -> r.nextDouble,
           "bar" -> "foo,bar,baz",
-          "baz" -> 124L,
-          "hash" -> HashMap[Int, Int](r.nextInt -> r.nextInt, 5 -> 500, 10 -> r.nextInt))
+          "baz" -> 124L
+        )
       }
 
       if (systemName != "Java")
@@ -446,8 +456,8 @@ class AkkaKryoCompressionTests extends FlatSpec {
         LongMap[Any](
           1L -> r.nextDouble,
           2L -> "foo,bar,baz",
-          3L -> 124L,
-          4L -> HashMap[Int, Int](r.nextInt -> r.nextInt, 5 -> 500, 10 -> r.nextInt))
+          3L -> 124L
+        )
       }
 
       if (systemName != "Java")
@@ -655,6 +665,69 @@ class AkkaKryoCompressionTests extends FlatSpec {
       timeIt("Mutable BitSet Deserialize: ", iterations)(serialization.deserialize(bytes, classOf[Array[scala.collection.mutable.BitSet]]))
       timeIt("Mutable BitSet Deserialize: ", iterations)(serialization.deserialize(bytes, classOf[Array[scala.collection.mutable.BitSet]]))
     }
+
+    it should "serialize and deserialize Array[Vector[Int]] timings (with compression)" in {
+      val r = new scala.util.Random(0L)
+      val orig = Array.fill(listLength) {
+        Vector(
+          1, 4, r.nextInt().abs % 32, r.nextInt().abs % 64, r.nextInt().abs % 64, r.nextInt().abs % 128, r.nextInt().abs % 128, r.nextInt().abs % 256
+        )
+      }
+
+      if (systemName != "Java")
+        assert(serialization.findSerializerFor(orig).getClass == classOf[KryoSerializer])
+      else
+        assert(serialization.findSerializerFor(orig).getClass != classOf[KryoSerializer])
+
+      val serialized = serialization.serialize(orig)
+      assert(serialized.isSuccess)
+
+      val deserialized = serialization.deserialize(serialized.get, classOf[Array[scala.collection.mutable.BitSet]])
+      assert(deserialized.isSuccess)
+
+      val bytes = serialized.get
+      println(s"Serialized to ${bytes.length} bytes")
+
+      timeIt("Vector Serialize:   ", iterations) { serialization.serialize(orig) }
+      timeIt("Vector Serialize:   ", iterations) { serialization.serialize(orig) }
+      timeIt("Vector Serialize:   ", iterations) { serialization.serialize(orig) }
+
+      timeIt("Vector Deserialize: ", iterations)(serialization.deserialize(bytes, classOf[Array[Vector[Int]]]))
+      timeIt("Vector Deserialize: ", iterations)(serialization.deserialize(bytes, classOf[Array[Vector[Int]]]))
+      timeIt("Vector Deserialize: ", iterations)(serialization.deserialize(bytes, classOf[Array[Vector[Int]]]))
+    }
+
+    it should "serialize and deserialize Array[Array[Int]] timings (with compression)" in {
+      val r = new scala.util.Random(0L)
+      val orig = Array.fill(listLength) {
+        Array(
+          1, 4, r.nextInt().abs % 32, r.nextInt().abs % 64, r.nextInt().abs % 64, r.nextInt().abs % 128, r.nextInt().abs % 128, r.nextInt().abs % 256
+        )
+      }
+
+      if (systemName != "Java")
+        assert(serialization.findSerializerFor(orig).getClass == classOf[KryoSerializer])
+      else
+        assert(serialization.findSerializerFor(orig).getClass != classOf[KryoSerializer])
+
+      val serialized = serialization.serialize(orig)
+      assert(serialized.isSuccess)
+
+      val deserialized = serialization.deserialize(serialized.get, classOf[Array[scala.collection.mutable.BitSet]])
+      assert(deserialized.isSuccess)
+
+      val bytes = serialized.get
+      println(s"Serialized to ${bytes.length} bytes")
+
+      timeIt("Array Serialize:   ", iterations) { serialization.serialize(orig) }
+      timeIt("Array Serialize:   ", iterations) { serialization.serialize(orig) }
+      timeIt("Array Serialize:   ", iterations) { serialization.serialize(orig) }
+
+      timeIt("Array Deserialize: ", iterations)(serialization.deserialize(bytes, classOf[Array[Array[Int]]]))
+      timeIt("Array Deserialize: ", iterations)(serialization.deserialize(bytes, classOf[Array[Array[Int]]]))
+      timeIt("Array Deserialize: ", iterations)(serialization.deserialize(bytes, classOf[Array[Array[Int]]]))
+    }
+
   }
 
   testConfig("Zip", "akka.actor.kryo.post-serialization-transformations = deflate")
@@ -670,6 +743,10 @@ class AkkaKryoCompressionTests extends FlatSpec {
     """.stripMargin)
   testConfig("Off", "")
   testConfig("Unsafe", "akka.actor.kryo.use-unsafe = true")
+  testConfig("UnsafeLZ4",
+    """akka.actor.kryo.use-unsafe = true
+      |akka.actor.kryo.post-serialization-transformations = lz4
+    """.stripMargin)
   testConfig("Java",
     """akka.actor.serialization-bindings {
       |"scala.Product" = java
@@ -698,6 +775,9 @@ class AkkaKryoCompressionTests extends FlatSpec {
       |"[Lscala.collection.mutable.TreeSet;" = java
       |"scala.collection.mutable.BitSet" = java
       |"[Lscala.collection.mutable.BitSet;" = java
+      |"scala.collection.immutable.Vector" = java
+      |"[Lscala.collection.immutable.Vector;" = java
+      |"[[I" = java
       |}
       |""".stripMargin)
 }
