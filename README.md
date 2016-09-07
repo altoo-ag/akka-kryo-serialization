@@ -22,7 +22,7 @@ Features
 How to use this library in your project
 ---------------------------------------
 
-We provide two versions of the libraray:
+We provide several versions of the libraray:
 
 * v0.3.3 is build against Akka-2.3 and in available for Scala-2.10 and 2.11
 * v0.4.1 is build against Akka-2.4 and is available for Scala-2.11 and will be made
@@ -34,7 +34,7 @@ To use this serializer, you need to do two things:
 
     `libraryDependencies += "com.github.romix.akka" %% "akka-kryo-serialization" % "0.4.1"`
 
-  or if you are building for Akka-2.3:
+  or if you are building for Akka-2.3 or Scala-2.10:
 
     `libraryDependencies += "com.github.romix.akka" %% "akka-kryo-serialization" % "0.3.3"`
 
@@ -149,7 +149,7 @@ extensions = ["com.romix.akka.serialization.kryo.KryoSerializationExtension$"]
             #
             # automatic -  use the pre-registered classes with fallback to FQCNs
             # Contains fully-qualified class names (FQCNs) for each non pre-registered
-            # class in the "mappings" and "classes" sections. That this strategy was
+            # class in the "mappings" and "classes" sections. This strategy was
             # added in version 0.4.1 and will not work with the previous versions
 
             idstrategy = "incremental"
@@ -175,6 +175,12 @@ extensions = ["com.romix.akka.serialization.kryo.KryoSerializationExtension$"]
             # If set, akka uses manifests to put a class name
             # of the top-level object into each message
             use-manifests = false
+
+            # If set it will use the UnsafeInput and UnsafeOutput
+            # Kyro IO instances. Please note that there is no guarantee
+            # for backward/forward compatibility of unsafe serialization.
+            # It is also not compatible with the safe-serialized values
+            use-unsafe = false
 
             # The transformations that have be done while serialization
             # Supported transformations: compression and encryption
@@ -212,7 +218,7 @@ extensions = ["com.romix.akka.serialization.kryo.KryoSerializationExtension$"]
             # class name to perform a custom initialization of Kryo instances in
             # addition to what is done automatically based on the config file.
             kryo-custom-serializer-init = "CustomKryoSerializerInitFQCN"
-			
+
             # If enabled, allows Kryo to resolve subclasses of registered Types.
             #
             # This is primarily useful when idstrategy is set to "explicit". In this
@@ -225,7 +231,7 @@ extensions = ["com.romix.akka.serialization.kryo.KryoSerializationExtension$"]
             # the subclasses, and the subclasses get serialized with that.
             #
             # Use this with care: you should only rely on this when you are confident
-            # that the superclass serializer covers all of the special cases properly. 
+            # that the superclass serializer covers all of the special cases properly.
             resolve-subclasses = false
 
             # Define mappings from a fully qualified class name to a numeric id.
@@ -436,10 +442,10 @@ serialized, and that may turn out to be more than you expect.
 
 For cases like these, you can use the `SubclassResolver`. This is a variant of the standard
 Kryo ClassResolver, which is able to deal with subclasses of the registered types. You turn it
-on by setting 
+on by setting
 
     resolve-subclasses = true
-    
+
 With that turned on, unregistered subclasses of a registered supertype are serialized as that
 supertype. So for example, if you have registered `immutable.Set`, and the object being serialized
 is actually an `immutable.Set.Set3` (the subclass used for Sets of 3 elements), it will serialize and
@@ -458,7 +464,7 @@ like `immutable.ListMap` -- the resolver will choose the more-specific one when 
 `SubclassResolver` should be used with care -- even when it is turned on, you should define and
 register most of your classes explicitly, as usual. But it is a helpful way to tame the complexity
 of some class hierarchies, when that complexity can be treated as an implementation detail and all
-of the subclasses can be serialized and deserialized identically. 
+of the subclasses can be serialized and deserialized identically.
 
 Usage as a general purpose Scala serialization library
 ------------------------------------------------------
