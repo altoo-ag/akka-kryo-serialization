@@ -675,6 +675,7 @@ class AkkaKryoCompressionTests extends FlatSpec {
       |akka.actor.kryo.encryption.aes.key = j68KkRjq21ykRGAQ
     """.stripMargin)
   testConfig("Off", "")
+  testConfig("Unsafe", "akka.actor.kryo.use-unsafe = true")
   testConfig("Java",
     """akka.actor.serialization-bindings {
       |"scala.Product" = java
