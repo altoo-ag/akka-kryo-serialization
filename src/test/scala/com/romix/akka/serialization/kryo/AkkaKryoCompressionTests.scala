@@ -118,7 +118,7 @@ class AkkaKryoCompressionTests extends FlatSpec {
         i += 1
       }
       val ms = (System.nanoTime - now) / 1000000
-      println(s"$systemName $name:\t$ms\tms\t=\t${loops * iterations / ms}\tops/s")
+      println(s"$systemName $name:\t$ms\tms\t=\t${loops * listLength / ms}\tops/ms")
     }
 
     // Get the Serialization Extension
