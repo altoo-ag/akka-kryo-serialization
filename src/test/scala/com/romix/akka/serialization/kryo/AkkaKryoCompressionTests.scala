@@ -713,7 +713,7 @@ class AkkaKryoCompressionTests extends FlatSpec {
       val serialized = serialization.serialize(orig)
       assert(serialized.isSuccess)
 
-      val deserialized = serialization.deserialize(serialized.get, classOf[Array[scala.collection.mutable.BitSet]])
+      val deserialized = serialization.deserialize(serialized.get, classOf[Array[Array[Int]]])
       assert(deserialized.isSuccess)
 
       val bytes = serialized.get
