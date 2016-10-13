@@ -52,15 +52,15 @@ class NoKryoTransformer extends Transformation {
 }
 
 class KryoTransformer(transformations: List[Transformation]) {
-  val toPipeLine = transformations.map(x => x.toBinary _)
-  val fromPipeLine = transformations.map(x => x.fromBinary _).reverse
+  private[this] val toPipeLine = transformations.map(x => x.toBinary _).reduceLeft(_ andThen _)
+  private[this] val fromPipeLine = transformations.map(x => x.fromBinary _).reverse.reduceLeft(_ andThen _)
 
   def toBinary(inputBuff: Array[Byte]): Array[Byte] = {
-    toPipeLine.reduceLeft(_ andThen _)(inputBuff)
+    toPipeLine(inputBuff)
   }
 
   def fromBinary(inputBuff: Array[Byte]) = {
-    fromPipeLine.reduceLeft(_ andThen _)(inputBuff)
+    fromPipeLine(inputBuff)
   }
 }
 

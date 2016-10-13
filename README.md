@@ -179,7 +179,9 @@ extensions = ["com.romix.akka.serialization.kryo.KryoSerializationExtension$"]
             # If set it will use the UnsafeInput and UnsafeOutput
             # Kyro IO instances. Please note that there is no guarantee
             # for backward/forward compatibility of unsafe serialization.
-            # It is also not compatible with the safe-serialized values
+            # It is also not compatible with the safe-serialized values.
+            # The unsafe IO usually creates bugger payloads but is faster
+            # for some types, e.g. native arrays.
             use-unsafe = false
 
             # The transformations that have be done while serialization
