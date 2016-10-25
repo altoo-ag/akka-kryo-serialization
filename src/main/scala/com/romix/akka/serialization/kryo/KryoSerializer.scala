@@ -385,6 +385,10 @@ class KryoSerializer(val system: ExtendedActorSystem) extends Serializer {
         throw e
     }
     kryo.register(classOf[scala.Enumeration#Value])
+
+    // identity preserving serializers for Unit and BoxedUnit
+    kryo.addDefaultSerializer(classOf[scala.runtime.BoxedUnit], classOf[ScalaUnitSerializer])
+
     // mutable maps
     kryo.addDefaultSerializer(classOf[scala.collection.mutable.Map[_, _]], classOf[ScalaMutableMapSerializer])
 
