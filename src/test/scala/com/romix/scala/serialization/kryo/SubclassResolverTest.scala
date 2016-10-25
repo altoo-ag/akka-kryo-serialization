@@ -15,10 +15,10 @@ class SubclassResolverTest extends SpecCase {
     val map2 = map1 + ("Moscow" -> "Russia")
     val map3 = map2 + ("Berlin" -> "Germany")
     val map4 = map3 + ("Germany" -> "Berlin", "Russia" -> "Moscow")
-    roundTrip(52, map1)
-    roundTrip(35, map2)
-    roundTrip(35, map3)
-    roundTrip(35, map4)    
+    roundTrip(map1)
+    roundTrip(map2)
+    roundTrip(map3)
+    roundTrip(map4)    
   }
   
   "SubclassResolver" should "work with empty HashMap" in {
@@ -29,7 +29,7 @@ class SubclassResolverTest extends SpecCase {
       case resolver:SubclassResolver => resolver.enable()
     }
     val map1 = Map()
-    roundTrip(52, map1)
+    roundTrip(map1)
   }
   
   "SubclassResolver" should "permit more-specific types to work when specified" in {
@@ -46,8 +46,8 @@ class SubclassResolverTest extends SpecCase {
     }
     val map1 = Map("Rome" -> "Italy", "London" -> "England", "Paris" -> "France", "New York" -> "USA", "Tokio" -> "Japan", "Peking" -> "China", "Brussels" -> "Belgium")
     val map2 = ListMap("Rome" -> "Italy", "London" -> "England", "Paris" -> "France", "New York" -> "USA", "Tokio" -> "Japan", "Peking" -> "China", "Brussels" -> "Belgium")
-    val map1Copy = roundTrip(52, map1)
-    val map2Copy = roundTrip(52, map2)
+    val map1Copy = roundTrip(map1)
+    val map2Copy = roundTrip(map2)
     assert(map1Copy.isInstanceOf[HashMap.HashTrieMap[_,_]])
     assert(map2Copy.isInstanceOf[ListMap[_,_]])
   }
@@ -62,6 +62,6 @@ class SubclassResolverTest extends SpecCase {
     
     val set1 = Set(83, 84, 959)
     val set2 = Set("hello", "world")
-    roundTrip(0, set1)
+    roundTrip(set1)
   }
 }

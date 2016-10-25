@@ -7,7 +7,7 @@ class ScalaKryoTest extends SpecCase {
   kryo = new ScalaKryo(new DefaultClassResolver(), new ListReferenceResolver(), new DefaultStreamFactory())
 
   "ScalaKryo" should "preserve Nil equality" in {
-    val deserializedNil = roundTrip(1, Nil)
+    val deserializedNil = roundTrip(Nil)
     assert(deserializedNil eq Nil)
   }
 

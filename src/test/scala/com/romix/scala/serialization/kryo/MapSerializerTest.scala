@@ -21,10 +21,10 @@ class MapSerializerTest extends SpecCase {
     val map2 = map1 + ("Moscow" -> "Russia")
     val map3 = map2 + ("Berlin" -> "Germany")
     val map4 = map3 + ("Germany" -> "Berlin", "Russia" -> "Moscow")
-    roundTrip(52, map1)
-    roundTrip(35, map2)
-    roundTrip(35, map3)
-    roundTrip(35, map4)
+    roundTrip(map1)
+    roundTrip(map2)
+    roundTrip(map3)
+    roundTrip(map4)
   }
 
   it should "roundtrip immutable sets " in {
@@ -36,10 +36,10 @@ class MapSerializerTest extends SpecCase {
     val set2 = set1 + ("Moscow", "Russia")
     val set3 = set2 + ("Berlin", "Germany")
     val set4 = set3 + ("Germany", "Berlin", "Russia", "Moscow")
-    roundTrip(52, set1)
-    roundTrip(35, set2)
-    roundTrip(35, set3)
-    roundTrip(35, set4)
+    roundTrip(set1)
+    roundTrip(set2)
+    roundTrip(set3)
+    roundTrip(set4)
   }
 
   "Kryo" should "roundtrip mutable maps " in {
@@ -52,10 +52,10 @@ class MapSerializerTest extends SpecCase {
     val map2 = map1 + ("Moscow" -> "Russia")
     val map3 = map2 + ("Berlin" -> "Germany")
     val map4 = map3 + ("Germany" -> "Berlin", "Russia" -> "Moscow")
-    roundTrip(52, map1)
-    roundTrip(35, map2)
-    roundTrip(35, map3)
-    roundTrip(35, map4)
+    roundTrip(map1)
+    roundTrip(map2)
+    roundTrip(map3)
+    roundTrip(map4)
   }
 
   it should "roundtrip muttable AnyRefMap" in {
@@ -68,11 +68,11 @@ class MapSerializerTest extends SpecCase {
     val map2 = map1 + ("Moscow" -> "Russia")
     val map3 = map2 + ("Berlin" -> "Germany")
     val map4 = map3 + ("Germany" -> "Berlin") + ("Russia" -> "Moscow")
-    roundTrip(52, map1)
-    roundTrip(35, map2)
-    roundTrip(35, map3)
-    roundTrip(35, map4)
-    roundTrip(35, List(scala.collection.mutable.AnyRefMap("Leo" -> "Romanoff")))
+    roundTrip(map1)
+    roundTrip(map2)
+    roundTrip(map3)
+    roundTrip(map4)
+    roundTrip(List(scala.collection.mutable.AnyRefMap("Leo" -> "Romanoff")))
   }
 
   it should "roundtrip muttable LongMap" in {
@@ -85,11 +85,11 @@ class MapSerializerTest extends SpecCase {
     val map2 = map1 + (110L -> "Russia")
     val map3 = map2 + (111L -> "Germany")
     val map4 = map3 + (112L -> "Berlin") + (113L -> "Moscow")
-    roundTrip(52, map1)
-    roundTrip(35, map2)
-    roundTrip(35, map3)
-    roundTrip(35, map4)
-    roundTrip(35, List(map3))
+    roundTrip(map1)
+    roundTrip(map2)
+    roundTrip(map3)
+    roundTrip(map4)
+    roundTrip(List(map3))
   }
 
   it should "roundtrip immuttable LongMap" in {
@@ -102,11 +102,11 @@ class MapSerializerTest extends SpecCase {
     val map2 = map1 + (110L -> "Russia")
     val map3 = map2 + (111L -> "Germany")
     val map4 = map3 + (112L -> "Berlin") + (113L -> "Moscow")
-    roundTrip(52, map1)
-    roundTrip(35, map2)
-    roundTrip(35, map3)
-    roundTrip(35, map4)
-    roundTrip(35, List(map3))
+    roundTrip(map1)
+    roundTrip(map2)
+    roundTrip(map3)
+    roundTrip(map4)
+    roundTrip(List(map3))
   }
 
   it should "roundtrip custom classes and maps/vectors/lists of them" in {
@@ -128,13 +128,13 @@ class MapSerializerTest extends SpecCase {
     scl1.vector11 = null
     scl1.list11 = List("LL", "ee", "oo", "nn", "ii", "dd", "aa", "ss")
     val typeParams = scl1.getClass.getTypeParameters
-    roundTrip(35, scl1)
+    roundTrip(scl1)
 
     val scl2 = new ScalaClass1()
     scl2.map11 = map1
     scl2.vector11 = Vector("LL", "ee", "oo")
     scl2.list11 = List("LL", "ee", "oo", "nn")
-    roundTrip(35, scl2)
+    roundTrip(scl2)
   }
 
   it should "roundtrip big immutable maps" in {
@@ -158,11 +158,11 @@ class MapSerializerTest extends SpecCase {
     val map2 = map1 + ("Moscow" -> "Russia")
     val map3 = map2 + ("Berlin" -> "Germany")
     val map4 = map3 + ("Germany" -> "Berlin") + ("Russia" -> "Moscow")
-    roundTrip(52, map1)
-    roundTrip(35, map2)
-    roundTrip(35, map3)
-    roundTrip(35, map4)
-    roundTrip(35, List(Map("Leo" -> "Romanoff")))
+    roundTrip(map1)
+    roundTrip(map2)
+    roundTrip(map3)
+    roundTrip(map4)
+    roundTrip(List(Map("Leo" -> "Romanoff")))
   }
 
   it should "roundtrip big immutable sets" in {
@@ -184,10 +184,10 @@ class MapSerializerTest extends SpecCase {
     val map2 = map1 + "Moscow"
     val map3 = map2 + "Berlin"
     val map4 = map3 + "Germany" + "Russia"
-    roundTrip(52, map1)
-    roundTrip(35, map2)
-    roundTrip(35, map3)
-    roundTrip(35, map4)
+    roundTrip(map1)
+    roundTrip(map2)
+    roundTrip(map3)
+    roundTrip(map4)
   }
 
   it should "roundtrip big immutable lists" in {
@@ -203,10 +203,10 @@ class MapSerializerTest extends SpecCase {
     val map2 = "Moscow" :: "Russia" :: map1
     val map3 = "Berlin" :: "Germany" :: map2
     val map4 = "Germany" :: "Berlin" :: "Russia" :: "Moscow" :: map3
-    roundTrip(52, map1)
-    roundTrip(35, map2)
-    roundTrip(35, map3)
-    roundTrip(35, map4)
+    roundTrip(map1)
+    roundTrip(map2)
+    roundTrip(map3)
+    roundTrip(map4)
   }
 
   it should "roundtrip big immutable sequences" in {
@@ -219,10 +219,10 @@ class MapSerializerTest extends SpecCase {
     val map2 = Seq("Moscow", "Russia") ++ map1
     val map3 = Seq("Berlin", "Germany") ++ map2
     val map4 = Seq("Germany", "Berlin", "Russia", "Moscow") ++ map3
-    roundTrip(52, map1)
-    roundTrip(35, map2)
-    roundTrip(35, map3)
-    roundTrip(35, map4)
+    roundTrip(map1)
+    roundTrip(map2)
+    roundTrip(map3)
+    roundTrip(map4)
   }
 
   it should "roundtrip empty java hash map" in {
@@ -248,7 +248,7 @@ class MapSerializerTest extends SpecCase {
   it should "roundtrip scala hash map" in {
     var map = new scala.collection.immutable.HashMap[String, Int]()
     map ++= Seq("foo" -> 1, "bar" -> 2)
-    roundTrip(2, map)
+    roundTrip(map)
   }
 
   def execute(map: java.util.Map[Any, Any], inserts: Int) = {
@@ -276,7 +276,7 @@ class MapSerializerTest extends SpecCase {
     var map = new TreeMap[Any, Any]()
     map.put("123", "456")
     map.put("789", "abc")
-    roundTrip(19, map)
+    roundTrip(map)
   }
 }
 

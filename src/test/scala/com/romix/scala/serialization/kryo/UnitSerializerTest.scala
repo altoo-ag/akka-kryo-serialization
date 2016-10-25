@@ -15,19 +15,14 @@ class UnitSerializerTest extends SpecCase {
     kryo.setRegistrationRequired(true)
     kryo.addDefaultSerializer(classOf[scala.runtime.BoxedUnit], classOf[ScalaUnitSerializer])
     kryo.register(classOf[scala.runtime.BoxedUnit], 50)
-
-    val unit = ()
-    val result = roundTrip(1, unit)
-    assert(result == unit)
+    roundTrip(())
   }
 
   it should "roundtrip boxedUnit " in {
     kryo.setRegistrationRequired(true)
     kryo.addDefaultSerializer(classOf[scala.runtime.BoxedUnit], classOf[ScalaUnitSerializer])
     kryo.register(classOf[scala.runtime.BoxedUnit], 50)
-    val unit = scala.runtime.BoxedUnit.UNIT
-    val result = roundTrip(1, unit)
-    assert(result == unit)
+    roundTrip(scala.runtime.BoxedUnit.UNIT)
   }
 
 }
