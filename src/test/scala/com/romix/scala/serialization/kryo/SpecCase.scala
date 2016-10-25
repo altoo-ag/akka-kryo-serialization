@@ -26,7 +26,7 @@ abstract class SpecCase extends FlatSpec {
     super.withFixture(test)
   }
 
-  def roundTrip[T](length: Int, obj: T): T = {
+  def roundTrip[T](obj: T): T = {
     val outStream = new ByteArrayOutputStream()
     val output = new Output(outStream, 4096)
     kryo.writeClassAndObject(output, obj)
