@@ -23,7 +23,7 @@ object Build extends sbt.Build {
   lazy val typesafe = "Typesafe Repository" at "http://repo.typesafe.com/typesafe/releases/"
   lazy val typesafeSnapshot = "Typesafe Snapshots Repository" at "http://repo.typesafe.com/typesafe/snapshots/"
   lazy val sonatypeSnapshot = "Sonatype Snapshots Repository" at "https://oss.sonatype.org/content/repositories/snapshots/"
-  lazy val akkaVersion = "2.4.11"
+  lazy val akkaVersion = "2.4.12"
 
   lazy val root = Project(id = "akka-kryo-serialization", base = file(".")).settings(
 
@@ -32,8 +32,8 @@ object Build extends sbt.Build {
     resolvers += typesafeSnapshot,
     resolvers += sonatypeSnapshot,
     // publishArtifact in packageDoc := false,
-    scalaVersion := "2.11.8",
-    crossScalaVersions := Seq(scalaVersion.value),
+    scalaVersion := "2.12.0",
+    crossScalaVersions := Seq(scalaVersion.value, "2.11.8"),
     libraryDependencies += "com.typesafe.akka" %% "akka-remote" % akkaVersion,
     libraryDependencies += "com.esotericsoftware" % "kryo" % "4.0.0",
     libraryDependencies += "net.jpountz.lz4" % "lz4" % "1.3.0",
@@ -50,9 +50,12 @@ object Build extends sbt.Build {
       "-unchecked",
       "-deprecation",
       "-language:existentials",
-      "-optimise",
       "-Xlog-reflective-calls"
     ),
+
+    scalacOptions += scalaVersion.map { sv: String =>
+      if (sv.startsWith("2.11")) "-optimise" else "-opt:l:project"
+    }.value,
 
     //Enabling hardware AES support if available
     javaOptions in run += "-XX:+UseAES -XX:+UseAESIntrinsics",

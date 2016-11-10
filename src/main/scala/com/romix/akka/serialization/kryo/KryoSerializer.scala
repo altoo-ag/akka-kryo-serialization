@@ -37,7 +37,7 @@ import com.romix.scala.serialization.kryo.{ScalaKryo, _}
 import net.jpountz.lz4.LZ4Factory
 import org.objenesis.strategy.StdInstantiatorStrategy
 
-import scala.collection.JavaConversions._
+import scala.collection.JavaConverters._
 import scala.collection.mutable.ArrayBuilder
 import scala.util.{Failure, Success, Try}
 
@@ -432,7 +432,7 @@ class KryoSerializer(val system: ExtendedActorSystem) extends Serializer {
         }
       }
 
-      for (classname <- classnames) {
+      for (classname <- classnames.asScala) {
         // Load class
         system.dynamicAccess.getClassFor[AnyRef](classname) match {
           case Success(clazz) => kryo.register(clazz)

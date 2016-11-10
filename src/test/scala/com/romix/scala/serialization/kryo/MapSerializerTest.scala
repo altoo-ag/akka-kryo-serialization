@@ -60,6 +60,7 @@ class MapSerializerTest extends SpecCase {
 
   it should "roundtrip muttable AnyRefMap" in {
     kryo.setRegistrationRequired(false)
+    kryo.addDefaultSerializer(classOf[scala.collection.mutable.AnyRefMap[_,_]], classOf[ScalaMutableMapSerializer])
     kryo.register(classOf[scala.collection.mutable.AnyRefMap[AnyRef, Any]], 3040)
 
     var map1 = scala.collection.mutable.AnyRefMap[String, String]()
@@ -77,6 +78,7 @@ class MapSerializerTest extends SpecCase {
 
   it should "roundtrip muttable LongMap" in {
     kryo.setRegistrationRequired(false)
+    kryo.addDefaultSerializer(classOf[scala.collection.mutable.LongMap[_]], classOf[ScalaMutableMapSerializer])
     kryo.register(classOf[scala.collection.mutable.LongMap[Any]], 3041)
 
     var map1 = scala.collection.mutable.LongMap[String]()
@@ -94,6 +96,7 @@ class MapSerializerTest extends SpecCase {
 
   it should "roundtrip immuttable LongMap" in {
     kryo.setRegistrationRequired(false)
+    kryo.addDefaultSerializer(classOf[scala.collection.immutable.LongMap[_]], classOf[ScalaImmutableMapSerializer])
     kryo.register(classOf[scala.collection.immutable.LongMap[Any]], 3042)
 
     var map1 = scala.collection.immutable.LongMap[String]()
