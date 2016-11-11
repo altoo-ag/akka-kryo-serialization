@@ -17,6 +17,11 @@
 import sbt._
 import Keys._
 import com.typesafe.sbt.osgi._
+import sbtrelease._
+import sbtrelease.ReleasePlugin.autoImport._
+import sbtrelease.ReleaseStateTransformations._
+import com.typesafe.sbt.pgp.PgpKeys
+import ReleaseTransformations._
 
 object Build extends sbt.Build {
 
@@ -73,6 +78,22 @@ object Build extends sbt.Build {
     publishArtifact in Test := false,
 
     pomIncludeRepository := { _ => false },
+
+    // Configure cross builds.
+    releaseProcess := Seq[ReleaseStep](
+      checkSnapshotDependencies,
+      inquireVersions,
+      runClean,
+      runTest,
+      setReleaseVersion,
+      commitReleaseVersion,
+      tagRelease,
+      ReleaseStep(action = Command.process("publishSigned", _), enableCrossBuild = true),
+      setNextVersion,
+      commitNextVersion,
+      ReleaseStep(action = Command.process("sonatypeReleaseAll", _), enableCrossBuild = true),
+      pushChanges
+    ),
 
     pomExtra := <url>https://github.com/romix/akka-kryo-serialization</url>
       <licenses>
