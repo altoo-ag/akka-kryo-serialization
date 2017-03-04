@@ -14,14 +14,11 @@
  * limitations under the License.
  ******************************************************************************/
 
-import sbt._
-import Keys._
 import com.typesafe.sbt.osgi._
-import sbtrelease._
+import sbt.Keys._
+import sbt._
+import sbtrelease.ReleasePlugin.autoImport.ReleaseTransformations._
 import sbtrelease.ReleasePlugin.autoImport._
-import sbtrelease.ReleaseStateTransformations._
-import com.typesafe.sbt.pgp.PgpKeys
-import ReleaseTransformations._
 
 object Build extends sbt.Build {
 
@@ -30,8 +27,10 @@ object Build extends sbt.Build {
   lazy val sonatypeSnapshot = "Sonatype Snapshots Repository" at "https://oss.sonatype.org/content/repositories/snapshots/"
   lazy val akkaVersion = "2.4.12"
 
-  lazy val root = Project(id = "akka-kryo-serialization", base = file(".")).settings(
+  lazy val rootProjectName = "akka-kryo-serialization"
+  lazy val shadedProjectName = "akka-kryo-serialization-shaded"
 
+  lazy val commonSettings = Defaults.coreDefaultSettings ++ SbtOsgi.osgiSettings ++ Seq(
     organization := "com.github.romix.akka",
     resolvers += typesafe,
     resolvers += typesafeSnapshot,
@@ -40,7 +39,6 @@ object Build extends sbt.Build {
     scalaVersion := "2.12.0",
     crossScalaVersions := Seq(scalaVersion.value, "2.11.8"),
     libraryDependencies += "com.typesafe.akka" %% "akka-remote" % akkaVersion,
-    libraryDependencies += "com.esotericsoftware" % "kryo" % "4.0.0",
     libraryDependencies += "net.jpountz.lz4" % "lz4" % "1.3.0",
     libraryDependencies += "commons-io" % "commons-io" % "2.4" % "test",
     libraryDependencies += "org.scalatest" %% "scalatest" % "3.0.0" % "test",
@@ -113,10 +111,17 @@ object Build extends sbt.Build {
           <name>Roman Levenstein</name>
           <email>romixlev@gmail.com</email>
         </developer>
-      </developers>)
-    .settings(SbtOsgi.osgiSettings: _*)
-    .settings(
-      OsgiKeys.privatePackage := Nil,
-      OsgiKeys.exportPackage := Seq("com.romix.*")
-    )
+      </developers>,
+
+    OsgiKeys.privatePackage := Nil,
+    OsgiKeys.exportPackage := Seq("com.romix.*"))
+
+  lazy val root = Project(id = rootProjectName, base = file(".")).settings(commonSettings ++ Seq(
+    target ~= (target => target / rootProjectName),
+    libraryDependencies += "com.esotericsoftware" % "kryo" % "4.0.0"))
+
+  lazy val shaded = Project(id = shadedProjectName, base = file(".")).settings(commonSettings ++ Seq(
+    target ~= (target => target / shadedProjectName),
+    libraryDependencies += "com.esotericsoftware" % "kryo-shaded" % "4.0.0"))
+
 }
