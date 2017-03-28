@@ -417,7 +417,7 @@ which has a string return type i.e.
 ```scala
 
     public string kryoAESKey(...); // for Java
-    def customize(...):String // for Scala
+    def kryoAESKey(...):String // for Scala
 ```
 
 An example of such a custom aes-key supplier class could be something like this:
