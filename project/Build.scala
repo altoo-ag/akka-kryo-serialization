@@ -28,7 +28,7 @@ object Build extends sbt.Build {
   lazy val typesafe = "Typesafe Repository" at "http://repo.typesafe.com/typesafe/releases/"
   lazy val typesafeSnapshot = "Typesafe Snapshots Repository" at "http://repo.typesafe.com/typesafe/snapshots/"
   lazy val sonatypeSnapshot = "Sonatype Snapshots Repository" at "https://oss.sonatype.org/content/repositories/snapshots/"
-  lazy val akkaVersion = "2.5.1"
+  lazy val akkaVersion = "2.5.8"
 
   lazy val root = Project(id = "akka-kryo-serialization", base = file(".")).settings(
 
