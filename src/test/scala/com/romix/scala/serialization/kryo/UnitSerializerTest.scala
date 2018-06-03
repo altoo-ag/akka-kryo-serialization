@@ -1,12 +1,5 @@
 package com.romix.scala.serialization.kryo
 
-import java.util.{HashMap, Random, TreeMap}
-import java.util.concurrent.ConcurrentHashMap
-
-import com.esotericsoftware.kryo.Kryo
-import com.esotericsoftware.kryo.io.{Input, Output}
-import com.esotericsoftware.kryo.serializers._
-
 
 class UnitSerializerTest extends SpecCase {
 

@@ -8,6 +8,7 @@ import com.esotericsoftware.kryo.io.{Input, Output}
 import com.esotericsoftware.kryo.serializers.MapSerializer
 
 import scala.collection.immutable.{Map, Set, Vector}
+import scala.language.existentials
 
 class MapSerializerTest extends SpecCase {
 

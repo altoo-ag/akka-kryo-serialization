@@ -39,6 +39,7 @@ import org.objenesis.strategy.StdInstantiatorStrategy
 
 import scala.collection.JavaConverters._
 import scala.collection.mutable.ArrayBuilder
+import scala.language.existentials
 import scala.util.{Failure, Success, Try}
 
 trait Transformation {
