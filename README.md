@@ -87,7 +87,7 @@ If you want to test the latest snapshot of this library, please use the followin
     <dependency>
        <groupId>com.github.romix.akka</groupId>
        <artifactId>akka-kryo-serialization_2.11</artifactId>
-        <version>0.6.2-SNAPSHOT</version>
+        <version>0.6.1-SNAPSHOT</version>
     </dependency>
 ```
 
