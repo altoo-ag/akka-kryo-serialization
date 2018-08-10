@@ -24,6 +24,7 @@ How to use this library in your project
 
 We provide several versions of the libraray:
 
+* v0.6.0 is build against Akka-2.4 and Kryo-5.0 and is available for Scala-2.11 and Scala-2.12
 * v0.5.1 is build against Akka-2.4 and Kryo-4.0 and is available for Scala-2.11 and Scala-2.12
 * v0.4.2 is build against Akka-2.4 and Kryo-3.0 and is available for Scala-2.11
 * v0.3.3 is build against Akka-2.3 and in available for Scala-2.10 and 2.11
@@ -31,6 +32,10 @@ We provide several versions of the libraray:
 To use this serializer, you need to do two things:
 
 * Include a dependency on this library into your project:
+
+    `libraryDependencies += "com.github.romix.akka" %% "akka-kryo-serialization" % "0.6.0"`
+
+  or if you need Kryo-4.0 compatibility:
 
     `libraryDependencies += "com.github.romix.akka" %% "akka-kryo-serialization" % "0.5.1"`
 
@@ -66,7 +71,7 @@ To use the official release of akka-kryo-serialization, please use the following
     <dependency>
         <groupId>com.github.romix.akka</groupId>
         <artifactId>akka-kryo-serialization_2.11</artifactId>
-        <version>0.5.1</version>
+        <version>0.6.0</version>
     </dependency>
 ```
 
@@ -82,7 +87,7 @@ If you want to test the latest snapshot of this library, please use the followin
     <dependency>
        <groupId>com.github.romix.akka</groupId>
        <artifactId>akka-kryo-serialization_2.11</artifactId>
-        <version>0.5.2-SNAPSHOT</version>
+        <version>0.6.2-SNAPSHOT</version>
     </dependency>
 ```
 
