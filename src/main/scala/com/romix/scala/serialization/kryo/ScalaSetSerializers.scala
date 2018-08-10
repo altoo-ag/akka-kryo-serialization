@@ -35,7 +35,7 @@ class ScalaImmutableSortedSetSerializer() extends Serializer[imSSet[_]] {
 
   var class2constuctor = Map[Class[_], Constructor[_]]()
 
-  override def read(kryo: Kryo, input: Input, typ: Class[imSSet[_]]): imSSet[_] = {
+  override def read(kryo: Kryo, input: Input, typ: Class[_ <: imSSet[_]]): imSSet[_] = {
     val len = input.readInt(true)
 
     var coll: imSSet[Any] = {
@@ -79,7 +79,7 @@ class ScalaImmutableSetSerializer() extends Serializer[imSet[_]] {
 
   setImmutable(true)
 
-  override def read(kryo: Kryo, input: Input, typ: Class[imSet[_]]): imSet[_] = {
+  override def read(kryo: Kryo, input: Input, typ: Class[_ <: imSet[_]]): imSet[_] = {
     val len = input.readInt(true)
     var coll: imSet[Any] = kryo.newInstance(typ).asInstanceOf[imSet[Any]].empty
     var i = 0
@@ -103,7 +103,7 @@ class ScalaImmutableAbstractSetSerializer() extends Serializer[imSet[_]] {
 
   setImmutable(true)
 
-  override def read(kryo: Kryo, input: Input, typ: Class[imSet[_]]): imSet[_] = {
+  override def read(kryo: Kryo, input: Input, typ: Class[_ <: imSet[_]]): imSet[_] = {
     val len = input.readInt(true)
     var coll: imSet[Any] = Set.empty
     var i = 0
@@ -126,7 +126,7 @@ class ScalaImmutableAbstractSetSerializer() extends Serializer[imSet[_]] {
 class ScalaMutableSortedSetSerializer() extends Serializer[mSSet[_]] {
   var class2constuctor = Map[Class[_], Constructor[_]]()
 
-  override def read(kryo: Kryo, input: Input, typ: Class[mSSet[_]]): mSSet[_] = {
+  override def read(kryo: Kryo, input: Input, typ: Class[_ <: mSSet[_]]): mSSet[_] = {
     val len = input.readInt(true)
 
     val coll: mSSet[Any] = {
@@ -168,7 +168,7 @@ class ScalaMutableSortedSetSerializer() extends Serializer[mSSet[_]] {
 
 class ScalaMutableSetSerializer() extends Serializer[mSet[_]] {
 
-  override def read(kryo: Kryo, input: Input, typ: Class[mSet[_]]): mSet[_] = {
+  override def read(kryo: Kryo, input: Input, typ: Class[_ <: mSet[_]]): mSet[_] = {
     val len = input.readInt(true)
     val coll: mSet[Any] = kryo.newInstance(typ).asInstanceOf[mSet[Any]].empty
     var i = 0

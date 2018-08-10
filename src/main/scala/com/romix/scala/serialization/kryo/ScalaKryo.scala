@@ -22,10 +22,9 @@ import com.esotericsoftware.kryo.Serializer
 import com.esotericsoftware.kryo.serializers.FieldSerializer
 import com.esotericsoftware.kryo.ClassResolver
 import com.esotericsoftware.kryo.ReferenceResolver
-import com.esotericsoftware.kryo.StreamFactory
 
-class ScalaKryo(classResolver: ClassResolver, referenceResolver: ReferenceResolver, streamFactory: StreamFactory)
-  extends Kryo(classResolver, referenceResolver, streamFactory) {
+class ScalaKryo(classResolver: ClassResolver, referenceResolver: ReferenceResolver)
+  extends Kryo(classResolver, referenceResolver) {
 
   lazy val objSer = new ObjectSerializer[AnyRef]
 
@@ -46,7 +45,7 @@ class ScalaKryo(classResolver: ClassResolver, referenceResolver: ReferenceResolv
           //Scala has a lot of synthetic fields that must be serialized:
           //We also enable it by default in java since not wanting these fields
           //serialized looks like the exception rather than the rule.
-          fs.setIgnoreSyntheticFields(false)
+          fs.getFieldSerializerConfig.setIgnoreSyntheticFields(false)
           fs
         case x: Serializer[_] => x
       }

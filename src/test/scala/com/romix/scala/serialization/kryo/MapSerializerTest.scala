@@ -42,7 +42,7 @@ class MapSerializerTest extends SpecCase {
     roundTrip(set4)
   }
 
-  "Kryo" should "roundtrip mutable maps " in {
+  it should "roundtrip mutable maps " in {
     kryo.setRegistrationRequired(true)
     kryo.addDefaultSerializer(classOf[scala.collection.mutable.HashMap[_, _]],
       classOf[ScalaMutableMapSerializer])
@@ -61,7 +61,7 @@ class MapSerializerTest extends SpecCase {
   it should "roundtrip muttable AnyRefMap" in {
     kryo.setRegistrationRequired(false)
     kryo.addDefaultSerializer(classOf[scala.collection.mutable.AnyRefMap[_,_]], classOf[ScalaMutableMapSerializer])
-    kryo.register(classOf[scala.collection.mutable.AnyRefMap[AnyRef, Any]], 3040)
+    kryo.addDefaultSerializer(classOf[scala.collection.immutable.List[_]], classOf[ScalaCollectionSerializer])
 
     var map1 = scala.collection.mutable.AnyRefMap[String, String]()
 
@@ -79,7 +79,7 @@ class MapSerializerTest extends SpecCase {
   it should "roundtrip muttable LongMap" in {
     kryo.setRegistrationRequired(false)
     kryo.addDefaultSerializer(classOf[scala.collection.mutable.LongMap[_]], classOf[ScalaMutableMapSerializer])
-    kryo.register(classOf[scala.collection.mutable.LongMap[Any]], 3041)
+    kryo.addDefaultSerializer(classOf[scala.collection.immutable.List[_]], classOf[ScalaCollectionSerializer])
 
     var map1 = scala.collection.mutable.LongMap[String]()
 
@@ -97,7 +97,7 @@ class MapSerializerTest extends SpecCase {
   it should "roundtrip immuttable LongMap" in {
     kryo.setRegistrationRequired(false)
     kryo.addDefaultSerializer(classOf[scala.collection.immutable.LongMap[_]], classOf[ScalaImmutableMapSerializer])
-    kryo.register(classOf[scala.collection.immutable.LongMap[Any]], 3042)
+    kryo.addDefaultSerializer(classOf[scala.collection.immutable.List[_]], classOf[ScalaCollectionSerializer])
 
     var map1 = scala.collection.immutable.LongMap[String]()
 
@@ -114,13 +114,8 @@ class MapSerializerTest extends SpecCase {
 
   it should "roundtrip custom classes and maps/vectors/lists of them" in {
     kryo.setRegistrationRequired(false)
-    kryo.addDefaultSerializer(classOf[scala.Enumeration#Value], classOf[EnumerationSerializer])
-    kryo.addDefaultSerializer(classOf[scala.collection.immutable.Set[_]], classOf[ScalaImmutableSetSerializer])
-    kryo.addDefaultSerializer(classOf[scala.collection.generic.SetFactory[scala.collection.Set]], classOf[ScalaImmutableSetSerializer])
     kryo.addDefaultSerializer(classOf[scala.collection.Map[_, _]], classOf[ScalaImmutableMapSerializer])
-    kryo.addDefaultSerializer(classOf[scala.collection.generic.MapFactory[scala.collection.Map]], classOf[ScalaImmutableMapSerializer])
-    kryo.addDefaultSerializer(classOf[scala.collection.Traversable[_]], classOf[ScalaCollectionSerializer])
-    kryo.addDefaultSerializer(classOf[scala.Product], classOf[ScalaProductSerializer])
+    kryo.addDefaultSerializer(classOf[scala.collection.immutable.List[_]], classOf[ScalaCollectionSerializer])
     val scl1 = new ScalaClass1()
     var map1: Map[String, String] = Map.empty[String, String]
 
@@ -128,7 +123,6 @@ class MapSerializerTest extends SpecCase {
 
     scl1.map11 = map1
     scl1.vector11 = Vector("LL", "ee", "oo")
-    scl1.vector11 = null
     scl1.list11 = List("LL", "ee", "oo", "nn", "ii", "dd", "aa", "ss")
     val typeParams = scl1.getClass.getTypeParameters
     roundTrip(scl1)
@@ -142,18 +136,8 @@ class MapSerializerTest extends SpecCase {
 
   it should "roundtrip big immutable maps" in {
     kryo.setRegistrationRequired(false)
-    kryo.register(classOf[scala.collection.immutable.HashMap$HashTrieMap], 40)
-    kryo.register(classOf[Array[scala.collection.immutable.HashMap[Any, Any]]], 51)
-    kryo.register(classOf[scala.collection.immutable.HashMap$HashMap1], 41)
-    kryo.register(classOf[scala.Tuple1[Any]], 45)
-    kryo.register(classOf[scala.Tuple2[Any, Any]], 46)
-    kryo.register(classOf[scala.Tuple3[Any, Any, Any]], 47)
-    kryo.register(classOf[scala.Tuple4[Any, Any, Any, Any]], 48)
-    kryo.register(classOf[scala.Tuple5[Any, Any, Any, Any, Any]], 49)
-    kryo.register(classOf[scala.Tuple6[Any, Any, Any, Any, Any, Any]], 50)
-    kryo.addDefaultSerializer(classOf[scala.Enumeration#Value], classOf[EnumerationSerializer])
-    kryo.addDefaultSerializer(classOf[scala.collection.immutable.Set[_]], classOf[ScalaImmutableSetSerializer])
-    kryo.addDefaultSerializer(classOf[scala.collection.generic.SetFactory[scala.collection.Set]], classOf[ScalaImmutableSetSerializer])
+    kryo.addDefaultSerializer(classOf[scala.collection.immutable.Map[_, _]], classOf[ScalaImmutableMapSerializer])
+    kryo.addDefaultSerializer(classOf[scala.collection.immutable.List[_]], classOf[ScalaCollectionSerializer])
 
     var map1: Map[String, String] = Map.empty[String, String]
 
@@ -170,16 +154,6 @@ class MapSerializerTest extends SpecCase {
 
   it should "roundtrip big immutable sets" in {
     kryo.setRegistrationRequired(false)
-    kryo.register(classOf[scala.collection.immutable.HashSet$HashTrieSet], 40)
-    kryo.register(classOf[Array[scala.collection.immutable.HashSet[Any]]], 51)
-    kryo.register(classOf[scala.collection.immutable.HashSet$HashSet1], 41)
-    kryo.register(classOf[scala.Tuple1[Any]], 45)
-    kryo.register(classOf[scala.Tuple2[Any, Any]], 46)
-    kryo.register(classOf[scala.Tuple3[Any, Any, Any]], 47)
-    kryo.register(classOf[scala.Tuple4[Any, Any, Any, Any]], 48)
-    kryo.register(classOf[scala.Tuple5[Any, Any, Any, Any, Any]], 49)
-    kryo.register(classOf[scala.Tuple6[Any, Any, Any, Any, Any, Any]], 50)
-    kryo.addDefaultSerializer(classOf[scala.Enumeration#Value], classOf[EnumerationSerializer])
     var map1 = Set.empty[String]
 
     0 until hugeCollectionSize foreach { case i => map1 += ("k" + i) }
@@ -195,9 +169,7 @@ class MapSerializerTest extends SpecCase {
 
   it should "roundtrip big immutable lists" in {
     kryo.setRegistrationRequired(false)
-    // Support serialization of Scala collections
-    kryo.register(classOf[scala.collection.immutable.$colon$colon[_]], 60)
-    kryo.addDefaultSerializer(classOf[scala.Enumeration#Value], classOf[EnumerationSerializer])
+    kryo.addDefaultSerializer(classOf[scala.collection.immutable.List[_]], classOf[ScalaCollectionSerializer])
 
     var map1 = List.empty[String]
 
@@ -214,10 +186,7 @@ class MapSerializerTest extends SpecCase {
 
   it should "roundtrip big immutable sequences" in {
     kryo.setRegistrationRequired(false)
-    kryo.register(classOf[scala.collection.immutable.$colon$colon[_]], 40)
-    kryo.addDefaultSerializer(classOf[scala.Enumeration#Value], classOf[EnumerationSerializer])
-    kryo.addDefaultSerializer(classOf[scala.collection.immutable.Set[_]], classOf[ScalaImmutableSetSerializer])
-    kryo.addDefaultSerializer(classOf[scala.collection.generic.SetFactory[scala.collection.Set]], classOf[ScalaImmutableSetSerializer])
+    kryo.addDefaultSerializer(classOf[scala.collection.Seq[_]], classOf[ScalaCollectionSerializer])
     val map1 = Seq("Rome", "Italy", "London", "England", "Paris", "France")
     val map2 = Seq("Moscow", "Russia") ++ map1
     val map3 = Seq("Berlin", "Germany") ++ map2
@@ -249,6 +218,8 @@ class MapSerializerTest extends SpecCase {
   }
 
   it should "roundtrip scala hash map" in {
+    kryo.setRegistrationRequired(false)
+    kryo.addDefaultSerializer(classOf[scala.collection.immutable.HashMap[_, _]], classOf[ScalaImmutableMapSerializer])
     var map = new scala.collection.immutable.HashMap[String, Int]()
     map ++= Seq("foo" -> 1, "bar" -> 2)
     roundTrip(map)
@@ -275,7 +246,6 @@ class MapSerializerTest extends SpecCase {
 
   it should "roundtrip tree map" in {
     kryo.setRegistrationRequired(false)
-    kryo.register(classOf[TreeMap[Any, Any]])
     var map = new TreeMap[Any, Any]()
     map.put("123", "456")
     map.put("789", "abc")

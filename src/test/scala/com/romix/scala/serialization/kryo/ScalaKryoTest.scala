@@ -1,10 +1,11 @@
 package com.romix.scala.serialization.kryo
 
-import com.esotericsoftware.kryo.util.{DefaultClassResolver, DefaultStreamFactory, ListReferenceResolver}
+import com.esotericsoftware.kryo.util.{DefaultClassResolver, ListReferenceResolver}
 import org.scalatest.Outcome
 
 class ScalaKryoTest extends SpecCase {
-  kryo = new ScalaKryo(new DefaultClassResolver(), new ListReferenceResolver(), new DefaultStreamFactory())
+  kryo = new ScalaKryo(new DefaultClassResolver(), new ListReferenceResolver())
+  kryo.setRegistrationRequired(false)
 
   "ScalaKryo" should "preserve Nil equality" in {
     val deserializedNil = roundTrip(Nil)

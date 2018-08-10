@@ -29,8 +29,9 @@ import akka.actor.{ActorRef, ExtendedActorSystem}
 import akka.event.Logging
 import akka.serialization._
 import com.esotericsoftware.kryo.Kryo
-import com.esotericsoftware.kryo.io.{Input, Output, UnsafeInput, UnsafeOutput}
+import com.esotericsoftware.kryo.io.{Input, Output}
 import com.esotericsoftware.kryo.serializers.FieldSerializer
+import com.esotericsoftware.kryo.unsafe.{UnsafeInput, UnsafeOutput}
 import com.esotericsoftware.kryo.util._
 import com.esotericsoftware.minlog.{Log => MiniLog}
 import com.romix.scala.serialization.kryo.{ScalaKryo, _}
@@ -370,10 +371,10 @@ class KryoSerializer(val system: ExtendedActorSystem) extends Serializer {
       if (settings.IdStrategy == "incremental") new KryoClassResolver(implicitRegistrationLogging)
       else if (resolveSubclasses) new SubclassResolver()
       else new DefaultClassResolver()
-    val kryo = new ScalaKryo(classResolver, referenceResolver, new DefaultStreamFactory())
+    val kryo = new ScalaKryo(classResolver, referenceResolver)
     kryo.setClassLoader(system.dynamicAccess.classLoader)
     // Support deserialization of classes without no-arg constructors
-    val instStrategy = kryo.getInstantiatorStrategy.asInstanceOf[Kryo.DefaultInstantiatorStrategy]
+    val instStrategy = kryo.getInstantiatorStrategy.asInstanceOf[DefaultInstantiatorStrategy]
     instStrategy.setFallbackInstantiatorStrategy(new StdInstantiatorStrategy())
     kryo.setInstantiatorStrategy(instStrategy)
     // Support serialization of some standard or often used Scala classes
@@ -516,7 +517,7 @@ class KryoBasedSerializer(
     else
       new Input(bytes)
 
-  private def releaseBuffer(buffer: Output) = { buffer.clear() }
+  private def releaseBuffer(buffer: Output) = { buffer.reset() }
 
 }
 
