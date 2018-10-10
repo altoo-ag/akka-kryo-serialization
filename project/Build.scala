@@ -14,21 +14,18 @@
  * limitations under the License.
  ******************************************************************************/
 
-import sbt._
-import Keys._
 import com.typesafe.sbt.osgi._
-import sbtrelease._
+import sbt.Keys._
+import sbt._
+import sbtrelease.ReleasePlugin.autoImport.ReleaseTransformations._
 import sbtrelease.ReleasePlugin.autoImport._
-import sbtrelease.ReleaseStateTransformations._
-import com.typesafe.sbt.pgp.PgpKeys
-import ReleaseTransformations._
 
 object Build extends sbt.Build {
 
   lazy val typesafe = "Typesafe Repository" at "http://repo.typesafe.com/typesafe/releases/"
   lazy val typesafeSnapshot = "Typesafe Snapshots Repository" at "http://repo.typesafe.com/typesafe/snapshots/"
   lazy val sonatypeSnapshot = "Sonatype Snapshots Repository" at "https://oss.sonatype.org/content/repositories/snapshots/"
-  lazy val akkaVersion = "2.4.12"
+  lazy val akkaVersion = "2.5.17"
 
   lazy val root = Project(id = "akka-kryo-serialization", base = file(".")).settings(
 
@@ -37,7 +34,7 @@ object Build extends sbt.Build {
     resolvers += typesafeSnapshot,
     resolvers += sonatypeSnapshot,
     // publishArtifact in packageDoc := false,
-    scalaVersion := "2.12.0",
+    scalaVersion := "2.12.7",
     crossScalaVersions := Seq(scalaVersion.value, "2.11.8"),
     libraryDependencies += "com.typesafe.akka" %% "akka-remote" % akkaVersion,
     libraryDependencies += "com.esotericsoftware" % "kryo" % "4.0.0",
