@@ -28,6 +28,7 @@ import javax.crypto.spec.{IvParameterSpec, SecretKeySpec}
 import akka.actor.{ActorRef, ExtendedActorSystem}
 import akka.event.Logging
 import akka.serialization._
+import com.esotericsoftware.kryo
 import com.esotericsoftware.kryo.Kryo
 import com.esotericsoftware.kryo.io.{Input, Output, UnsafeInput, UnsafeOutput}
 import com.esotericsoftware.kryo.serializers.FieldSerializer
@@ -249,6 +250,20 @@ class KryoSerializer(val system: ExtendedActorSystem) extends Serializer {
     log.debug("Got customizer method: {}", customizerMethod)
   }
 
+  val defaultSerializerClassName = settings.KryoDefaultSerializer
+
+  val defaultSerializerClass =
+    system.dynamicAccess.getClassFor[kryo.Serializer[_]](defaultSerializerClassName) match {
+      case Success(clazz) => clazz
+      case Failure(e) =>
+        log.error("Class could not be loaded and/or registered: {}", defaultSerializerClassName)
+        throw e
+    }
+
+  locally {
+    log.debug("Got default serializer class: {}", defaultSerializerClass)
+  }
+
   val customAESKeyClassName = settings.AESKeyClass
   locally {
     log.debug("Got custom aes key class: {}", customAESKeyClassName)
@@ -376,6 +391,10 @@ class KryoSerializer(val system: ExtendedActorSystem) extends Serializer {
     val instStrategy = kryo.getInstantiatorStrategy.asInstanceOf[Kryo.DefaultInstantiatorStrategy]
     instStrategy.setFallbackInstantiatorStrategy(new StdInstantiatorStrategy())
     kryo.setInstantiatorStrategy(instStrategy)
+
+//    setting default serializer
+    kryo.setDefaultSerializer(defaultSerializerClass)
+
     // Support serialization of some standard or often used Scala classes
     kryo.addDefaultSerializer(classOf[scala.Enumeration#Value], classOf[EnumerationSerializer])
     system.dynamicAccess.getClassFor[AnyRef]("scala.Enumeration$Val") match {

@@ -68,6 +68,9 @@ object KryoSerialization {
 
     val KryoCustomSerializerInit: String = Try(config.getString("akka.actor.kryo.kryo-custom-serializer-init")).getOrElse(null)
 
+    val KryoDefaultSerializer: String = Try(config.getString("akka.actor.kryo.kryo-default-serializer"))
+      .getOrElse("com.esotericsoftware.kryo.serializers.FieldSerializer")
+
     val CustomQueueBuilder: String = Try(config.getString("akka.actor.kryo.custom-queue-builder")).getOrElse(null)
 
     val ResolveSubclasses: Boolean = config.getBoolean("akka.actor.kryo.resolve-subclasses")

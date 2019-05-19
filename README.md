@@ -224,10 +224,59 @@ extensions = ["com.romix.akka.serialization.kryo.KryoSerializationExtension$"]
             # Useful for debugging and lowl-level tweaking
             kryo-trace = false
 
-            # If proviced, Kryo uses the class specified by a fully qualified
+            # If provided, Kryo uses the class specified by a fully qualified
             # class name to perform a custom initialization of Kryo instances in
             # addition to what is done automatically based on the config file.
             kryo-custom-serializer-init = "CustomKryoSerializerInitFQCN"
+            
+            # If provided, Kryo uses this class as default serializer,
+            # otherwise com.esotericsoftware.kryo.serializers.FieldSerializer will be used
+            
+            # Predefined classes:
+            
+            # com.esotericsoftware.kryo.serializers.FieldSerializer
+            # Serializes objects using direct field assignment. FieldSerializer is generic
+            # and can serialize most classes without any configuration. It is efficient
+            # and writes only the field data, without any extra information. It does not 
+            # support adding, removing, or changing the type of fields without invalidating
+            # previously serialized bytes. This can be acceptable in many situations,
+            # such as when sending data over a network, but may not be a good choice for
+            # long term data storage because the Java classes cannot evolve.
+            
+            # com.esotericsoftware.kryo.serializers.CompatibleFieldSerializer
+            # Serializes objects using direct field assignment, providing both forward and
+            # backward compatibility. This means fields can be added or removed without
+            # invalidating previously serialized bytes. Changing the type of a field 
+            # is not supported. The forward and backward compatibility comes at a cost: the
+            # first time the class is encountered in the serialized bytes, a simple 
+            # schema is written containing the field name strings.
+            
+            # com.esotericsoftware.kryo.serializers.VersionFieldSerializer
+            # Serializes objects using direct field assignment, with versioning backward
+            # compatibility. Allows fields to have a @Since(int) annotation to indicate 
+            # the version they were added. For a particular field, the value in @Since
+            # should never change once created. This is less flexible than FieldSerializer,
+            # which can handle most classes without needing annotations, but it provides
+            # backward compatibility. This means that new fields can be added, but
+            # removing, renaming or changing the type of any field will invalidate
+            # previous serialized bytes. VersionFieldSerializer has very little overhead
+            # (a single additional varint) compared to FieldSerializer. Forward 
+            # compatibility is not supported.
+            
+            # com.esotericsoftware.kryo.serializers.TaggedFieldSerializer
+            # Serializes objects using direct field assignment for fields that have
+            # a @Tag(int) annotation. This provides backward compatibility so new 
+            # fields can be added. TaggedFieldSerializer has two advantages over 
+            # VersionFieldSerializer:
+            # 1) fields can be renamed
+            # 2) fields marked with the @Deprecated annotation will be ignored when
+            # reading old bytes and won't be written to new bytes.
+            # Deprecation effectively removes the field from serialization, though
+            # the field and @Tag annotation must remain in the class. The downside is that
+            # it has a small amount of additional overhead compared to 
+            # VersionFieldSerializer (an additional varint per field). Forward compatibility
+            # is not supported.
+            kryo-default-serializer
 
             # If enabled, allows Kryo to resolve subclasses of registered Types.
             #
