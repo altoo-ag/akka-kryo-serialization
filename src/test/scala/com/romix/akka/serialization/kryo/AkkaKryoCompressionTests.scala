@@ -134,8 +134,8 @@ class AkkaKryoCompressionTests extends FlatSpec with BeforeAndAfterAllConfigMap 
         val x = a
         i += 1
       }
-      val ms = (System.nanoTime - now) / 1000000
-      println(s"$systemName $name\t$ms\tms\t=\t${loops * listLength / ms}\tops/ms")
+      val ms = (System.nanoTime - now) / 1000000.0
+      println(f"$systemName%s $name%s\t$ms%.1f\tms\t=\t${loops * listLength / ms}%.0f\tops/ms")
     }
 
     // Get the Serialization Extension

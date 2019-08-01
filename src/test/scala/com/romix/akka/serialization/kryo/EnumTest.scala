@@ -51,8 +51,8 @@ class EnumTest(configMap: ConfigMap) extends FlatSpec with BeforeAndAfterAllConf
       val x = a
       i += 1
     }
-    val ms = (System.nanoTime - now) / 1000000
-    println(s"$name:\t$ms\tms\t=\t${loops * 1000 / ms}\tops/s")
+    val ms = (System.nanoTime - now) / 1000000.0
+    println(f"$name%s:\t$ms%.1f\tms\t=\t${loops * 1000 / ms}%.0f\tops/s")
    }
 
   "Enumeration serialization" should "be fast" in {
