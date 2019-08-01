@@ -2,7 +2,7 @@
 val typesafe = "Typesafe Repository" at "http://repo.typesafe.com/typesafe/releases/"
 val typesafeSnapshot = "Typesafe Snapshots Repository" at "http://repo.typesafe.com/typesafe/snapshots/"
 val sonatypeSnapshot = "Sonatype Snapshots Repository" at "https://oss.sonatype.org/content/repositories/snapshots/"
-val akkaVersion = "2.4.12"
+val akkaVersion = "2.5.23"
 
 enablePlugins(SbtOsgi, ReleasePlugin)
 
