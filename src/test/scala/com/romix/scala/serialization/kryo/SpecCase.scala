@@ -10,7 +10,7 @@ import org.scalatest.FlatSpec
 
 abstract class SpecCase extends FlatSpec {
   var kryo: Kryo = null
-  
+
   val useSubclassResolver:Boolean = false
 
   override def withFixture(test: NoArgTest) = {
