@@ -70,13 +70,13 @@ class SnapshotRecoveryTest extends PersistenceSpec with ImplicitSender {
 
     "recover state only from its own correct snapshot file after restart" in {
       persistentActor ! Person("John", "Doe")
-      expectNoMsg()
+      expectNoMessage()
       persistentActor ! Person("Bruce", "Wayne")
-      expectNoMsg()
+      expectNoMessage()
       persistentActor ! TakeSnapshot
       expectMsg(SnapshotSaveSuccess)
       persistentActor ! Person("Tony", "Stark")
-      expectNoMsg()
+      expectNoMessage()
       persistentActor ! Boom
       persistentActor ! GetState
       expectMsg(List(Person("John", "Doe"), Person("Bruce", "Wayne"), Person("Tony", "Stark")))
