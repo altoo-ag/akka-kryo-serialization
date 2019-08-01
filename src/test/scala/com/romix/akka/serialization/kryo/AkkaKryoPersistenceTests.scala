@@ -100,7 +100,7 @@ abstract class PersistenceSpec extends TestKit(ActorSystem("testSystem", ConfigF
   with WordSpecLike with Matchers with BeforeAndAfterAll {
   val storageLocations = List("akka.persistence.snapshot-store.local.dir").map(s => new File(system.settings.config.getString(s)))
 
-  override def beforeAll() {
+  override def beforeAll(): Unit = {
     storageLocations.foreach(FileUtils.deleteDirectory)
     super.beforeAll()
   }
