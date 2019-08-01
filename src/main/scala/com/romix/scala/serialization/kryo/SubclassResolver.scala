@@ -34,7 +34,7 @@ class SubclassResolver extends DefaultClassResolver {
       if (reg == null) {
         val result =
           findRegistered(clazz.getSuperclass) orElse
-          (Option.empty[Registration] /: clazz.getInterfaces) { (res, interf) =>
+          clazz.getInterfaces.foldLeft(Option.empty[Registration]) { (res, interf) =>
             res orElse findRegistered(interf)
           }
         if (result.isEmpty) {
