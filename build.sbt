@@ -12,8 +12,8 @@ resolvers += typesafe
 resolvers += typesafeSnapshot
 resolvers += sonatypeSnapshot
 // publishArtifact in packageDoc := false,
-scalaVersion := "2.12.8"
-crossScalaVersions := Seq(scalaVersion.value, "2.11.12")
+scalaVersion := "2.13.0"
+crossScalaVersions := Seq(scalaVersion.value, "2.11.12", "2.12.8")
 libraryDependencies += "com.typesafe.akka" %% "akka-remote" % akkaVersion
 libraryDependencies += "com.esotericsoftware" % "kryo" % "4.0.2"
 libraryDependencies += "net.jpountz.lz4" % "lz4" % "1.3.0"
@@ -21,6 +21,20 @@ libraryDependencies += "commons-io" % "commons-io" % "2.6" % "test"
 libraryDependencies += "org.scalatest" %% "scalatest" % "3.0.8" % "test"
 libraryDependencies += "com.typesafe.akka" %% "akka-persistence" % akkaVersion % "test"
 libraryDependencies += "com.typesafe.akka" %% "akka-testkit" % akkaVersion % "test"
+
+unmanagedSourceDirectories in Compile += {
+  scalaBinaryVersion.value match {
+    case "2.10" | "2.11" | "2.12" => baseDirectory.value / "src" / "main" / "scala-2.12"
+    case _                        => baseDirectory.value / "src" / "main" / "scala-2.13"
+  }
+}
+
+unmanagedSourceDirectories in Test += {
+  scalaBinaryVersion.value match {
+    case "2.10" | "2.11" | "2.12" => baseDirectory.value / "src" / "test" / "scala-2.12"
+    case _                        => baseDirectory.value / "src" / "test" / "scala-2.13"
+  }
+}
 
 parallelExecution in Test := false
 
@@ -33,9 +47,13 @@ scalacOptions := Seq(
   "-Xlog-reflective-calls"
 )
 
-scalacOptions += scalaVersion.map { sv: String =>
-  if (sv.startsWith("2.11")) "-optimise" else "-opt:l:project"
-}.value
+scalacOptions ++= {
+  if (scalaVersion.value.startsWith("2.11")) {
+    Seq("-optimise")
+  } else {
+    Seq("-opt:l:inline", "-opt-inline-from:com.romix.*")
+  }
+}
 
 //Enabling hardware AES support if available
 javaOptions in run += "-XX:+UseAES -XX:+UseAESIntrinsics"

@@ -48,7 +48,7 @@ class SubclassResolverTest extends SpecCase {
     val map2 = ListMap("Rome" -> "Italy", "London" -> "England", "Paris" -> "France", "New York" -> "USA", "Tokio" -> "Japan", "Peking" -> "China", "Brussels" -> "Belgium")
     val map1Copy = roundTrip(map1)
     val map2Copy = roundTrip(map2)
-    assert(map1Copy.isInstanceOf[HashMap.HashTrieMap[_,_]])
+    assert(map1Copy.isInstanceOf[HashMap[_, _]])
     assert(map2Copy.isInstanceOf[ListMap[_,_]])
   }
 

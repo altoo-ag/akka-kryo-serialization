@@ -8,6 +8,8 @@ import org.scalatest._
 import scala.collection.immutable.{HashMap, TreeMap}
 import scala.collection.mutable.{AnyRefMap, LongMap}
 
+import com.romix.scala.serialization.kryo.ScalaVersionRegistry
+
 class AkkaKryoCompressionTests extends FlatSpec with BeforeAndAfterAllConfigMap {
   val defaultConfig = ConfigFactory.parseString("""
       akka {
@@ -23,13 +25,13 @@ class AkkaKryoCompressionTests extends FlatSpec with BeforeAndAfterAllConfigMap 
             mappings {
               "akka.actor.ActorRef" = 20
               "akka.actor.DeadLetterActorRef" = 21
-              "scala.collection.immutable.HashMap$HashTrieMap"    = 32
+              """" + ScalaVersionRegistry.immutableHashMapImpl + """" = 32
               "[Lscala.collection.immutable.HashMap;"             = 33
               "scala.collection.immutable.TreeMap"                = 34
               "[Lscala.collection.immutable.TreeMap;"             = 35
               "scala.collection.mutable.HashMap"                  = 36
               "[Lscala.collection.mutable.HashMap;"               = 37
-              "scala.collection.immutable.HashSet$HashTrieSet"    = 38
+              """" + ScalaVersionRegistry.immutableHashSetImpl + """" = 38
               "[Lscala.collection.immutable.HashSet;"             = 39
               "scala.collection.immutable.TreeSet"                = 40
               "[Lscala.collection.immutable.TreeSet;"             = 41
