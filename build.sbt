@@ -21,6 +21,7 @@ libraryDependencies += "commons-io" % "commons-io" % "2.6" % "test"
 libraryDependencies += "org.scalatest" %% "scalatest" % "3.0.8" % "test"
 libraryDependencies += "com.typesafe.akka" %% "akka-persistence" % akkaVersion % "test"
 libraryDependencies += "com.typesafe.akka" %% "akka-testkit" % akkaVersion % "test"
+libraryDependencies += "org.scala-lang.modules" %% "scala-collection-compat" % "2.1.1"
 
 unmanagedSourceDirectories in Compile += {
   scalaBinaryVersion.value match {

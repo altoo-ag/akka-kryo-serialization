@@ -37,8 +37,8 @@ import com.romix.scala.serialization.kryo.{ScalaKryo, _}
 import net.jpountz.lz4.LZ4Factory
 import org.objenesis.strategy.StdInstantiatorStrategy
 
-import scala.collection.JavaConverters._
 import scala.collection.mutable.ArrayBuilder
+import scala.jdk.CollectionConverters._
 import scala.util.{Failure, Success, Try}
 
 trait Transformation {
