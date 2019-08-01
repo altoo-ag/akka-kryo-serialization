@@ -18,7 +18,7 @@ libraryDependencies += "com.typesafe.akka" %% "akka-remote" % akkaVersion
 libraryDependencies += "com.esotericsoftware" % "kryo" % "4.0.0"
 libraryDependencies += "net.jpountz.lz4" % "lz4" % "1.3.0"
 libraryDependencies += "commons-io" % "commons-io" % "2.4" % "test"
-libraryDependencies += "org.scalatest" %% "scalatest" % "3.0.0" % "test"
+libraryDependencies += "org.scalatest" %% "scalatest" % "3.0.8" % "test"
 libraryDependencies += "com.typesafe.akka" %% "akka-persistence" % akkaVersion % "test"
 libraryDependencies += "com.typesafe.akka" %% "akka-testkit" % akkaVersion % "test"
 
