@@ -3,12 +3,12 @@ package com.romix.akka.serialization.kryo
 import akka.actor.ActorSystem
 import akka.serialization._
 import com.typesafe.config.ConfigFactory
-import org.scalatest.FlatSpec
+import org.scalatest._
 
 import scala.collection.immutable.{HashMap, TreeMap}
 import scala.collection.mutable.{AnyRefMap, LongMap}
 
-class AkkaKryoCompressionTests extends FlatSpec {
+class AkkaKryoCompressionTests extends FlatSpec with BeforeAndAfterAllConfigMap {
   val defaultConfig = ConfigFactory.parseString("""
       akka {
         extensions = ["com.romix.akka.serialization.kryo.KryoSerializationExtension$"]
@@ -114,11 +114,18 @@ class AkkaKryoCompressionTests extends FlatSpec {
       }
   """)
 
+  var iterations: Int = 1000
+  var listLength: Int = 500
+
+  override def beforeAll(configMap: ConfigMap): Unit = {
+    configMap.getOptional[String]("iterations")
+      .foreach { i => iterations = i.toInt }
+    configMap.getOptional[String]("listLength")
+      .foreach { ll => listLength = ll.toInt }
+  }
+
   def testConfig(systemName: String, config: String): Unit = {
     val system = ActorSystem(systemName, ConfigFactory.parseString(config).withFallback(defaultConfig))
-
-    val iterations = 1000
-    val listLength = 500
 
     def timeIt[A](name: String, loops: Int)(a: => A) = {
       val now = System.nanoTime
