@@ -224,7 +224,7 @@ extensions = ["com.romix.akka.serialization.kryo.KryoSerializationExtension$"]
             # Useful for debugging and lowl-level tweaking
             kryo-trace = false
 
-            # If proviced, Kryo uses the class specified by a fully qualified
+            # If provided, Kryo uses the class specified by a fully qualified
             # class name to perform a custom initialization of Kryo instances in
             # addition to what is done automatically based on the config file.
             kryo-custom-serializer-init = "CustomKryoSerializerInitFQCN"
