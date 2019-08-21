@@ -129,7 +129,7 @@ extensions = ["com.romix.akka.serialization.kryo.KryoSerializationExtension$"]
             # Possibles values for type are: graph or nograph
             # graph supports serialization of object graphs with shared nodes
             # and cyclic references, but this comes at the expense of a small
-            # overhead nograph does not support object grpahs with shared nodes,
+            # overhead nograph does not support object graphs with shared nodes,
             # but is usually faster
             type = "graph"
 
