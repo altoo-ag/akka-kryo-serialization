@@ -20,7 +20,6 @@ package com.romix.akka.serialization.kryo
 
 import java.security.SecureRandom
 import java.util
-import java.util.concurrent.ConcurrentLinkedQueue
 import java.util.zip.{Deflater, Inflater}
 
 import javax.crypto.Cipher
@@ -35,6 +34,7 @@ import com.esotericsoftware.kryo.util._
 import com.esotericsoftware.minlog.{Log => MiniLog}
 import com.romix.scala.serialization.kryo.{ScalaKryo, _}
 import net.jpountz.lz4.LZ4Factory
+import org.agrona.concurrent.ManyToManyConcurrentArrayQueue
 import org.objenesis.strategy.StdInstantiatorStrategy
 
 import scala.collection.mutable.ArrayBuilder
@@ -533,7 +533,7 @@ class SerializerPool(queueBuilder: QueueBuilder, newInstance: () => Serializer) 
 
   private val pool =
     if (queueBuilder == null)
-      new ConcurrentLinkedQueue[Serializer]
+      new ManyToManyConcurrentArrayQueue[Serializer](Runtime.getRuntime.availableProcessors * 4)
     else
       queueBuilder.build
 
@@ -556,7 +556,7 @@ class SerializerPool(queueBuilder: QueueBuilder, newInstance: () => Serializer) 
 /**
   * Kryo custom queue builder, to replace ConcurrentLinkedQueue for another Queue,
   * Notice that it must be a multiple producer and multiple consumer queue type,
-  * you could use for example JCtools MpmcArrayQueue.
+  * you could use for example a bounded non-blocking queue.
   */
 trait QueueBuilder {
 
