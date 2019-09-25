@@ -6,7 +6,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *   http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -22,55 +22,46 @@ import akka.actor.{ActorSystem, ExtendedActorSystem, Extension, ExtensionId, Ext
 import akka.event.Logging
 import com.typesafe.config.Config
 
+import scala.jdk.CollectionConverters._
 import scala.util.Try
 
 object KryoSerialization {
 
   class Settings(val config: Config) {
 
-    import scala.jdk.CollectionConverters._
-    import config._
-
     // type can be: graph, simple
-    val SerializerType: String = config.getString("akka.actor.kryo.type")
+    val serializerType: String = config.getString("akka.actor.kryo.type")
 
-    val BufferSize: Int = config.getInt("akka.actor.kryo.buffer-size")
-
-    val MaxBufferSize: Int = config.getInt("akka.actor.kryo.max-buffer-size")
+    val bufferSize: Int = config.getInt("akka.actor.kryo.buffer-size")
+    val maxBufferSize: Int = config.getInt("akka.actor.kryo.max-buffer-size")
 
     // Each entry should be: FQCN -> integer id
-    val ClassNameMappings: Map[String, String] = configToMap(getConfig("akka.actor.kryo.mappings"))
-
-    val ClassNames: java.util.List[String] = config.getStringList("akka.actor.kryo.classes")
+    val classNameMappings: Map[String, String] = configToMap(config.getConfig("akka.actor.kryo.mappings"))
+    val classNames: java.util.List[String] = config.getStringList("akka.actor.kryo.classes")
 
     // Strategy: default, explicit, incremental, automatic
-    val IdStrategy: String = config.getString("akka.actor.kryo.idstrategy")
+    val idStrategy: String = config.getString("akka.actor.kryo.idstrategy")
+    val implicitRegistrationLogging: Boolean = config.getBoolean("akka.actor.kryo.implicit-registration-logging")
 
-    val ImplicitRegistrationLogging: Boolean = config.getBoolean("akka.actor.kryo.implicit-registration-logging")
+    val kryoTrace: Boolean = config.getBoolean("akka.actor.kryo.kryo-trace")
+    val kryoReferenceMap: Boolean = config.getBoolean("akka.actor.kryo.kryo-reference-map")
+    val kryoCustomSerializerInit: String = Try(config.getString("akka.actor.kryo.kryo-custom-serializer-init")).getOrElse(null)
 
-    val KryoTrace: Boolean = config.getBoolean("akka.actor.kryo.kryo-trace")
+    val useManifests: Boolean = config.getBoolean("akka.actor.kryo.use-manifests")
 
-    val KryoReferenceMap: Boolean = config.getBoolean("akka.actor.kryo.kryo-reference-map")
+    val useUnsafe: Boolean = config.getBoolean("akka.actor.kryo.use-unsafe")
 
-    val UseManifests: Boolean = config.getBoolean("akka.actor.kryo.use-manifests")
+    val aesKeyClass: String = Try(config.getString("akka.actor.kryo.encryption.aes.custom-key-class")).getOrElse(null)
+    val aesKey: String = Try(config.getString(s"akka.actor.kryo.encryption.aes.key")).getOrElse("ThisIsASecretKey")
+    val aesMode: String = Try(config.getString(s"akka.actor.kryo.encryption.aes.mode")).getOrElse("AES/CBC/PKCS5Padding")
+    val aesIvLength: Int = Try(config.getInt(s"akka.actor.kryo.encryption.aes.IV-length")).getOrElse(16)
 
-    val UseUnsafe: Boolean = config.getBoolean("akka.actor.kryo.use-unsafe")
+    val postSerTransformations: String = Try(config.getString("akka.actor.kryo.post-serialization-transformations")).getOrElse("off")
 
-    val AESKeyClass: String = Try(config.getString("akka.actor.kryo.encryption.aes.custom-key-class")).getOrElse(null)
+    val customQueueBuilder: String = Try(config.getString("akka.actor.kryo.custom-queue-builder")).getOrElse(null)
 
-    val AESKey: String = Try(config.getString(s"akka.actor.kryo.encryption.aes.key")).getOrElse("ThisIsASecretKey")
+    val resolveSubclasses: Boolean = config.getBoolean("akka.actor.kryo.resolve-subclasses")
 
-    val AESMode: String = Try(config.getString(s"akka.actor.kryo.encryption.aes.mode")).getOrElse("AES/CBC/PKCS5Padding")
-
-    val AESIVLength: Int = Try(config.getInt(s"akka.actor.kryo.encryption.aes.IV-length")).getOrElse(16)
-
-    val PostSerTransformations:  String = Try(config.getString("akka.actor.kryo.post-serialization-transformations")).getOrElse("off")
-
-    val KryoCustomSerializerInit: String = Try(config.getString("akka.actor.kryo.kryo-custom-serializer-init")).getOrElse(null)
-
-    val CustomQueueBuilder: String = Try(config.getString("akka.actor.kryo.custom-queue-builder")).getOrElse(null)
-
-    val ResolveSubclasses: Boolean = config.getBoolean("akka.actor.kryo.resolve-subclasses")
 
     private def configToMap(cfg: Config): Map[String, String] =
       cfg.root.unwrapped.asScala.toMap.map { case (k, v) => (k, v.toString) }
