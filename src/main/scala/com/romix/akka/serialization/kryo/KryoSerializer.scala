@@ -22,11 +22,11 @@ import java.security.SecureRandom
 import java.util
 import java.util.concurrent.ConcurrentLinkedQueue
 import java.util.zip.{Deflater, Inflater}
+
 import javax.crypto.Cipher
 import javax.crypto.spec.{IvParameterSpec, SecretKeySpec}
-
 import akka.actor.{ActorRef, ExtendedActorSystem}
-import akka.event.Logging
+import akka.event.{Logging, LoggingAdapter}
 import akka.serialization._
 import com.esotericsoftware.kryo.Kryo
 import com.esotericsoftware.kryo.io.{Input, Output, UnsafeInput, UnsafeOutput}
@@ -313,7 +313,7 @@ class KryoSerializer(val system: ExtendedActorSystem) extends Serializer {
     bufferSize,
     maxBufferSize,
     useManifests,
-    useUnsafe)
+    useUnsafe)(log)
   catch {
     case e: Exception =>
       log.error("exception caught during akka-kryo-serialization startup: {}", e)
@@ -358,7 +358,7 @@ class KryoSerializer(val system: ExtendedActorSystem) extends Serializer {
       bufferSize,
       maxBufferSize,
       useManifests,
-      useUnsafe)
+      useUnsafe)(log)
   )
 
   private def getSerializer = serializerPool.fetch()
@@ -471,7 +471,7 @@ class KryoBasedSerializer(
     val bufferSize: Int,
     val maxBufferSize: Int,
     val includeManifest: Boolean,
-    val useUnsafe: Boolean) extends Serializer {
+    val useUnsafe: Boolean)(log: LoggingAdapter) extends Serializer {
 
   // A unique identifier for this Serializer
   def identifier = 12454323
@@ -485,6 +485,10 @@ class KryoBasedSerializer(
       else
         kryo.writeClassAndObject(buffer, obj)
       buffer.toBytes
+    } catch {
+      case e: StackOverflowError if !kryo.getReferences => // when configured with "nograph" serialization can fail with stack overflow
+        log.error(e, "Could not serialize class with potentially circular references: {}", obj)
+        throw new RuntimeException("Could not serialize class with potential circular references: " + obj)
     } finally {
       releaseBuffer(buffer)
     }
