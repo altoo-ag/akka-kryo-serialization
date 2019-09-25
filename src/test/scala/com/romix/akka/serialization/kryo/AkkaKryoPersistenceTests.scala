@@ -48,13 +48,13 @@ object SnapshotRecoveryLocalStoreSpec {
 }
 
 class SnapshotRecoveryTest extends PersistenceSpec with ImplicitSender {
-  
+
   import com.romix.akka.serialization.kryo.SnapshotRecoveryLocalStoreSpec._
   "A persistent actor which is persisted" should {
     val persistentActor = system.actorOf(Props(classOf[SnapshotTestPersistentActor], "PersistentActor", testActor))
-    
+
     "should get right serializer" in {
-      val serialization = SerializationExtension(system) 
+      val serialization = SerializationExtension(system)
       val sample = List(Person("John", "Doe"), Person("Bruce", "Wayne"), Person("Tony", "Stark"))
       val sampleHead: Person = sample.head
       assert(serialization.findSerializerFor(sample).getClass == classOf[KryoSerializer])
@@ -67,16 +67,16 @@ class SnapshotRecoveryTest extends PersistenceSpec with ImplicitSender {
       assert(deserialized.isSuccess)
       assert(deserialized.get == sample)
     }
-    
+
     "recover state only from its own correct snapshot file after restart" in {
       persistentActor ! Person("John", "Doe")
-      expectNoMsg()
+      expectNoMessage()
       persistentActor ! Person("Bruce", "Wayne")
-      expectNoMsg()
+      expectNoMessage()
       persistentActor ! TakeSnapshot
       expectMsg(SnapshotSaveSuccess)
       persistentActor ! Person("Tony", "Stark")
-      expectNoMsg()
+      expectNoMessage()
       persistentActor ! Boom
       persistentActor ! GetState
       expectMsg(List(Person("John", "Doe"), Person("Bruce", "Wayne"), Person("Tony", "Stark")))
@@ -84,7 +84,7 @@ class SnapshotRecoveryTest extends PersistenceSpec with ImplicitSender {
 
     "recover correct state after explicitly killing the actor and starting it again" in {
       persistentActor ! Kill   //default supervision stops the actor on ActorKilledException
-      
+
       val newPersistentActor = system.actorOf(Props(classOf[SnapshotTestPersistentActor], "PersistentActor", testActor))
       within(3 seconds) {
         newPersistentActor ! GetState
@@ -100,7 +100,7 @@ abstract class PersistenceSpec extends TestKit(ActorSystem("testSystem", ConfigF
   with WordSpecLike with Matchers with BeforeAndAfterAll {
   val storageLocations = List("akka.persistence.snapshot-store.local.dir").map(s => new File(system.settings.config.getString(s)))
 
-  override def beforeAll() {
+  override def beforeAll(): Unit = {
     storageLocations.foreach(FileUtils.deleteDirectory)
     super.beforeAll()
   }
@@ -131,7 +131,7 @@ object TestConfig {
         implicit-registration-logging = true
         mappings {
           "scala.collection.immutable.$colon$colon" = 48
-          "scala.collection.immutable.List" = 49 
+          "scala.collection.immutable.List" = 49
           "com.romix.akka.serialization.kryo.Person" = 56
           "akka.persistence.serialization.Snapshot" = 108
           "akka.persistence.SnapshotMetadata" = 113
@@ -142,9 +142,9 @@ object TestConfig {
         kryo = "com.romix.akka.serialization.kryo.KryoSerializer"
       }
 
-      serialization-bindings { 
-          "scala.collection.immutable.$colon$colon" = kryo 
-          "scala.collection.immutable.List" = kryo 
+      serialization-bindings {
+          "scala.collection.immutable.$colon$colon" = kryo
+          "scala.collection.immutable.List" = kryo
           "com.romix.akka.serialization.kryo.Person" = kryo
           "akka.persistence.serialization.Snapshot" = kryo
           "akka.persistence.SnapshotMetadata" = kryo

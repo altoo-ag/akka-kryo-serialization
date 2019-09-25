@@ -7,6 +7,8 @@ import org.scalatest.FlatSpec
 
 import scala.collection.mutable.AnyRefMap
 
+import com.romix.scala.serialization.kryo.ScalaVersionRegistry
+
 class KryoCryptoTestKey {
   def kryoAESKey = "TheTestSecretKey"
 }
@@ -49,8 +51,8 @@ class AkkaKryoCryptoWithCustomKeyTests extends FlatSpec {
               }
             implicit-registration-logging = true
             mappings {
-              "scala.collection.immutable.HashMap$HashTrieMap"    = 30
-              "[Lscala.collection.immutable.HashMap$HashTrieMap;" = 31
+              """" + ScalaVersionRegistry.immutableHashMapImpl + """" = 30
+              "[L""" + ScalaVersionRegistry.immutableHashMapImpl + """;" = 31
               "scala.collection.mutable.AnyRefMap"                = 34
               "[Lscala.collection.mutable.AnyRefMap;"             = 35
               "scala.collection.mutable.LongMap"                  = 36

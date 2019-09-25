@@ -1,9 +1,9 @@
 package com.romix.scala.serialization.kryo
 
 class SubclassResolverTest extends SpecCase {
-  
+
   override val useSubclassResolver:Boolean = true
-  
+
   "SubclassResolver" should "work with normal Map" in {
     kryo.setRegistrationRequired(true)
     kryo.addDefaultSerializer(classOf[scala.collection.Map[_, _]], classOf[ScalaImmutableAbstractMapSerializer])
@@ -18,9 +18,9 @@ class SubclassResolverTest extends SpecCase {
     roundTrip(map1)
     roundTrip(map2)
     roundTrip(map3)
-    roundTrip(map4)    
+    roundTrip(map4)
   }
-  
+
   "SubclassResolver" should "work with empty HashMap" in {
     kryo.setRegistrationRequired(true)
     kryo.addDefaultSerializer(classOf[scala.collection.Map[_, _]], classOf[ScalaImmutableAbstractMapSerializer])
@@ -31,10 +31,10 @@ class SubclassResolverTest extends SpecCase {
     val map1 = Map()
     roundTrip(map1)
   }
-  
+
   "SubclassResolver" should "permit more-specific types to work when specified" in {
     import scala.collection.immutable.{HashMap, ListMap}
-    
+
     kryo.setRegistrationRequired(true)
     // The usual generic case:
     kryo.addDefaultSerializer(classOf[scala.collection.immutable.Map[_, _]], classOf[ScalaImmutableAbstractMapSerializer])
@@ -48,10 +48,10 @@ class SubclassResolverTest extends SpecCase {
     val map2 = ListMap("Rome" -> "Italy", "London" -> "England", "Paris" -> "France", "New York" -> "USA", "Tokio" -> "Japan", "Peking" -> "China", "Brussels" -> "Belgium")
     val map1Copy = roundTrip(map1)
     val map2Copy = roundTrip(map2)
-    assert(map1Copy.isInstanceOf[HashMap.HashTrieMap[_,_]])
+    assert(map1Copy.isInstanceOf[HashMap[_, _]])
     assert(map2Copy.isInstanceOf[ListMap[_,_]])
   }
-  
+
   "SubclassResolver" should "work with normal Set" in {
     kryo.setRegistrationRequired(true)
     kryo.addDefaultSerializer(classOf[scala.collection.Set[_]], classOf[ScalaImmutableAbstractSetSerializer])
@@ -59,7 +59,7 @@ class SubclassResolverTest extends SpecCase {
     kryo.getClassResolver match {
       case resolver:SubclassResolver => resolver.enable()
     }
-    
+
     val set1 = Set(83, 84, 959)
     val set2 = Set("hello", "world")
     roundTrip(set1)

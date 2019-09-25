@@ -37,8 +37,8 @@ import com.romix.scala.serialization.kryo.{ScalaKryo, _}
 import net.jpountz.lz4.LZ4Factory
 import org.objenesis.strategy.StdInstantiatorStrategy
 
-import scala.collection.JavaConverters._
 import scala.collection.mutable.ArrayBuilder
+import scala.jdk.CollectionConverters._
 import scala.util.{Failure, Success, Try}
 
 trait Transformation {
@@ -406,11 +406,10 @@ class KryoSerializer(val system: ExtendedActorSystem) extends Serializer {
     kryo.addDefaultSerializer(classOf[scala.collection.mutable.Set[_]], classOf[ScalaMutableSetSerializer])
 
     // Map/Set Factories
-    kryo.addDefaultSerializer(classOf[scala.collection.generic.MapFactory[scala.collection.Map]], classOf[ScalaImmutableMapSerializer])
-    kryo.addDefaultSerializer(classOf[scala.collection.generic.SetFactory[scala.collection.Set]], classOf[ScalaImmutableSetSerializer])
+    ScalaVersionSerializers.mapAndSet(kryo)
 
     kryo.addDefaultSerializer(classOf[akka.util.ByteString], classOf[AkkaByteStringSerializer])
-    kryo.addDefaultSerializer(classOf[scala.collection.Traversable[_]], classOf[ScalaCollectionSerializer])
+    ScalaVersionSerializers.iterable(kryo)
     kryo.addDefaultSerializer(classOf[ActorRef], new ActorRefSerializer(system))
 
     if (settings.KryoTrace)

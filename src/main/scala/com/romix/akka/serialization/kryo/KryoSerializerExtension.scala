@@ -28,7 +28,7 @@ object KryoSerialization {
 
   class Settings(val config: Config) {
 
-    import scala.collection.JavaConverters._
+    import scala.jdk.CollectionConverters._
     import config._
 
     // type can be: graph, simple

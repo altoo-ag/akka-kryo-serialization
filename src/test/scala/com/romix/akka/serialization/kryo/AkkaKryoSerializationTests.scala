@@ -26,6 +26,8 @@ import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 import scala.concurrent.duration._
 
+import com.romix.scala.serialization.kryo.ScalaVersionRegistry
+
 class AkkaKryoSerializationTests extends FlatSpec with Matchers {
 
   Log.ERROR()
@@ -48,11 +50,11 @@ class AkkaKryoSerializationTests extends FlatSpec with Matchers {
       mappings {
             "akka.actor.ActorRef" = 20
             "akka.actor.DeadLetterActorRef" = 21
-            "scala.collection.immutable.HashMap$HashTrieMap" = 30
-            "[Lscala.collection.immutable.HashMap$HashTrieMap;" = 31
+            """" + ScalaVersionRegistry.immutableHashMapImpl+ """" = 30
+            "[L""" + ScalaVersionRegistry.immutableHashMapImpl + """;" = 31
             "scala.collection.immutable.TreeMap"                = 32
             "[Lscala.collection.immutable.TreeMap;"             = 33
-            "scala.collection.immutable.HashSet$HashTrieSet" = 34
+            """" + ScalaVersionRegistry.immutableHashSetImpl + """" = 34
             "scala.collection.immutable.$colon$colon" = 35
             "[J" = 50
             "[D" = 51
@@ -67,10 +69,8 @@ class AkkaKryoSerializationTests extends FlatSpec with Matchers {
       "scala.Product" = kryo
       "scala.collection.Map" = kryo
       "scala.collection.Set" = kryo
-      "scala.collection.generic.MapFactory" = kryo
-      "scala.collection.generic.SetFactory" = kryo
-      "scala.collection.immutable.HashMap$HashTrieMap" = kryo
-      "scala.collection.immutable.HashSet$HashTrieSet" = kryo
+      """" + ScalaVersionRegistry.immutableHashMapImpl + """" = kryo
+      """" + ScalaVersionRegistry.immutableHashSetImpl + """" = kryo
       "scala.collection.immutable.TreeMap" = kryo
       "[Ljava.lang.Object;" = kryo
       "akka.actor.ActorRef" = kryo
@@ -95,11 +95,11 @@ class AkkaKryoSerializationTests extends FlatSpec with Matchers {
       mappings {
             "akka.actor.ActorRef" = 20
             "akka.actor.DeadLetterActorRef" = 21
-            "scala.collection.immutable.HashMap$HashTrieMap" = 30
-            "[Lscala.collection.immutable.HashMap$HashTrieMap;" = 31
+            """" + ScalaVersionRegistry.immutableHashMapImpl+ """" = 30
+            "[L""" + ScalaVersionRegistry.immutableHashMapImpl + """;" = 31
             "scala.collection.immutable.TreeMap"                = 32
             "[Lscala.collection.immutable.TreeMap;"             = 33
-            "scala.collection.immutable.HashSet$HashTrieSet" = 34
+            """" + ScalaVersionRegistry.immutableHashSetImpl + """" = 34
             "scala.collection.immutable.$colon$colon" = 35
             "[J" = 50
             "[D" = 51
@@ -114,10 +114,8 @@ class AkkaKryoSerializationTests extends FlatSpec with Matchers {
       "scala.Product" = kryo
       "scala.collection.Map" = kryo
       "scala.collection.Set" = kryo
-      "scala.collection.generic.MapFactory" = kryo
-      "scala.collection.generic.SetFactory" = kryo
-      "scala.collection.immutable.HashMap$HashTrieMap" = kryo
-      "scala.collection.immutable.HashSet$HashTrieSet" = kryo
+      """" + ScalaVersionRegistry.immutableHashMapImpl + """" = kryo
+      """" + ScalaVersionRegistry.immutableHashSetImpl + """" = kryo
       "scala.collection.immutable.TreeMap" = kryo
       "[Ljava.lang.Object;" = kryo
       "akka.actor.ActorRef" = kryo
