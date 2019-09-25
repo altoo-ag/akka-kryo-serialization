@@ -37,7 +37,7 @@ class AkkaByteStringSerializer() extends Serializer[ByteString] {
     ByteString(input.readBytes(len))
   }
 
-  override def write(kryo: Kryo, output: Output, obj: ByteString) = {
+  override def write(kryo: Kryo, output: Output, obj: ByteString): Unit = {
     val len = obj.size
     output.writeInt(len, true)
     obj.foreach { output.writeByte }

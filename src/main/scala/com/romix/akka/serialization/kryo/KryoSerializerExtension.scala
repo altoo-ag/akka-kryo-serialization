@@ -58,11 +58,11 @@ object KryoSerialization {
 
     val AESKeyClass: String = Try(config.getString("akka.actor.kryo.encryption.aes.custom-key-class")).getOrElse(null)
 
-    val AESKey = Try(config.getString(s"akka.actor.kryo.encryption.aes.key")).getOrElse("ThisIsASecretKey")
+    val AESKey: String = Try(config.getString(s"akka.actor.kryo.encryption.aes.key")).getOrElse("ThisIsASecretKey")
 
-    val AESMode = Try(config.getString(s"akka.actor.kryo.encryption.aes.mode")).getOrElse("AES/CBC/PKCS5Padding")
+    val AESMode: String = Try(config.getString(s"akka.actor.kryo.encryption.aes.mode")).getOrElse("AES/CBC/PKCS5Padding")
 
-    val AESIVLength = Try(config.getInt(s"akka.actor.kryo.encryption.aes.IV-length")).getOrElse(16)
+    val AESIVLength: Int = Try(config.getInt(s"akka.actor.kryo.encryption.aes.IV-length")).getOrElse(16)
 
     val PostSerTransformations:  String = Try(config.getString("akka.actor.kryo.post-serialization-transformations")).getOrElse("off")
 
@@ -87,7 +87,7 @@ class KryoSerialization(val system: ExtendedActorSystem) extends Extension {
 
 object KryoSerializationExtension extends ExtensionId[KryoSerialization] with ExtensionIdProvider {
   override def get(system: ActorSystem): KryoSerialization = super.get(system)
-  override def lookup = KryoSerializationExtension
+  override def lookup: KryoSerializationExtension.type = KryoSerializationExtension
   override def createExtension(system: ExtendedActorSystem): KryoSerialization = new KryoSerialization(system)
 }
 
