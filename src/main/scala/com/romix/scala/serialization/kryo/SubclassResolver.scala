@@ -14,7 +14,7 @@ class SubclassResolver extends DefaultClassResolver {
    */
   private var enabled = false
 
-  def enable() = enabled = true
+  def enable(): Unit = enabled = true
 
   /**
    * Keep track of the Types we've tried to look up and failed, to reduce wasted effort.
@@ -51,12 +51,12 @@ class SubclassResolver extends DefaultClassResolver {
     val found = super.getRegistration(tpe)
     if (enabled && found == null) {
       findRegistered(tpe) match {
-        case Some(reg) => {
+        case Some(reg) =>
           // Okay, we've found an ancestor registration. Add that registration for the current type, so
           // it'll be efficient later. (This isn't threadsafe, but a given Kryo instance isn't anyway.)
           classToRegistration.put(tpe, reg)
           reg
-        }
+
         case None => null
       }
     } else
