@@ -7,10 +7,10 @@ object ScalaVersionRegistry {
   final val immutableHashSetImpl = "scala.collection.immutable.HashSet$HashTrieSet"
 
   def registerHashMap(kryo: Kryo): Unit = {
-    kryo.register(classOf[scala.collection.immutable.HashMap$HashTrieMap], 40)
+    kryo.register(classOf[scala.collection.immutable.HashMap.HashTrieMap[_, _]], 40)
   }
 
   def registerHashSet(kryo: Kryo): Unit = {
-    kryo.register(classOf[scala.collection.immutable.HashSet$HashTrieSet], 41)
+    kryo.register(classOf[scala.collection.immutable.HashSet.HashTrieSet[_]], 41)
   }
 }
