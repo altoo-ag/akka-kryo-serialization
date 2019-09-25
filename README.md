@@ -23,7 +23,7 @@ How to use this library in your project
 ---------------------------------------
 
 We provide several versions of the libraray:
-
+* (upcoming) v0.6.0 is build against Akka-2.5 and Kryo-4.0 and is available for Scala-2.11, Scala-2.12 and Scala-2.13
 * v0.5.1 is build against Akka-2.4 and Kryo-4.0 and is available for Scala-2.11 and Scala-2.12
 * v0.4.2 is build against Akka-2.4 and Kryo-3.0 and is available for Scala-2.11
 * v0.3.3 is build against Akka-2.3 and in available for Scala-2.10 and 2.11
