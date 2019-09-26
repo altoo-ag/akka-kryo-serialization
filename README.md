@@ -164,7 +164,7 @@ extensions = ["com.romix.akka.serialization.kryo.KryoSerializationExtension$"]
 
             idstrategy = "incremental"
 
-            # Define a default queue builder, by default ConcurrentLinkedQueue is used.
+            # Define a default queue builder, by default a bounded non-blocking queue is used.
             # Create your own queue builder by implementing the trait QueueBuilder,
             # useful for paranoid GC users that want to use JCtools MpmcArrayQueue for example.
             #
@@ -298,35 +298,31 @@ whole object graph with this object as a root using this Java serializer.
 Kryo queue builder examples:
 ----------------------------
 
-* Scala bounded queue builder with a capacity of 32:
-
-        package a.b.c
+* Scala bounded queue builder with a capacity of CPUs x 4:
 
         import akka.serialization.Serializer
         import com.romix.akka.serialization.kryo.QueueBuilder
-        import org.jctools.queues.MpmcArrayQueue
+        import org.agrona.concurrent.ManyToManyConcurrentArrayQueue
         import java.util.Queue
 
         class KryoQueueBuilder extends QueueBuilder {
           def build: Queue[Serializer] = {
-            new MpmcArrayQueue[Serializer](32)
+            new ManyToManyConcurrentArrayQueue[Serializer](Runtime.getRuntime.availableProcessors * 4)
           }
         }
 
-* Java bounded queue builder with a capacity of 32:
-
-        package a.b.c;
+* Java bounded queue builder with a capacity of CPUs x 4:
 
         import akka.serialization.Serializer;
         import com.romix.akka.serialization.kryo.QueueBuilder;
-        import org.jctools.queues.MpmcArrayQueue;
+        import org.agrona.concurrent.ManyToManyConcurrentArrayQueue
         import java.util.Queue;
 
         public class KryoQueueBuilder implements QueueBuilder {
 
           @Override
           public Queue<Serializer> build() {
-            return new MpmcArrayQueue<>(32);
+            return new ManyToManyConcurrentArrayQueue<>(Runtime.getRuntime().availableProcessors() * 4);
           }
         }
 
