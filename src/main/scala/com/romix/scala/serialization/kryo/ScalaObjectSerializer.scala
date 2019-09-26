@@ -29,7 +29,7 @@ import _root_.java.lang.reflect.Field
 
 // Stolen with pride from Chill ;-)
 class ObjectSerializer[T] extends Serializer[T] {
-  val cachedObj = MMap[Class[_], Option[T]]()
+  private val cachedObj = MMap[Class[_], Option[T]]()
 
   // Does nothing
   override def write(kser: Kryo, out: Output, obj: T): Unit = ()

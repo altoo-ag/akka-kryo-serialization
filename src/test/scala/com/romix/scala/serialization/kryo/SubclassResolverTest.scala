@@ -14,7 +14,7 @@ class SubclassResolverTest extends SpecCase {
     val map1 = Map("Rome" -> "Italy", "London" -> "England", "Paris" -> "France", "New York" -> "USA", "Tokio" -> "Japan", "Peking" -> "China", "Brussels" -> "Belgium")
     val map2 = map1 + ("Moscow" -> "Russia")
     val map3 = map2 + ("Berlin" -> "Germany")
-    val map4 = map3 + ("Germany" -> "Berlin", "Russia" -> "Moscow")
+    val map4 = map3 + ("Germany" -> "Berlin") + ("Russia" -> "Moscow")
     roundTrip(map1)
     roundTrip(map2)
     roundTrip(map3)
