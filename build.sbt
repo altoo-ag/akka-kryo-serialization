@@ -7,7 +7,7 @@ val akkaVersion = "2.5.25"
 enablePlugins(SbtOsgi, ReleasePlugin)
 
 name := "akka-kryo-serialization"
-organization := "com.github.romix.akka"
+organization := "io.altoo"
 resolvers += typesafe
 resolvers += typesafeSnapshot
 resolvers += sonatypeSnapshot
@@ -52,7 +52,7 @@ scalacOptions ++= {
   if (scalaVersion.value.startsWith("2.11")) {
     Seq("-optimise")
   } else {
-    Seq("-opt:l:inline", "-opt-inline-from:com.romix.*")
+    Seq("-opt:l:inline", "-opt-inline-from:io.altoo.akka.serialization.kryo.*")
   }
 }
 
@@ -60,7 +60,7 @@ scalacOptions ++= {
 javaOptions in run += "-XX:+UseAES -XX:+UseAESIntrinsics"
 
 OsgiKeys.privatePackage := Nil
-OsgiKeys.exportPackage := Seq("com.romix.*")
+OsgiKeys.exportPackage := Seq("io.altoo.*")
 
 publishTo := {
   val nexus = "https://oss.sonatype.org/"
@@ -93,7 +93,7 @@ releaseProcess := Seq[ReleaseStep](
   pushChanges
 )
 
-pomExtra := <url>https://github.com/romix/akka-kryo-serialization</url>
+pomExtra := <url>https://github.com/altoo-ag/akka-kryo-serialization</url>
   <licenses>
     <license>
       <name>The Apache Software License, Version 2.0</name>
@@ -105,11 +105,4 @@ pomExtra := <url>https://github.com/romix/akka-kryo-serialization</url>
     <url>git@github.com:altoo-ag/akka-kryo-serialization.git</url>
     <connection>scm:git:git@github.com:altoo-ag/akka-kryo-serialization.git</connection>
   </scm>
-  <developers>
-    <developer>
-      <id>romix</id>
-      <name>Roman Levenstein</name>
-      <email>romixlev@gmail.com</email>
-    </developer>
-  </developers>
 
