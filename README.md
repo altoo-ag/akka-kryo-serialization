@@ -129,7 +129,7 @@ The following options are available for configuring this serializer:
 * You need to add a following line to the list of your Akka extensions:
 
 ```
-extensions = ["com.romix.akka.serialization.kryo.KryoSerializationExtension$"]
+extensions = ["io.altoo.akka.serialization.kryo.KryoSerializationExtension$"]
 ```
 
 * You need to add a new `kryo` section to the akka.actor part of configuration
@@ -338,7 +338,7 @@ extensions = ["com.romix.akka.serialization.kryo.KryoSerializationExtension$"]
 serializers {
     java = "akka.serialization.JavaSerializer"
     # Define kryo serializer
-    kryo = "com.romix.akka.serialization.kryo.KryoSerializer"
+    kryo = "io.altoo.akka.serialization.kryo.KryoSerializer"
 }
 ```
 
@@ -357,7 +357,7 @@ Kryo queue builder examples:
 * Scala bounded queue builder with a capacity of CPUs x 4:
 
         import akka.serialization.Serializer
-        import com.romix.akka.serialization.kryo.QueueBuilder
+        import io.altoo.akka.serialization.kryo.QueueBuilder
         import org.agrona.concurrent.ManyToManyConcurrentArrayQueue
         import java.util.Queue
 
@@ -370,7 +370,7 @@ Kryo queue builder examples:
 * Java bounded queue builder with a capacity of CPUs x 4:
 
         import akka.serialization.Serializer;
-        import com.romix.akka.serialization.kryo.QueueBuilder;
+        import io.altoo.akka.serialization.kryo.QueueBuilder;
         import org.agrona.concurrent.ManyToManyConcurrentArrayQueue
         import java.util.Queue;
 
@@ -535,7 +535,7 @@ Usage as a general purpose Scala serialization library
 
 Simply add this library to your classpath. It does not have any external
 dependencies besides Kryo. All serializers for Scala classes can be found
-in the package `com.romix.scala.serialization.kryo`
+in the package `io.altoo.scala.serialization.kryo`
 
 If you want to use any of those serializers in your code, add some of the
 following lines to your code as required:
