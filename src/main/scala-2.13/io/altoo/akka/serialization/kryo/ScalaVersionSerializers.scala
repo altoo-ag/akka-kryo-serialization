@@ -5,7 +5,7 @@ import io.altoo.akka.serialization.kryo.serializer.scala.{ScalaCollectionSeriali
 
 private[kryo] object ScalaVersionSerializers {
   def mapAndSet(kryo: Kryo): Unit = {
-    kryo.addDefaultSerializer(classOf[scala.collection.MapFactory[scala.collection.Map]], classOf[ScalaImmutableMapSerializer])
+    kryo.addDefaultSerializer(classOf[scala.collection.MapFactory[_root_.scala.collection.Map]], classOf[ScalaImmutableMapSerializer])
   }
 
   def iterable(kryo: Kryo): Unit = {
