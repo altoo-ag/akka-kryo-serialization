@@ -3,12 +3,11 @@ package io.altoo.akka.serialization.kryo
 import akka.actor.ActorSystem
 import akka.serialization._
 import com.typesafe.config.ConfigFactory
+import io.altoo.akka.serialization.kryo.serializer.scala.ScalaVersionRegistry
 import org.scalatest._
 
 import scala.collection.immutable.{HashMap, TreeMap}
 import scala.collection.mutable.{AnyRefMap, LongMap}
-
-import io.altoo.scala.serialization.kryo.ScalaVersionRegistry
 
 class AkkaKryoCompressionTests extends FlatSpec with BeforeAndAfterAllConfigMap {
   val defaultConfig = ConfigFactory.parseString("""

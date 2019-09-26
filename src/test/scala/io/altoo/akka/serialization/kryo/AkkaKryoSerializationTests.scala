@@ -20,13 +20,12 @@ import akka.actor.{ActorRef, ActorSystem}
 import akka.serialization.{Serialization, _}
 import com.esotericsoftware.minlog.Log
 import com.typesafe.config.ConfigFactory
+import io.altoo.akka.serialization.kryo.serializer.scala.ScalaVersionRegistry
 import org.scalatest._
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 import scala.concurrent.duration._
-
-import io.altoo.scala.serialization.kryo.ScalaVersionRegistry
 
 class AkkaKryoSerializationTests extends FlatSpec with Matchers {
 

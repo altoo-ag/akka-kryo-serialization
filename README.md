@@ -529,31 +529,3 @@ like `immutable.ListMap` -- the resolver will choose the more-specific one when 
 register most of your classes explicitly, as usual. But it is a helpful way to tame the complexity
 of some class hierarchies, when that complexity can be treated as an implementation detail and all
 of the subclasses can be serialized and deserialized identically.
-
-Usage as a general purpose Scala serialization library
-------------------------------------------------------
-
-Simply add this library to your classpath. It does not have any external
-dependencies besides Kryo. All serializers for Scala classes can be found
-in the package `io.altoo.scala.serialization.kryo`
-
-If you want to use any of those serializers in your code, add some of the
-following lines to your code as required:
-
-```scala
-    // Serialization of Scala enumerations
-    kryo.addDefaultSerializer(classOf[scala.Enumeration#Value], classOf[EnumerationSerializer])
-    kryo.register(Class.forName("scala.Enumeration$Val"))
-    kryo.register(classOf[scala.Enumeration#Value])
-
-    // Serialization of Scala maps like Trees, etc
-    kryo.addDefaultSerializer(classOf[scala.collection.Map[_,_]], classOf[ScalaMapSerializer])
-    kryo.addDefaultSerializer(classOf[scala.collection.generic.MapFactory[scala.collection.Map]], classOf[ScalaMapSerializer])
-
-    // Serialization of Scala sets
-    kryo.addDefaultSerializer(classOf[scala.collection.Set[_]], classOf[ScalaSetSerializer])
-    kryo.addDefaultSerializer(classOf[scala.collection.generic.SetFactory[scala.collection.Set]], classOf[ScalaSetSerializer])
-
-    // Serialization of all Traversable Scala collections like Lists, Vectors, etc
-    kryo.addDefaultSerializer(classOf[scala.collection.Traversable[_]], classOf[ScalaCollectionSerializer])
-```

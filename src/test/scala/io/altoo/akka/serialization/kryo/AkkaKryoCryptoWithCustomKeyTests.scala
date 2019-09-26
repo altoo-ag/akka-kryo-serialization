@@ -3,11 +3,10 @@ package io.altoo.akka.serialization.kryo
 import akka.actor.ActorSystem
 import akka.serialization.SerializationExtension
 import com.typesafe.config.ConfigFactory
+import io.altoo.akka.serialization.kryo.serializer.scala.ScalaVersionRegistry
 import org.scalatest.FlatSpec
 
 import scala.collection.mutable.AnyRefMap
-
-import io.altoo.scala.serialization.kryo.ScalaVersionRegistry
 
 class KryoCryptoTestKey {
   def kryoAESKey = "TheTestSecretKey"

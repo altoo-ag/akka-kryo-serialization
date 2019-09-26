@@ -60,7 +60,7 @@ scalacOptions ++= {
 javaOptions in run += "-XX:+UseAES -XX:+UseAESIntrinsics"
 
 OsgiKeys.privatePackage := Nil
-OsgiKeys.exportPackage := Seq("io.altoo.*")
+OsgiKeys.exportPackage := Seq("io.altoo.akka.serialization.kryo.*")
 
 publishTo := {
   val nexus = "https://oss.sonatype.org/"
