@@ -52,7 +52,7 @@ scalacOptions ++= {
   if (scalaVersion.value.startsWith("2.11")) {
     Seq("-optimise")
   } else {
-    Seq("-opt:l:inline", "-opt-inline-from:io.altoo.*")
+    Seq("-opt:l:inline", "-opt-inline-from:io.altoo.akka.serialization.kryo.*")
   }
 }
 
@@ -60,7 +60,7 @@ scalacOptions ++= {
 javaOptions in run += "-XX:+UseAES -XX:+UseAESIntrinsics"
 
 OsgiKeys.privatePackage := Nil
-OsgiKeys.exportPackage := Seq("io.altoo.akka.serialization.kryo.*")
+OsgiKeys.exportPackage := Seq("io.altoo.*")
 
 publishTo := {
   val nexus = "https://oss.sonatype.org/"
