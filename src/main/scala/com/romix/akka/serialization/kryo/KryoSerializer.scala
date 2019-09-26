@@ -25,6 +25,7 @@ import java.util.zip.{Deflater, Inflater}
 import akka.actor.{ActorRef, ExtendedActorSystem}
 import akka.event.{Logging, LoggingAdapter}
 import akka.serialization._
+import com.esotericsoftware.kryo
 import com.esotericsoftware.kryo.Kryo
 import com.esotericsoftware.kryo.io._
 import com.esotericsoftware.kryo.serializers.FieldSerializer
@@ -179,6 +180,7 @@ class KryoSerializer(val system: ExtendedActorSystem) extends Serializer {
     log.debug("Got implicit registration logging: {}", settings.implicitRegistrationLogging)
     log.debug("Got use manifests: {}", settings.useManifests)
     log.debug("Got use unsafe: {}", settings.useUnsafe)
+    log.debug("Got default serializer class: {}", settings.kryoDefaultSerializer)
     log.debug("Got custom serializer init class: {}", settings.kryoCustomSerializerInit)
     log.debug("Got custom aes key class: {}", settings.aesKeyClass)
     log.debug("Got transformations: {}", settings.postSerTransformations)
@@ -200,6 +202,14 @@ class KryoSerializer(val system: ExtendedActorSystem) extends Serializer {
   val customizerInstance = Try(customSerializerInitClass.map(_.getDeclaredConstructor().newInstance()))
   val customizerMethod = Try(customSerializerInitClass.map(_.getMethod("customize", classOf[Kryo])))
 
+  val defaultSerializerClass =
+    system.dynamicAccess.getClassFor[kryo.Serializer[_]](settings.kryoDefaultSerializer) match {
+      case Success(clazz) => clazz
+      case Failure(e) =>
+        log.error("Class could not be loaded and/or registered: {}", settings.kryoDefaultSerializer)
+        throw e
+    }
+  
   val customAESKeyClass: Some[Class[_ <: AnyRef]] =
     if (settings.aesKeyClass == null) null else
       system.dynamicAccess.getClassFor[AnyRef](settings.aesKeyClass) match {
@@ -283,6 +293,10 @@ class KryoSerializer(val system: ExtendedActorSystem) extends Serializer {
     val instStrategy = kryo.getInstantiatorStrategy.asInstanceOf[Kryo.DefaultInstantiatorStrategy]
     instStrategy.setFallbackInstantiatorStrategy(new StdInstantiatorStrategy())
     kryo.setInstantiatorStrategy(instStrategy)
+
+//    setting default serializer
+    kryo.setDefaultSerializer(defaultSerializerClass)
+
     // Support serialization of some standard or often used Scala classes
     kryo.addDefaultSerializer(classOf[scala.Enumeration#Value], classOf[EnumerationSerializer])
     system.dynamicAccess.getClassFor[AnyRef]("scala.Enumeration$Val") match {
