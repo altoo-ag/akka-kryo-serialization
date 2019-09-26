@@ -1,5 +1,6 @@
 akka-kryo-serialization - kryo-based serializers for Scala and Akka
 =====================================================================
+[![Build Status](https://travis-ci.org/altoo-ag/akka-kryo-serialization.svg?branch=master)](https://travis-ci.org/altoo-ag/akka-kryo-serialization)
 
 This library provides custom Kryo-based serializers for Scala and Akka. It can be
 used for more efficient akka actor's remoting.
@@ -22,8 +23,9 @@ Features
 How to use this library in your project
 ---------------------------------------
 
-We provide several versions of the libraray:
-
+We provide several versions of the library:
+* (upcoming) v0.6.0 is build against Akka-2.5 and Kryo-4.0 and is available for Scala-2.11, Scala-2.12 and Scala-2.13
+  this version is tested with JDK: OpenJdk8,OpenJdk11 and Scala: 2.11.12,2.12.10,2.13.1 
 * v0.5.1 is build against Akka-2.4 and Kryo-4.0 and is available for Scala-2.11 and Scala-2.12
 * v0.4.2 is build against Akka-2.4 and Kryo-3.0 and is available for Scala-2.11
 * v0.3.3 is build against Akka-2.3 and in available for Scala-2.10 and 2.11
@@ -129,7 +131,7 @@ extensions = ["com.romix.akka.serialization.kryo.KryoSerializationExtension$"]
             # Possibles values for type are: graph or nograph
             # graph supports serialization of object graphs with shared nodes
             # and cyclic references, but this comes at the expense of a small
-            # overhead nograph does not support object grpahs with shared nodes,
+            # overhead nograph does not support object graphs with shared nodes,
             # but is usually faster
             type = "graph"
 

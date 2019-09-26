@@ -8,9 +8,14 @@ lib_managed/
 src_managed/
 project/boot/
 project/plugins/project/
+.metals
+.bloop
 
 # Scala-IDE specific
 .scala_dependencies
 
 # Intellij IDEA specific
 .idea/
+
+# VS Code
+.history

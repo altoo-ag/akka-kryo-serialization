@@ -3,7 +3,7 @@ package com.romix.akka.serialization.kryo
 import akka.actor.ActorSystem
 import akka.serialization.SerializationExtension
 import com.typesafe.config.ConfigFactory
-import org.scalatest.FlatSpec
+import org.scalatest._
 
 import scala.concurrent._
 import scala.concurrent.duration._
@@ -13,7 +13,8 @@ object Time extends Enumeration {
   val Second, Minute, Hour, Day, Month, Year = Value
 }
 
-class EnumTest extends FlatSpec {
+
+class EnumTest(configMap: ConfigMap) extends FlatSpec with BeforeAndAfterAllConfigMap {
 
   import Time._
 
@@ -36,6 +37,12 @@ class EnumTest extends FlatSpec {
   val system = ActorSystem("testSystem", defaultConfig)
   val serialization = SerializationExtension(system)
 
+  var iterations: Int = 10000
+
+  override def beforeAll(configMap: ConfigMap): Unit = {
+    configMap.getOptional[String]("iterations")
+      .foreach { i => iterations = i.toInt }
+  }
 
   def timeIt[A](name: String, loops: Int)(a: => A) = {
     val now = System.nanoTime
@@ -44,12 +51,12 @@ class EnumTest extends FlatSpec {
       val x = a
       i += 1
     }
-    val ms = (System.nanoTime - now) / 1000000
-    println(s"$name:\t$ms\tms\t=\t${loops * 1000 / ms}\tops/s")
+    val ms = (System.nanoTime - now) / 1000000.0
+    println(f"$name%s:\t$ms%.1f\tms\t=\t${loops * 1000 / ms}%.0f\tops/s")
    }
 
   "Enumeration serialization" should "be fast" in {
-    val iterations = 10000
+    val iterations = configMap.getWithDefault("iterations", 10000)
 
     val listOfTimes = 1 to 1000 flatMap {i => Time.values.toList}
     timeIt("Enum Serialize:   ", iterations) { serialization.serialize(listOfTimes) }

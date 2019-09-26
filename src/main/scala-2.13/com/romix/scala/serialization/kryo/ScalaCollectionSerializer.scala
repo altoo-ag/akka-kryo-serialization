@@ -6,7 +6,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *   http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -18,7 +18,6 @@
 
 package com.romix.scala.serialization.kryo
 
-import akka.util.ByteString
 import com.esotericsoftware.kryo.{Kryo, Serializer}
 import com.esotericsoftware.kryo.io.{Input, Output}
 
@@ -27,20 +26,29 @@ import com.esotericsoftware.kryo.io.{Input, Output}
  *
  * Generic serializer for traversable collections
  *
- * @author luben
+ * @author romix
  *
  */
-class AkkaByteStringSerializer() extends Serializer[ByteString] {
+class ScalaCollectionSerializer() extends Serializer[Iterable[_]] {
 
-  override def read(kryo: Kryo, input: Input, typ: Class[ByteString]): ByteString = {
+  override def read(kryo: Kryo, input: Input, typ: Class[Iterable[_]]): Iterable[_] = {
     val len = input.readInt(true)
-    ByteString(input.readBytes(len))
+    val inst = kryo.newInstance(typ)
+    val coll = inst.iterableFactory.newBuilder[Any]
+
+    var i = 0
+    while (i < len) {
+      coll += kryo.readClassAndObject(input)
+      i += 1
+    }
+    coll.result
   }
 
-  override def write(kryo: Kryo, output: Output, obj: ByteString): Unit = {
-    val len = obj.size
+  override def write(kryo: Kryo, output: Output, obj: Iterable[_]): Unit = {
+    val collection: Iterable[_] = obj
+    val len = collection.size
     output.writeInt(len, true)
-    obj.foreach { output.writeByte }
+    collection.foreach { e: Any => kryo.writeClassAndObject(output, e) }
   }
 }
 

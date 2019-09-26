@@ -16,11 +16,11 @@ class MapSerializerTest extends SpecCase {
   "Kryo" should "roundtrip immutable maps " in {
     kryo.setRegistrationRequired(true)
     kryo.addDefaultSerializer(classOf[scala.collection.Map[_, _]], classOf[ScalaImmutableMapSerializer])
-    kryo.register(classOf[scala.collection.immutable.HashMap$HashTrieMap], 40)
+    ScalaVersionRegistry.registerHashMap(kryo)
     val map1 = Map("Rome" -> "Italy", "London" -> "England", "Paris" -> "France", "New York" -> "USA", "Tokio" -> "Japan", "Peking" -> "China", "Brussels" -> "Belgium")
     val map2 = map1 + ("Moscow" -> "Russia")
     val map3 = map2 + ("Berlin" -> "Germany")
-    val map4 = map3 + ("Germany" -> "Berlin", "Russia" -> "Moscow")
+    val map4 = map3 ++ Seq("Germany" -> "Berlin", "Russia" -> "Moscow")
     roundTrip(map1)
     roundTrip(map2)
     roundTrip(map3)
@@ -30,12 +30,12 @@ class MapSerializerTest extends SpecCase {
   it should "roundtrip immutable sets " in {
     kryo.setRegistrationRequired(true)
     kryo.addDefaultSerializer(classOf[scala.collection.immutable.Set[_]], classOf[ScalaImmutableSetSerializer])
-    kryo.register(classOf[scala.collection.immutable.HashSet$HashTrieSet], 41)
+    ScalaVersionRegistry.registerHashSet(kryo)
 
     val set1 = Set("Rome", "Italy", "London", "England", "Paris", "France", "New York", "USA", "Tokio", "Japan", "Peking", "China", "Brussels", "Belgium")
-    val set2 = set1 + ("Moscow", "Russia")
-    val set3 = set2 + ("Berlin", "Germany")
-    val set4 = set3 + ("Germany", "Berlin", "Russia", "Moscow")
+    val set2 = set1 ++ Seq("Moscow", "Russia")
+    val set3 = set2 ++ Seq("Berlin", "Germany")
+    val set4 = set3 ++ Seq("Germany", "Berlin", "Russia", "Moscow")
     roundTrip(set1)
     roundTrip(set2)
     roundTrip(set3)
@@ -49,9 +49,9 @@ class MapSerializerTest extends SpecCase {
     kryo.register(classOf[scala.collection.mutable.HashMap[_, _]], 42)
     val map1 = scala.collection.mutable.Map("Rome" -> "Italy", "London" -> "England", "Paris" -> "France",
       "New York" -> "USA", "Tokio" -> "Japan", "Peking" -> "China", "Brussels" -> "Belgium")
-    val map2 = map1 + ("Moscow" -> "Russia")
-    val map3 = map2 + ("Berlin" -> "Germany")
-    val map4 = map3 + ("Germany" -> "Berlin", "Russia" -> "Moscow")
+    val map2 = map1 ++ Seq("Moscow" -> "Russia")
+    val map3 = map2 ++ Seq("Berlin" -> "Germany")
+    val map4 = map3 ++ Seq("Germany" -> "Berlin", "Russia" -> "Moscow")
     roundTrip(map1)
     roundTrip(map2)
     roundTrip(map3)
@@ -61,14 +61,15 @@ class MapSerializerTest extends SpecCase {
   it should "roundtrip muttable AnyRefMap" in {
     kryo.setRegistrationRequired(false)
     kryo.addDefaultSerializer(classOf[scala.collection.mutable.AnyRefMap[_,_]], classOf[ScalaMutableMapSerializer])
+    kryo.addDefaultSerializer(classOf[scala.collection.immutable.List[_]], classOf[ScalaCollectionSerializer])
     kryo.register(classOf[scala.collection.mutable.AnyRefMap[AnyRef, Any]], 3040)
 
     var map1 = scala.collection.mutable.AnyRefMap[String, String]()
 
     0 until hugeCollectionSize foreach { case i => map1 += ("k" + i) -> ("v" + i) }
-    val map2 = map1 + ("Moscow" -> "Russia")
-    val map3 = map2 + ("Berlin" -> "Germany")
-    val map4 = map3 + ("Germany" -> "Berlin") + ("Russia" -> "Moscow")
+    val map2 = map1 ++ Seq("Moscow" -> "Russia")
+    val map3 = map2 ++ Seq("Berlin" -> "Germany")
+    val map4 = map3 ++ Seq("Germany" -> "Berlin") ++ Seq("Russia" -> "Moscow")
     roundTrip(map1)
     roundTrip(map2)
     roundTrip(map3)
@@ -79,14 +80,15 @@ class MapSerializerTest extends SpecCase {
   it should "roundtrip muttable LongMap" in {
     kryo.setRegistrationRequired(false)
     kryo.addDefaultSerializer(classOf[scala.collection.mutable.LongMap[_]], classOf[ScalaMutableMapSerializer])
+    kryo.addDefaultSerializer(classOf[scala.collection.immutable.List[_]], classOf[ScalaCollectionSerializer])
     kryo.register(classOf[scala.collection.mutable.LongMap[Any]], 3041)
 
     var map1 = scala.collection.mutable.LongMap[String]()
 
     0 until hugeCollectionSize foreach { case i => map1 += i.toLong -> ("v" + i) }
-    val map2 = map1 + (110L -> "Russia")
-    val map3 = map2 + (111L -> "Germany")
-    val map4 = map3 + (112L -> "Berlin") + (113L -> "Moscow")
+    val map2 = map1 ++ Seq(110L -> "Russia")
+    val map3 = map2 ++ Seq(111L -> "Germany")
+    val map4 = map3 ++ Seq(112L -> "Berlin") ++ Seq(113L -> "Moscow")
     roundTrip(map1)
     roundTrip(map2)
     roundTrip(map3)
@@ -97,6 +99,7 @@ class MapSerializerTest extends SpecCase {
   it should "roundtrip immuttable LongMap" in {
     kryo.setRegistrationRequired(false)
     kryo.addDefaultSerializer(classOf[scala.collection.immutable.LongMap[_]], classOf[ScalaImmutableMapSerializer])
+    kryo.addDefaultSerializer(classOf[scala.collection.immutable.List[_]], classOf[ScalaCollectionSerializer])
     kryo.register(classOf[scala.collection.immutable.LongMap[Any]], 3042)
 
     var map1 = scala.collection.immutable.LongMap[String]()
@@ -116,10 +119,8 @@ class MapSerializerTest extends SpecCase {
     kryo.setRegistrationRequired(false)
     kryo.addDefaultSerializer(classOf[scala.Enumeration#Value], classOf[EnumerationSerializer])
     kryo.addDefaultSerializer(classOf[scala.collection.immutable.Set[_]], classOf[ScalaImmutableSetSerializer])
-    kryo.addDefaultSerializer(classOf[scala.collection.generic.SetFactory[scala.collection.Set]], classOf[ScalaImmutableSetSerializer])
     kryo.addDefaultSerializer(classOf[scala.collection.Map[_, _]], classOf[ScalaImmutableMapSerializer])
-    kryo.addDefaultSerializer(classOf[scala.collection.generic.MapFactory[scala.collection.Map]], classOf[ScalaImmutableMapSerializer])
-    kryo.addDefaultSerializer(classOf[scala.collection.Traversable[_]], classOf[ScalaCollectionSerializer])
+    kryo.addDefaultSerializer(classOf[scala.collection.immutable.Seq[_]], classOf[ScalaCollectionSerializer])
     kryo.addDefaultSerializer(classOf[scala.Product], classOf[ScalaProductSerializer])
     val scl1 = new ScalaClass1()
     var map1: Map[String, String] = Map.empty[String, String]
@@ -142,9 +143,8 @@ class MapSerializerTest extends SpecCase {
 
   it should "roundtrip big immutable maps" in {
     kryo.setRegistrationRequired(false)
-    kryo.register(classOf[scala.collection.immutable.HashMap$HashTrieMap], 40)
+    kryo.register(classOf[scala.collection.immutable.HashMap[_, _]], 40)
     kryo.register(classOf[Array[scala.collection.immutable.HashMap[Any, Any]]], 51)
-    kryo.register(classOf[scala.collection.immutable.HashMap$HashMap1], 41)
     kryo.register(classOf[scala.Tuple1[Any]], 45)
     kryo.register(classOf[scala.Tuple2[Any, Any]], 46)
     kryo.register(classOf[scala.Tuple3[Any, Any, Any]], 47)
@@ -153,7 +153,7 @@ class MapSerializerTest extends SpecCase {
     kryo.register(classOf[scala.Tuple6[Any, Any, Any, Any, Any, Any]], 50)
     kryo.addDefaultSerializer(classOf[scala.Enumeration#Value], classOf[EnumerationSerializer])
     kryo.addDefaultSerializer(classOf[scala.collection.immutable.Set[_]], classOf[ScalaImmutableSetSerializer])
-    kryo.addDefaultSerializer(classOf[scala.collection.generic.SetFactory[scala.collection.Set]], classOf[ScalaImmutableSetSerializer])
+    kryo.addDefaultSerializer(classOf[scala.collection.immutable.List[_]], classOf[ScalaCollectionSerializer])
 
     var map1: Map[String, String] = Map.empty[String, String]
 
@@ -170,9 +170,7 @@ class MapSerializerTest extends SpecCase {
 
   it should "roundtrip big immutable sets" in {
     kryo.setRegistrationRequired(false)
-    kryo.register(classOf[scala.collection.immutable.HashSet$HashTrieSet], 40)
-    kryo.register(classOf[Array[scala.collection.immutable.HashSet[Any]]], 51)
-    kryo.register(classOf[scala.collection.immutable.HashSet$HashSet1], 41)
+    kryo.register(classOf[Array[scala.collection.immutable.HashSet[_]]], 51)
     kryo.register(classOf[scala.Tuple1[Any]], 45)
     kryo.register(classOf[scala.Tuple2[Any, Any]], 46)
     kryo.register(classOf[scala.Tuple3[Any, Any, Any]], 47)
@@ -197,6 +195,7 @@ class MapSerializerTest extends SpecCase {
     kryo.setRegistrationRequired(false)
     // Support serialization of Scala collections
     kryo.register(classOf[scala.collection.immutable.$colon$colon[_]], 60)
+    kryo.addDefaultSerializer(classOf[scala.collection.immutable.List[_]], classOf[ScalaCollectionSerializer])
     kryo.addDefaultSerializer(classOf[scala.Enumeration#Value], classOf[EnumerationSerializer])
 
     var map1 = List.empty[String]
@@ -217,7 +216,7 @@ class MapSerializerTest extends SpecCase {
     kryo.register(classOf[scala.collection.immutable.$colon$colon[_]], 40)
     kryo.addDefaultSerializer(classOf[scala.Enumeration#Value], classOf[EnumerationSerializer])
     kryo.addDefaultSerializer(classOf[scala.collection.immutable.Set[_]], classOf[ScalaImmutableSetSerializer])
-    kryo.addDefaultSerializer(classOf[scala.collection.generic.SetFactory[scala.collection.Set]], classOf[ScalaImmutableSetSerializer])
+    kryo.addDefaultSerializer(classOf[scala.collection.immutable.List[_]], classOf[ScalaCollectionSerializer])
     val map1 = Seq("Rome", "Italy", "London", "England", "Paris", "France")
     val map2 = Seq("Moscow", "Russia") ++ map1
     val map3 = Seq("Berlin", "Germany") ++ map2
