@@ -99,10 +99,9 @@ class LZ4KryoCompressor extends Transformation {
 
 class ZipKryoCompressor extends Transformation {
 
-  lazy val deflater = new Deflater(Deflater.BEST_SPEED)
-  lazy val inflater = new Inflater()
 
   def toBinary(inputBuff: Array[Byte]): Array[Byte] = {
+    val deflater = new Deflater(Deflater.BEST_SPEED)
     val inputSize = inputBuff.length
     val outputBuff = new mutable.ArrayBuilder.ofByte
     outputBuff += (inputSize & 0xff).toByte
@@ -118,11 +117,12 @@ class ZipKryoCompressor extends Transformation {
       val n = deflater.deflate(buff)
       outputBuff ++= buff.take(n)
     }
-    deflater.reset()
+    deflater.end()
     outputBuff.result
   }
 
   def fromBinary(inputBuff: Array[Byte]): Array[Byte] = {
+    val inflater = new Inflater()
     val size: Int = (inputBuff(0).asInstanceOf[Int] & 0xff) |
                     (inputBuff(1).asInstanceOf[Int] & 0xff) << 8 |
                     (inputBuff(2).asInstanceOf[Int] & 0xff) << 16 |
@@ -130,7 +130,7 @@ class ZipKryoCompressor extends Transformation {
     val outputBuff = new Array[Byte](size)
     inflater.setInput(inputBuff, 4, inputBuff.length - 4)
     inflater.inflate(outputBuff)
-    inflater.reset()
+    inflater.end()
     outputBuff
   }
 }
