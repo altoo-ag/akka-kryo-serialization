@@ -45,7 +45,7 @@ object KryoSerialization {
 
     val kryoTrace: Boolean = config.getBoolean("akka.actor.kryo.kryo-trace")
     val kryoReferenceMap: Boolean = config.getBoolean("akka.actor.kryo.kryo-reference-map")
-    val kryoDefaultSerializer: String = Try(config.getString("akka.actor.kryo.kryo-default-serializer")).getOrElse("com.esotericsoftware.kryo.serializers.FieldSerializer")
+    val kryoDefaultSerializer: String = config.getString("akka.actor.kryo.kryo-default-serializer")
     val kryoCustomSerializerInit: String = Try(config.getString("akka.actor.kryo.kryo-custom-serializer-init")).getOrElse(null)
 
     val useManifests: Boolean = config.getBoolean("akka.actor.kryo.use-manifests")
