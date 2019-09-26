@@ -102,8 +102,8 @@ pomExtra := <url>https://github.com/romix/akka-kryo-serialization</url>
     </license>
   </licenses>
   <scm>
-    <url>git@github.com:romix/akka-kryo-serialization.git</url>
-    <connection>scm:git:git@github.com:romix/akka-kryo-serialization.git</connection>
+    <url>git@github.com:altoo-ag/akka-kryo-serialization.git</url>
+    <connection>scm:git:git@github.com:altoo-ag/akka-kryo-serialization.git</connection>
   </scm>
   <developers>
     <developer>
