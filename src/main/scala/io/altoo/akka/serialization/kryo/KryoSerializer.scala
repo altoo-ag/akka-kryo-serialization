@@ -336,13 +336,3 @@ class SerializerPool(queueBuilder: QueueBuilder, newInstance: () => Serializer) 
     pool.add(o)
   }
 }
-
-/**
- * Kryo custom queue builder, to replace ConcurrentLinkedQueue for another Queue,
- * Notice that it must be a multiple producer and multiple consumer queue type,
- * you could use for example a bounded non-blocking queue.
- */
-trait QueueBuilder {
-
-  def build: util.Queue[Serializer]
-}
