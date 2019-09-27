@@ -137,7 +137,7 @@ object TestConfig {
   }
   akka-kryo-serialization {
     type = "nograph"
-    idstrategy = "incremental"
+    id-strategy = "incremental"
     kryo-reference-map = false
     buffer-size = 65536
     post-serialization-transformations = "lz4,aes"

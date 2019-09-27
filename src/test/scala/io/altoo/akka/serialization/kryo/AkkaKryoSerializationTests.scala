@@ -43,7 +43,7 @@ class AkkaKryoSerializationTests extends FlatSpec with Matchers {
 
     altoo.akka.kryo {
       trace = true
-      idstrategy = "incremental"
+      id-strategy = "incremental"
       implicit-registration-logging = true
       post-serialization-transformations = off
       mappings {
@@ -88,7 +88,7 @@ class AkkaKryoSerializationTests extends FlatSpec with Matchers {
 
     akka-kryo-serialization {
       trace = true
-      idstrategy = "incremental"
+      id-strategy = "incremental"
       implicit-registration-logging = true
       post-serialization-transformations = lz4
       mappings {

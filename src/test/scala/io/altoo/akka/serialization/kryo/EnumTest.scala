@@ -29,7 +29,7 @@ object EnumTest {
     }
   }
   akka-kryo-serialization {
-    idstrategy = "default"
+    id-strategy = "default"
   }
   """
 }

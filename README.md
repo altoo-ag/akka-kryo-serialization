@@ -129,220 +129,22 @@ Configuration of akka-kryo-serialization
 The following options are available for configuring this serializer:
 
 * You need to add a following line to the list of your Akka extensions:
+    ```
+    extensions = ["io.altoo.akka.serialization.kryo.KryoSerializationExtension$"]
+    ```
 
-```
-extensions = ["io.altoo.akka.serialization.kryo.KryoSerializationExtension$"]
-```
-
-* You need to add a new `akka-kryo-serialization` section to the akka.actor part of configuration
-
-        akka-kryo-serialization  {
-            # Possibles values for type are: graph or nograph
-            # graph supports serialization of object graphs with shared nodes
-            # and cyclic references, but this comes at the expense of a small
-            # overhead nograph does not support object graphs with shared nodes,
-            # but is usually faster
-            type = "graph"
-
-            # Possible values for idstrategy are:
-            # default, explicit, incremental, automatic
-            #
-            # default - slowest and produces bigger serialized representation.
-            # Contains fully-qualified class names (FQCNs) for each class. Note
-            # that selecting this strategy does not work in version 0.3.2, but
-            # is available from 0.3.3 onward.
-            #
-            # explicit - fast and produces compact serialized representation.
-            # Requires that all classes that will be serialized are pre-registered
-            # using the "mappings" and "classes" sections. To guarantee that both
-            # sender and receiver use the same numeric ids for the same classes it
-            # is advised to provide exactly the same entries in the "mappings"
-            # section.
-            #
-            # incremental - fast and produces compact serialized representation.
-            # Support optional pre-registering of classes using the "mappings"
-            # and "classes" sections. If class is not pre-registered, it will be
-            # registered dynamically by picking a next available id To guarantee
-            # that both sender and receiver use the same numeric ids for the same
-            # classes it is advised to pre-register them using at least the "classes" section.
-            #
-            # automatic -  use the pre-registered classes with fallback to FQCNs
-            # Contains fully-qualified class names (FQCNs) for each non pre-registered
-            # class in the "mappings" and "classes" sections. This strategy was
-            # added in version 0.4.1 and will not work with the previous versions
-
-            idstrategy = "incremental"
-
-            # Define a default queue builder, by default a bounded non-blocking queue is used.
-            # Create your own queue builder by implementing the trait QueueBuilder,
-            # useful for paranoid GC users that want to use JCtools MpmcArrayQueue for example.
-            #
-            # If you pass a bounded queue make sure its capacity is equal or greater than the
-            # maximum concurrent remote dispatcher threads your application will ever have
-            # running; failing to do this will have a negative performance impact:
-            #
-            # custom-queue-builder = "a.b.c.KryoQueueBuilder"
-
-            # Define a default size for byte buffers used during serialization
-            buffer-size = 4096
-
-            # The serialization byte buffers are doubled as needed until they
-            # exceed max-buffer-size and an exception is thrown. Can be -1
-            # for no maximum.
-            max-buffer-size = -1
-
-            # If set, akka uses manifests to put a class name
-            # of the top-level object into each message
-            use-manifests = false
-
-            # If set it will use the UnsafeInput and UnsafeOutput
-            # Kyro IO instances. Please note that there is no guarantee
-            # for backward/forward compatibility of unsafe serialization.
-            # It is also not compatible with the safe-serialized values.
-            # The unsafe IO usually creates bugger payloads but is faster
-            # for some types, e.g. native arrays.
-            use-unsafe = false
-
-            # The transformations that have be done while serialization
-            # Supported transformations: compression and encryption
-            # accepted values(comma separated if multiple): off | lz4 | deflate | aes
-            # Transformations occur in the order they are specified
-            post-serialization-transformations = "lz4,aes"
-
-            # Settings for aes encryption, if included in transformations AES
-            # algo mode, key and custom key class can be specified AES algo mode
-            # defaults to 'AES/CBC/PKCS5Padding' and key to 'ThisIsASecretKey'.
-            # If custom key class is provided, Kryo will use the class specified
-            # by a fully qualified class name to get custom AES key. Such a
-            # class should define the method 'kryoAESKey'. This key overrides 'key'.
-            # If class doesn't contain 'kryoAESKey' method, specified key is used.
-            # If this is not present, default key is used
-            encryption {
-                aes {
-                    mode = "AES/CBC/PKCS5Padding"
-                    key = j68KkRjq21ykRGAQ
-                    IV-length = 16
-                    custom-key-class = "CustomAESKeyClass"
-                }
-            }
-
-            # Log implicitly registered classes. Useful, if you want to know all
-            # classes which are serialized. You can then use this information in
-            # the mappings and/or classes sections
-            implicit-registration-logging = false
-
-            # If enabled, Kryo logs a lot of information about serialization process.
-            # Useful for debugging and lowl-level tweaking
-            kryo-trace = false
-
-            # If provided, Kryo uses the class specified by a fully qualified
-            # class name to perform a custom initialization of Kryo instances in
-            # addition to what is done automatically based on the config file.
-            kryo-custom-serializer-init = "CustomKryoSerializerInitFQCN"
-            
-            # If provided, Kryo uses this class as default serializer,
-            # otherwise com.esotericsoftware.kryo.serializers.FieldSerializer will be used
-            
-            # Predefined classes:
-            
-            # com.esotericsoftware.kryo.serializers.FieldSerializer
-            # Serializes objects using direct field assignment. FieldSerializer is generic
-            # and can serialize most classes without any configuration. It is efficient
-            # and writes only the field data, without any extra information. It does not 
-            # support adding, removing, or changing the type of fields without invalidating
-            # previously serialized bytes. This can be acceptable in many situations,
-            # such as when sending data over a network, but may not be a good choice for
-            # long term data storage because the Java classes cannot evolve.
-            
-            # com.esotericsoftware.kryo.serializers.CompatibleFieldSerializer
-            # Serializes objects using direct field assignment, providing both forward and
-            # backward compatibility. This means fields can be added or removed without
-            # invalidating previously serialized bytes. Changing the type of a field 
-            # is not supported. The forward and backward compatibility comes at a cost: the
-            # first time the class is encountered in the serialized bytes, a simple 
-            # schema is written containing the field name strings.
-            
-            # com.esotericsoftware.kryo.serializers.VersionFieldSerializer
-            # Serializes objects using direct field assignment, with versioning backward
-            # compatibility. Allows fields to have a @Since(int) annotation to indicate 
-            # the version they were added. For a particular field, the value in @Since
-            # should never change once created. This is less flexible than FieldSerializer,
-            # which can handle most classes without needing annotations, but it provides
-            # backward compatibility. This means that new fields can be added, but
-            # removing, renaming or changing the type of any field will invalidate
-            # previous serialized bytes. VersionFieldSerializer has very little overhead
-            # (a single additional varint) compared to FieldSerializer. Forward 
-            # compatibility is not supported.
-            
-            # com.esotericsoftware.kryo.serializers.TaggedFieldSerializer
-            # Serializes objects using direct field assignment for fields that have
-            # a @Tag(int) annotation. This provides backward compatibility so new 
-            # fields can be added. TaggedFieldSerializer has two advantages over 
-            # VersionFieldSerializer:
-            # 1) fields can be renamed
-            # 2) fields marked with the @Deprecated annotation will be ignored when
-            # reading old bytes and won't be written to new bytes.
-            # Deprecation effectively removes the field from serialization, though
-            # the field and @Tag annotation must remain in the class. The downside is that
-            # it has a small amount of additional overhead compared to 
-            # VersionFieldSerializer (an additional varint per field). Forward compatibility
-            # is not supported.
-            kryo-default-serializer
-
-            # If enabled, allows Kryo to resolve subclasses of registered Types.
-            #
-            # This is primarily useful when idstrategy is set to "explicit". In this
-            # case, all classes to be serialized must be explicitly registered. The
-            # problem is that a large number of common Scala and Akka types (such as
-            # Map and ActorRef) are actually traits that mask a large number of
-            # specialized classes that deal with various situations and optimizations.
-            # It isn't straightforward to register all of these, so you can instead
-            # register a single supertype, with a serializer that can handle *all* of
-            # the subclasses, and the subclasses get serialized with that.
-            #
-            # Use this with care: you should only rely on this when you are confident
-            # that the superclass serializer covers all of the special cases properly.
-            resolve-subclasses = false
-
-            # Define mappings from a fully qualified class name to a numeric id.
-            # Smaller ids lead to smaller sizes of serialized representations.
-            #
-            # This section is:
-            # - mandatory for idstrategy="explicit"
-            # - ignored   for idstrategy="default"
-            # - optional  for incremental and automatic
-            #
-            # The smallest possible id should start at 20 (or even higher), because
-            # ids below it are used by Kryo internally e.g. for built-in Java and
-            # Scala types
-            mappings {
-                "package1.name1.className1" = 20,
-                "package2.name2.className2" = 21
-            }
-
-            # Define a set of fully qualified class names for
-            # classes to be used for serialization.
-            # The ids for those classes will be assigned automatically,
-            # but respecting the order of declaration in this section
-            #
-            # This section is ignored for idstrategy="default" and optional for
-            # all other.
-            classes = [
-                "package3.name3.className3",
-                "package4.name4.className4"
-            ]
-        }
-
+* You can add a new `akka-kryo-serialization` section to the configuration to customize the serializer.
+    Consult the supplied [reference.conf](https://github.com/altoo-ag/akka-kryo-serialization/blob/master/src/main/resources/reference.conf) for a detailed explanation of all the options available.
 
 * You should declare in the `akka.actor.serializers` section a new kind of serializer:
-
-```
-serializers {
-    java = "akka.serialization.JavaSerializer"
-    # Define kryo serializer
-    kryo = "io.altoo.akka.serialization.kryo.KryoSerializer"
-}
-```
+    
+    ```
+    serializers {
+        java = "akka.serialization.JavaSerializer"
+        # Define kryo serializer
+        kryo = "io.altoo.akka.serialization.kryo.KryoSerializer"
+    }
+    ```
 
 * As usual, you should declare in the Akka `serialization-bindings` section which
 classes should use kryo serialization. One thing to keep in mind is that classes that
@@ -489,7 +291,7 @@ An example of such a custom aes-key supplier class could be something like this:
 Resolving Subclasses
 --------------------
 
-If you are using `idstrategy="explicit"`, you may find that some of the standard Scala and
+If you are using `id-strategy="explicit"`, you may find that some of the standard Scala and
 Akka types are a bit hard to register properly. This is because these types are exposed in
 the API as simple traits or abstract classes, but they are actually implemented as many
 specialized subclasses that are used as necessary. Examples include:
