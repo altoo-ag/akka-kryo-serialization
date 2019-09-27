@@ -74,15 +74,10 @@ class KryoSerialization(val system: ExtendedActorSystem) extends Extension {
 
   val settings = new Settings(system.settings.config)
   val log = Logging(system, getClass.getName)
-
 }
 
 object KryoSerializationExtension extends ExtensionId[KryoSerialization] with ExtensionIdProvider {
   override def get(system: ActorSystem): KryoSerialization = super.get(system)
   override def lookup: KryoSerializationExtension.type = KryoSerializationExtension
   override def createExtension(system: ExtendedActorSystem): KryoSerialization = new KryoSerialization(system)
-}
-
-trait KryoCrypto {
-  def kryoAESKey: String
 }
