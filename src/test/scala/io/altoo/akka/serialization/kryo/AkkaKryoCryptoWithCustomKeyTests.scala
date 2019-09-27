@@ -34,7 +34,6 @@ class AkkaKryoCryptoWithCustomKeyTests extends FlatSpec {
 
   testConfig("CustomAESKey", """
       akka {
-        extensions = ["io.altoo.akka.serialization.kryo.KryoSerializationExtension$"]
         actor {
          serializers {
             kryo = "io.altoo.akka.serialization.kryo.KryoSerializer"

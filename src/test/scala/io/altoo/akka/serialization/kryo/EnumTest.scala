@@ -18,7 +18,6 @@ object EnumTest {
   private val defaultConfig =
     """
   akka {
-    extensions = ["io.altoo.akka.serialization.kryo.KryoSerializationExtension$"]
     actor {
       serializers {
         kryo = "io.altoo.akka.serialization.kryo.KryoSerializer"

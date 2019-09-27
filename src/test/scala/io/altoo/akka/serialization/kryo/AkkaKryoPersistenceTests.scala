@@ -114,7 +114,6 @@ abstract class PersistenceSpec extends TestKit(ActorSystem("testSystem", ConfigF
 object TestConfig {
   val config = """
   akka {
-    extensions = ["io.altoo.akka.serialization.kryo.KryoSerializationExtension$"]
     actor {
       serializers {
         kryo = "io.altoo.akka.serialization.kryo.KryoSerializer"

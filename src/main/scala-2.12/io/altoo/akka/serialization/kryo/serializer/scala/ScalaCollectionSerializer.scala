@@ -26,12 +26,9 @@ import com.esotericsoftware.kryo.io.Input
 import com.esotericsoftware.kryo.io.Output
 
 /**
- * *
- *
  * Generic serializer for traversable collections
  *
  * @author romix
- *
  */
 class ScalaCollectionSerializer() extends Serializer[Traversable[_]] {
 
