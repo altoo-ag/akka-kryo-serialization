@@ -36,35 +36,6 @@ class AkkaKryoCryptoWithCustomKeyTests extends FlatSpec {
       akka {
         extensions = ["io.altoo.akka.serialization.kryo.KryoSerializationExtension$"]
         actor {
-          kryo {
-            type = "nograph"
-            idstrategy = "incremental"
-            kryo-reference-map = false
-            buffer-size = 65536
-            post-serialization-transformations = aes
-            encryption {
-            aes {
-              mode = "AES/CBC/PKCS5Padding"
-              custom-key-class = "io.altoo.akka.serialization.kryo.KryoCryptoTestKey"
-                }
-              }
-            implicit-registration-logging = true
-            mappings {
-              """" + ScalaVersionRegistry.immutableHashMapImpl + """" = 30
-              "[L""" + ScalaVersionRegistry.immutableHashMapImpl + """;" = 31
-              "scala.collection.mutable.AnyRefMap"                = 34
-              "[Lscala.collection.mutable.AnyRefMap;"             = 35
-              "scala.collection.mutable.LongMap"                  = 36
-              "[Lscala.collection.mutable.LongMap;"               = 37
-              "[J" = 50
-              "[D" = 51
-              "[Z" = 52
-              "[Ljava.lang.Object;" = 53
-              "[Ljava.lang.String;" = 54
-              "scala.math.Ordering$String$" = 100
-            }
-
-          }
          serializers {
             kryo = "io.altoo.akka.serialization.kryo.KryoSerializer"
           }
@@ -77,6 +48,34 @@ class AkkaKryoCryptoWithCustomKeyTests extends FlatSpec {
           }
         }
       }
-                    """)
+      akka-kryo-serialization {
+        type = "nograph"
+        idstrategy = "incremental"
+        kryo-reference-map = false
+        buffer-size = 65536
+        post-serialization-transformations = aes
+        encryption {
+          aes {
+            mode = "AES/CBC/PKCS5Padding"
+            custom-key-class = "io.altoo.akka.serialization.kryo.KryoCryptoTestKey"
+          }
+        }
+        implicit-registration-logging = true
+        mappings {
+          """" + ScalaVersionRegistry.immutableHashMapImpl + """" = 30
+          "[L""" + ScalaVersionRegistry.immutableHashMapImpl + """;" = 31
+          "scala.collection.mutable.AnyRefMap"                = 34
+          "[Lscala.collection.mutable.AnyRefMap;"             = 35
+          "scala.collection.mutable.LongMap"                  = 36
+          "[Lscala.collection.mutable.LongMap;"               = 37
+          "[J" = 50
+          "[D" = 51
+          "[Z" = 52
+          "[Ljava.lang.Object;" = 53
+          "[Ljava.lang.String;" = 54
+          "scala.math.Ordering$String$" = 100
+        }
+      }
+  """)
 
 }

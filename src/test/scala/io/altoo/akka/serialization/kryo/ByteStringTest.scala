@@ -11,12 +11,6 @@ class ByteStringTest extends WordSpecLike with Matchers {
     """
     akka {
       actor {
-        kryo {
-          trace = true
-          idstrategy = "default"
-          implicit-registration-logging = true
-          post-serialization-transformations = off
-        }
         serializers {
           kryo = "io.altoo.akka.serialization.kryo.KryoSerializer"
         }
@@ -26,6 +20,12 @@ class ByteStringTest extends WordSpecLike with Matchers {
           "scala.collection.immutable.Vector" = kryo
         }
       }
+    }
+    akka-kryo-serialization {
+      trace = true
+      idstrategy = "default"
+      implicit-registration-logging = true
+      post-serialization-transformations = off
     }
     """))
 

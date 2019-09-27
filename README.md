@@ -8,6 +8,8 @@ used for more efficient akka actor's remoting.
 It can also be used for a general purpose and very efficient Kryo-based serialization
 of such Scala types like Option, Tuple, Enumeration and most of Scala's collection types.
 
+For upgrading to upcomming 1.0.0 version see [migration-guide](migration-guide.md).
+
 Features
 --------
 
@@ -132,9 +134,9 @@ The following options are available for configuring this serializer:
 extensions = ["io.altoo.akka.serialization.kryo.KryoSerializationExtension$"]
 ```
 
-* You need to add a new `kryo` section to the akka.actor part of configuration
+* You need to add a new `akka-kryo-serialization` section to the akka.actor part of configuration
 
-        kryo  {
+        akka-kryo-serialization  {
             # Possibles values for type are: graph or nograph
             # graph supports serialization of object graphs with shared nodes
             # and cyclic references, but this comes at the expense of a small
