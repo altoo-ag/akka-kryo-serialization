@@ -151,36 +151,33 @@ class KryoSerializer(val system: ExtendedActorSystem) extends Serializer {
         throw e
     }
 
+  // serializer pool to delegate actual serialization
+  private val serializerPool = new SerializerPool(queueBuilder, () => new KryoSerializerBackend(getKryo(settings.idStrategy, settings.serializerType), settings.bufferSize, settings.maxBufferSize, settings.useManifests, settings.useUnsafe)(log))
 
-  // This is whether "fromBinary" requires a "clazz" or not
+  // this is whether "fromBinary" requires a "clazz" or not
   override def includeManifest: Boolean = settings.useManifests
 
-  // A unique identifier for this Serializer
+  // a unique identifier for this Serializer
   override def identifier = 123454323
 
-  // Delegate to a real serializer
+  // Delegate to a serializer backend
   override def toBinary(obj: AnyRef): Array[Byte] = {
-    val ser = getSerializer
+    val ser = serializerPool.fetch()
     try
       kryoTransformer.toBinary(ser.toBinary(obj))
     finally
-      releaseSerializer(ser)
+      serializerPool.release(ser)
   }
 
+  // delegate to a serializer backend
   override def fromBinary(bytes: Array[Byte], clazz: Option[Class[_]]): AnyRef = {
-    val ser = getSerializer
+    val ser = serializerPool.fetch()
     try
       ser.fromBinary(kryoTransformer.fromBinary(bytes), clazz)
     finally
-      releaseSerializer(ser)
+      serializerPool.release(ser)
   }
 
-  private val serializerPool = new SerializerPool(queueBuilder, () =>
-    new KryoBasedSerializer(getKryo(settings.idStrategy, settings.serializerType), settings.bufferSize, settings.maxBufferSize, settings.useManifests, settings.useUnsafe)(log)
-  )
-
-  private def getSerializer = serializerPool.fetch()
-  private def releaseSerializer(ser: Serializer): Unit = serializerPool.release(ser)
 
   private def getKryo(strategy: String, serializerType: String): Kryo = {
     val referenceResolver = if (settings.kryoReferenceMap) new MapReferenceResolver() else new ListReferenceResolver()
@@ -190,12 +187,12 @@ class KryoSerializer(val system: ExtendedActorSystem) extends Serializer {
       else new DefaultClassResolver()
     val kryo = new ScalaKryo(classResolver, referenceResolver, new DefaultStreamFactory())
     kryo.setClassLoader(system.dynamicAccess.classLoader)
-    // Support deserialization of classes without no-arg constructors
+    // support deserialization of classes without no-arg constructors
     val instStrategy = kryo.getInstantiatorStrategy.asInstanceOf[Kryo.DefaultInstantiatorStrategy]
     instStrategy.setFallbackInstantiatorStrategy(new StdInstantiatorStrategy())
     kryo.setInstantiatorStrategy(instStrategy)
 
-    //    setting default serializer
+    // setting default serializer
     kryo.setDefaultSerializer(defaultSerializerClass)
 
     // Support serialization of some standard or often used Scala classes
