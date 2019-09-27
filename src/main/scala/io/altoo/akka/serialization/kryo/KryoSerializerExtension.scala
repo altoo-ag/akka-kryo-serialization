@@ -40,7 +40,7 @@ object KryoSerialization {
     val classNames: java.util.List[String] = config.getStringList("akka-kryo-serialization.classes")
 
     // Strategy: default, explicit, incremental, automatic
-    val idStrategy: String = config.getString("akka-kryo-serialization.idstrategy")
+    val idStrategy: String = config.getString("akka-kryo-serialization.id-strategy")
     val implicitRegistrationLogging: Boolean = config.getBoolean("akka-kryo-serialization.implicit-registration-logging")
 
     val kryoTrace: Boolean = config.getBoolean("akka-kryo-serialization.kryo-trace")

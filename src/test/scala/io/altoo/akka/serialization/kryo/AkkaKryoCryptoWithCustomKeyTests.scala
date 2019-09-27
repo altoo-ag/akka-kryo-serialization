@@ -50,7 +50,7 @@ class AkkaKryoCryptoWithCustomKeyTests extends FlatSpec {
       }
       akka-kryo-serialization {
         type = "nograph"
-        idstrategy = "incremental"
+        id-strategy = "incremental"
         kryo-reference-map = false
         buffer-size = 65536
         post-serialization-transformations = aes

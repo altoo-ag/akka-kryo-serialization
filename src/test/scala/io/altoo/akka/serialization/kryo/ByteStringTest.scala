@@ -23,7 +23,7 @@ class ByteStringTest extends WordSpecLike with Matchers {
     }
     akka-kryo-serialization {
       trace = true
-      idstrategy = "default"
+      id-strategy = "default"
       implicit-registration-logging = true
       post-serialization-transformations = off
     }

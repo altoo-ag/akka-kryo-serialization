@@ -144,7 +144,7 @@ extensions = ["io.altoo.akka.serialization.kryo.KryoSerializationExtension$"]
             # but is usually faster
             type = "graph"
 
-            # Possible values for idstrategy are:
+            # Possible values for id-strategy are:
             # default, explicit, incremental, automatic
             #
             # default - slowest and produces bigger serialized representation.
@@ -171,7 +171,7 @@ extensions = ["io.altoo.akka.serialization.kryo.KryoSerializationExtension$"]
             # class in the "mappings" and "classes" sections. This strategy was
             # added in version 0.4.1 and will not work with the previous versions
 
-            idstrategy = "incremental"
+            id-strategy = "incremental"
 
             # Define a default queue builder, by default a bounded non-blocking queue is used.
             # Create your own queue builder by implementing the trait QueueBuilder,
@@ -291,7 +291,7 @@ extensions = ["io.altoo.akka.serialization.kryo.KryoSerializationExtension$"]
 
             # If enabled, allows Kryo to resolve subclasses of registered Types.
             #
-            # This is primarily useful when idstrategy is set to "explicit". In this
+            # This is primarily useful when id-strategy is set to "explicit". In this
             # case, all classes to be serialized must be explicitly registered. The
             # problem is that a large number of common Scala and Akka types (such as
             # Map and ActorRef) are actually traits that mask a large number of
@@ -308,8 +308,8 @@ extensions = ["io.altoo.akka.serialization.kryo.KryoSerializationExtension$"]
             # Smaller ids lead to smaller sizes of serialized representations.
             #
             # This section is:
-            # - mandatory for idstrategy="explicit"
-            # - ignored   for idstrategy="default"
+            # - mandatory for id-strategy="explicit"
+            # - ignored   for id-strategy="default"
             # - optional  for incremental and automatic
             #
             # The smallest possible id should start at 20 (or even higher), because
@@ -325,7 +325,7 @@ extensions = ["io.altoo.akka.serialization.kryo.KryoSerializationExtension$"]
             # The ids for those classes will be assigned automatically,
             # but respecting the order of declaration in this section
             #
-            # This section is ignored for idstrategy="default" and optional for
+            # This section is ignored for id-strategy="default" and optional for
             # all other.
             classes = [
                 "package3.name3.className3",
@@ -489,7 +489,7 @@ An example of such a custom aes-key supplier class could be something like this:
 Resolving Subclasses
 --------------------
 
-If you are using `idstrategy="explicit"`, you may find that some of the standard Scala and
+If you are using `id-strategy="explicit"`, you may find that some of the standard Scala and
 Akka types are a bit hard to register properly. This is because these types are exposed in
 the API as simple traits or abstract classes, but they are actually implemented as many
 specialized subclasses that are used as necessary. Examples include:
