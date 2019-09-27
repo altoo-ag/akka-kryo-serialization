@@ -31,12 +31,14 @@ import com.esotericsoftware.kryo.io._
 import com.esotericsoftware.kryo.serializers.FieldSerializer
 import com.esotericsoftware.kryo.util._
 import com.esotericsoftware.minlog.{Log => MiniLog}
+import io.altoo.akka.serialization.kryo.serializer.akka.ActorRefSerializer
 import io.altoo.akka.serialization.kryo.serializer.scala.{ScalaKryo, _}
 import javax.crypto.Cipher
 import javax.crypto.spec.{IvParameterSpec, SecretKeySpec}
 import net.jpountz.lz4.LZ4Factory
 import org.agrona.concurrent.ManyToManyConcurrentArrayQueue
 import org.objenesis.strategy.StdInstantiatorStrategy
+
 import scala.collection.mutable
 import scala.jdk.CollectionConverters._
 import scala.util._

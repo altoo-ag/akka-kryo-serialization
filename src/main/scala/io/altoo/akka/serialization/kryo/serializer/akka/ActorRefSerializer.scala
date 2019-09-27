@@ -6,7 +6,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *   http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -16,24 +16,18 @@
  * ****************************************************************************
  */
 
-package io.altoo.akka.serialization.kryo
+package io.altoo.akka.serialization.kryo.serializer.akka
 
-import akka.actor.ExtendedActorSystem
-import akka.actor.ActorRef
+import akka.actor.{ActorRef, ExtendedActorSystem}
 import akka.serialization.Serialization
-import com.esotericsoftware.kryo.Kryo
-import com.esotericsoftware.kryo.Serializer
-import com.esotericsoftware.kryo.io.Input
-import com.esotericsoftware.kryo.io.Output
+import com.esotericsoftware.kryo.io.{Input, Output}
+import com.esotericsoftware.kryo.{Kryo, Serializer}
 
 /**
- * *
- * This module provides helper classes for serialization of Akka-specific classes.
+ * Specialized serializer for actor refs.
  *
  * @author Roman Levenstein
- *
  */
-
 class ActorRefSerializer(val system: ExtendedActorSystem) extends Serializer[ActorRef] {
 
   override def read(kryo: Kryo, input: Input, typ: Class[ActorRef]): ActorRef = {
