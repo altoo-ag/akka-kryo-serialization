@@ -128,11 +128,6 @@ Configuration of akka-kryo-serialization
 
 The following options are available for configuring this serializer:
 
-* You need to add a following line to the list of your Akka extensions:
-    ```
-    extensions = ["io.altoo.akka.serialization.kryo.KryoSerializationExtension$"]
-    ```
-
 * You can add a new `akka-kryo-serialization` section to the configuration to customize the serializer.
     Consult the supplied [reference.conf](https://github.com/altoo-ag/akka-kryo-serialization/blob/master/src/main/resources/reference.conf) for a detailed explanation of all the options available.
 

@@ -12,7 +12,6 @@ import scala.collection.mutable.{AnyRefMap, LongMap}
 class AkkaKryoCompressionTests extends FlatSpec with BeforeAndAfterAllConfigMap {
   val defaultConfig = ConfigFactory.parseString("""
       akka {
-        extensions = ["io.altoo.akka.serialization.kryo.KryoSerializationExtension$"]
         actor {
          serializers {
             java = "akka.serialization.JavaSerializer"
