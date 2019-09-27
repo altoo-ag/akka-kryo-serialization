@@ -28,10 +28,10 @@ class EnumTest(configMap: ConfigMap) extends FlatSpec with BeforeAndAfterAllConf
       serialization-bindings {
         "java.io.Serializable"        = kryo
       }
-      kryo  {
-        idstrategy  = "default"
-      }
     }
+  }
+  akka-kryo-serialization {
+    idstrategy  = "default"
   }
   """)
   val system = ActorSystem("testSystem", defaultConfig)

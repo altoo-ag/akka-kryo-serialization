@@ -30,38 +30,38 @@ object KryoSerialization {
   class Settings(val config: Config) {
 
     // type can be: graph, simple
-    val serializerType: String = config.getString("akka.actor.kryo.type")
+    val serializerType: String = config.getString("akka-kryo-serialization.type")
 
-    val bufferSize: Int = config.getInt("akka.actor.kryo.buffer-size")
-    val maxBufferSize: Int = config.getInt("akka.actor.kryo.max-buffer-size")
+    val bufferSize: Int = config.getInt("akka-kryo-serialization.buffer-size")
+    val maxBufferSize: Int = config.getInt("akka-kryo-serialization.max-buffer-size")
 
     // Each entry should be: FQCN -> integer id
-    val classNameMappings: Map[String, String] = configToMap(config.getConfig("akka.actor.kryo.mappings"))
-    val classNames: java.util.List[String] = config.getStringList("akka.actor.kryo.classes")
+    val classNameMappings: Map[String, String] = configToMap(config.getConfig("akka-kryo-serialization.mappings"))
+    val classNames: java.util.List[String] = config.getStringList("akka-kryo-serialization.classes")
 
     // Strategy: default, explicit, incremental, automatic
-    val idStrategy: String = config.getString("akka.actor.kryo.idstrategy")
-    val implicitRegistrationLogging: Boolean = config.getBoolean("akka.actor.kryo.implicit-registration-logging")
+    val idStrategy: String = config.getString("akka-kryo-serialization.idstrategy")
+    val implicitRegistrationLogging: Boolean = config.getBoolean("akka-kryo-serialization.implicit-registration-logging")
 
-    val kryoTrace: Boolean = config.getBoolean("akka.actor.kryo.kryo-trace")
-    val kryoReferenceMap: Boolean = config.getBoolean("akka.actor.kryo.kryo-reference-map")
-    val kryoDefaultSerializer: String = config.getString("akka.actor.kryo.kryo-default-serializer")
-    val kryoCustomSerializerInit: String = Try(config.getString("akka.actor.kryo.kryo-custom-serializer-init")).getOrElse(null)
+    val kryoTrace: Boolean = config.getBoolean("akka-kryo-serialization.kryo-trace")
+    val kryoReferenceMap: Boolean = config.getBoolean("akka-kryo-serialization.kryo-reference-map")
+    val kryoDefaultSerializer: String = config.getString("akka-kryo-serialization.kryo-default-serializer")
+    val kryoCustomSerializerInit: String = Try(config.getString("akka-kryo-serialization.kryo-custom-serializer-init")).getOrElse(null)
 
-    val useManifests: Boolean = config.getBoolean("akka.actor.kryo.use-manifests")
+    val useManifests: Boolean = config.getBoolean("akka-kryo-serialization.use-manifests")
 
-    val useUnsafe: Boolean = config.getBoolean("akka.actor.kryo.use-unsafe")
+    val useUnsafe: Boolean = config.getBoolean("akka-kryo-serialization.use-unsafe")
 
-    val aesKeyClass: String = Try(config.getString("akka.actor.kryo.encryption.aes.custom-key-class")).getOrElse(null)
-    val aesKey: String = Try(config.getString(s"akka.actor.kryo.encryption.aes.key")).getOrElse("ThisIsASecretKey")
-    val aesMode: String = Try(config.getString(s"akka.actor.kryo.encryption.aes.mode")).getOrElse("AES/CBC/PKCS5Padding")
-    val aesIvLength: Int = Try(config.getInt(s"akka.actor.kryo.encryption.aes.IV-length")).getOrElse(16)
+    val aesKeyClass: String = Try(config.getString("akka-kryo-serialization.encryption.aes.custom-key-class")).getOrElse(null)
+    val aesKey: String = Try(config.getString(s"akka-kryo-serialization.encryption.aes.key")).getOrElse("ThisIsASecretKey")
+    val aesMode: String = Try(config.getString(s"akka-kryo-serialization.encryption.aes.mode")).getOrElse("AES/CBC/PKCS5Padding")
+    val aesIvLength: Int = Try(config.getInt(s"akka-kryo-serialization.encryption.aes.IV-length")).getOrElse(16)
 
-    val postSerTransformations: String = Try(config.getString("akka.actor.kryo.post-serialization-transformations")).getOrElse("off")
+    val postSerTransformations: String = Try(config.getString("akka-kryo-serialization.post-serialization-transformations")).getOrElse("off")
 
-    val customQueueBuilder: String = Try(config.getString("akka.actor.kryo.custom-queue-builder")).getOrElse(null)
+    val customQueueBuilder: String = Try(config.getString("akka-kryo-serialization.custom-queue-builder")).getOrElse(null)
 
-    val resolveSubclasses: Boolean = config.getBoolean("akka.actor.kryo.resolve-subclasses")
+    val resolveSubclasses: Boolean = config.getBoolean("akka-kryo-serialization.resolve-subclasses")
 
 
     private def configToMap(cfg: Config): Map[String, String] =

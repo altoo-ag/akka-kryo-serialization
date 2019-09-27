@@ -113,31 +113,9 @@ abstract class PersistenceSpec extends TestKit(ActorSystem("testSystem", ConfigF
 
 object TestConfig {
   val config = """
-    akka {
+  akka {
     extensions = ["io.altoo.akka.serialization.kryo.KryoSerializationExtension$"]
     actor {
-      kryo {
-        type = "nograph"
-        idstrategy = "incremental"
-        kryo-reference-map = false
-        buffer-size = 65536
-        post-serialization-transformations = "lz4,aes"
-        encryption {
-          aes {
-            mode = "AES/CBC/PKCS5Padding"
-            key = j68KkRjq21ykRGAQ
-          }
-        }
-        implicit-registration-logging = true
-        mappings {
-          "scala.collection.immutable.$colon$colon" = 48
-          "scala.collection.immutable.List" = 49
-          "io.altoo.akka.serialization.kryo.Person" = 56
-          "akka.persistence.serialization.Snapshot" = 108
-          "akka.persistence.SnapshotMetadata" = 113
-        }
-      }
-
       serializers {
         kryo = "io.altoo.akka.serialization.kryo.KryoSerializer"
       }
@@ -155,6 +133,27 @@ object TestConfig {
       journal.plugin = "akka.persistence.journal.inmem"
       snapshot-store.plugin = "akka.persistence.snapshot-store.local"
       snapshot-store.local.dir = "target/test-snapshots"
+    }
+  }
+  akka-kryo-serialization {
+    type = "nograph"
+    idstrategy = "incremental"
+    kryo-reference-map = false
+    buffer-size = 65536
+    post-serialization-transformations = "lz4,aes"
+    encryption {
+      aes {
+        mode = "AES/CBC/PKCS5Padding"
+        key = j68KkRjq21ykRGAQ
+      }
+    }
+    implicit-registration-logging = true
+    mappings {
+      "scala.collection.immutable.$colon$colon" = 48
+      "scala.collection.immutable.List" = 49
+      "io.altoo.akka.serialization.kryo.Person" = 56
+      "akka.persistence.serialization.Snapshot" = 108
+      "akka.persistence.SnapshotMetadata" = 113
     }
   }
   """

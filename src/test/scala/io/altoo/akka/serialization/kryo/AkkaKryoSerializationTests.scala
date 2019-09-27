@@ -32,16 +32,16 @@ class AkkaKryoSerializationTests extends FlatSpec with Matchers {
   Log.ERROR()
 
   val system = ActorSystem("example", ConfigFactory.parseString("""
-	akka {
-	  loggers = ["akka.event.Logging$DefaultLogger"]
-	  loglevel = "WARNING"
-	}
+    akka {
+      loggers = ["akka.event.Logging$DefaultLogger"]
+      loglevel = "WARNING"
+    }
 
     akka.actor.serializers {
       kryo = "io.altoo.akka.serialization.kryo.KryoSerializer"
     }
 
-    akka.actor.kryo {
+    altoo.akka.kryo {
       trace = true
       idstrategy = "incremental"
       implicit-registration-logging = true
@@ -86,7 +86,7 @@ class AkkaKryoSerializationTests extends FlatSpec with Matchers {
       kryo = "io.altoo.akka.serialization.kryo.KryoSerializer"
     }
 
-    akka.actor.kryo {
+    akka-kryo-serialization {
       trace = true
       idstrategy = "incremental"
       implicit-registration-logging = true

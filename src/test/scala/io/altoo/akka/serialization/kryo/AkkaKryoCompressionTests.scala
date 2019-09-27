@@ -14,56 +14,6 @@ class AkkaKryoCompressionTests extends FlatSpec with BeforeAndAfterAllConfigMap 
       akka {
         extensions = ["io.altoo.akka.serialization.kryo.KryoSerializationExtension$"]
         actor {
-          kryo {
-            type = "nograph"
-            idstrategy = "incremental"
-            kryo-reference-map = false
-            buffer-size = 65536
-            post-serialization-transformations = off
-            implicit-registration-logging = true
-            mappings {
-              "akka.actor.ActorRef" = 20
-              "akka.actor.DeadLetterActorRef" = 21
-              """" + ScalaVersionRegistry.immutableHashMapImpl + """" = 32
-              "[Lscala.collection.immutable.HashMap;"             = 33
-              "scala.collection.immutable.TreeMap"                = 34
-              "[Lscala.collection.immutable.TreeMap;"             = 35
-              "scala.collection.mutable.HashMap"                  = 36
-              "[Lscala.collection.mutable.HashMap;"               = 37
-              """" + ScalaVersionRegistry.immutableHashSetImpl + """" = 38
-              "[Lscala.collection.immutable.HashSet;"             = 39
-              "scala.collection.immutable.TreeSet"                = 40
-              "[Lscala.collection.immutable.TreeSet;"             = 41
-              "scala.collection.mutable.HashSet"                  = 42
-              "[Lscala.collection.mutable.HashSet;"               = 43
-              "scala.collection.mutable.TreeSet"                  = 44
-              "[Lscala.collection.mutable.TreeSet;"               = 45
-              "scala.collection.mutable.BitSet"                   = 46
-              "[Lscala.collection.mutable.BitSet;"                = 47
-              "scala.collection.immutable.BitSet"                 = 48
-              "[Lscala.collection.immutable.BitSet;"              = 49
-              "scala.collection.immutable.BitSet$BitSet2"         = 50
-              "scala.collection.immutable.BitSet$BitSetN"         = 51
-              "scala.collection.immutable.BitSet$BitSet1"         = 52
-              "scala.collection.mutable.AnyRefMap"                = 53
-              "[Lscala.collection.mutable.AnyRefMap;"             = 54
-              "scala.collection.mutable.LongMap"                  = 55
-              "[Lscala.collection.mutable.LongMap;"               = 56
-              "scala.collection.immutable.LongMap"                = 57
-              "[Lscala.collection.immutable.LongMap;"             = 58
-              "scala.collection.immutable.Vector"                 = 59
-              "[Lscala.collection.immutable.Vector;"              = 60
-
-              "[J" = 150
-              "[I" = 151
-              "[[I" = 152
-              "[D" = 153
-              "[Z" = 154
-              "[Ljava.lang.Object;" = 155
-              "[Ljava.lang.String;" = 156
-              "scala.math.Ordering$String$" = 157
-            }
-          }
          serializers {
             java = "akka.serialization.JavaSerializer"
             kryo = "io.altoo.akka.serialization.kryo.KryoSerializer"
@@ -111,6 +61,56 @@ class AkkaKryoCompressionTests extends FlatSpec with BeforeAndAfterAllConfigMap 
             "[Ljava.lang.Object;" = kryo
             "[[I" = kryo
           }
+        }
+      }
+      kryo-serialization {
+        type = "nograph"
+        idstrategy = "incremental"
+        kryo-reference-map = false
+        buffer-size = 65536
+        post-serialization-transformations = off
+        implicit-registration-logging = true
+        mappings {
+          "akka.actor.ActorRef" = 20
+          "akka.actor.DeadLetterActorRef" = 21
+          """" + ScalaVersionRegistry.immutableHashMapImpl + """" = 32
+          "[Lscala.collection.immutable.HashMap;"             = 33
+          "scala.collection.immutable.TreeMap"                = 34
+          "[Lscala.collection.immutable.TreeMap;"             = 35
+          "scala.collection.mutable.HashMap"                  = 36
+          "[Lscala.collection.mutable.HashMap;"               = 37
+          """" + ScalaVersionRegistry.immutableHashSetImpl + """" = 38
+          "[Lscala.collection.immutable.HashSet;"             = 39
+          "scala.collection.immutable.TreeSet"                = 40
+          "[Lscala.collection.immutable.TreeSet;"             = 41
+          "scala.collection.mutable.HashSet"                  = 42
+          "[Lscala.collection.mutable.HashSet;"               = 43
+          "scala.collection.mutable.TreeSet"                  = 44
+          "[Lscala.collection.mutable.TreeSet;"               = 45
+          "scala.collection.mutable.BitSet"                   = 46
+          "[Lscala.collection.mutable.BitSet;"                = 47
+          "scala.collection.immutable.BitSet"                 = 48
+          "[Lscala.collection.immutable.BitSet;"              = 49
+          "scala.collection.immutable.BitSet$BitSet2"         = 50
+          "scala.collection.immutable.BitSet$BitSetN"         = 51
+          "scala.collection.immutable.BitSet$BitSet1"         = 52
+          "scala.collection.mutable.AnyRefMap"                = 53
+          "[Lscala.collection.mutable.AnyRefMap;"             = 54
+          "scala.collection.mutable.LongMap"                  = 55
+          "[Lscala.collection.mutable.LongMap;"               = 56
+          "scala.collection.immutable.LongMap"                = 57
+          "[Lscala.collection.immutable.LongMap;"             = 58
+          "scala.collection.immutable.Vector"                 = 59
+          "[Lscala.collection.immutable.Vector;"              = 60
+
+          "[J" = 150
+          "[I" = 151
+          "[[I" = 152
+          "[D" = 153
+          "[Z" = 154
+          "[Ljava.lang.Object;" = 155
+          "[Ljava.lang.String;" = 156
+          "scala.math.Ordering$String$" = 157
         }
       }
   """)
