@@ -18,9 +18,7 @@
 
 package io.altoo.akka.serialization.kryo
 
-import java.security.SecureRandom
 import java.util
-import java.util.zip.{Deflater, Inflater}
 
 import akka.actor.{ActorRef, ExtendedActorSystem}
 import akka.event.{Logging, LoggingAdapter}
@@ -33,142 +31,16 @@ import com.esotericsoftware.kryo.util._
 import com.esotericsoftware.minlog.{Log => MiniLog}
 import io.altoo.akka.serialization.kryo.serializer.akka.ActorRefSerializer
 import io.altoo.akka.serialization.kryo.serializer.scala.{ScalaKryo, _}
-import javax.crypto.Cipher
-import javax.crypto.spec.{IvParameterSpec, SecretKeySpec}
-import net.jpountz.lz4.LZ4Factory
 import org.agrona.concurrent.ManyToManyConcurrentArrayQueue
 import org.objenesis.strategy.StdInstantiatorStrategy
 
-import scala.collection.mutable
 import scala.jdk.CollectionConverters._
 import scala.util._
 
-trait Transformation {
-  def toBinary(inputBuff: Array[Byte]): Array[Byte]
-  def fromBinary(inputBuff: Array[Byte]): Array[Byte]
-}
-
-class NoKryoTransformer extends Transformation {
-  def toBinary(inputBuff: Array[Byte]): Array[Byte] = inputBuff
-  def fromBinary(inputBuff: Array[Byte]): Array[Byte] = inputBuff
-}
-
-class KryoTransformer(transformations: List[Transformation]) {
-  private[this] val toPipeLine = transformations.map(x => x.toBinary _).reduceLeft(_ andThen _)
-  private[this] val fromPipeLine = transformations.map(x => x.fromBinary _).reverse.reduceLeft(_ andThen _)
-
-  def toBinary(inputBuff: Array[Byte]): Array[Byte] = {
-    toPipeLine(inputBuff)
-  }
-
-  def fromBinary(inputBuff: Array[Byte]): Array[Byte] = {
-    fromPipeLine(inputBuff)
-  }
-}
-
-class LZ4KryoCompressor extends Transformation {
-
-  private lazy val lz4factory = LZ4Factory.fastestInstance
-
-  def toBinary(inputBuff: Array[Byte]): Array[Byte] = {
-    val inputSize = inputBuff.length
-    val lz4 = lz4factory.fastCompressor
-    val maxOutputSize = lz4.maxCompressedLength(inputSize)
-    val outputBuff = new Array[Byte](maxOutputSize + 4)
-    val outputSize = lz4.compress(inputBuff, 0, inputSize, outputBuff, 4, maxOutputSize)
-
-    // encode 32 bit length in the first bytes
-    outputBuff(0) = (inputSize & 0xff).toByte
-    outputBuff(1) = (inputSize >> 8 & 0xff).toByte
-    outputBuff(2) = (inputSize >> 16 & 0xff).toByte
-    outputBuff(3) = (inputSize >> 24 & 0xff).toByte
-    outputBuff.take(outputSize + 4)
-  }
-
-  def fromBinary(inputBuff: Array[Byte]): Array[Byte] = {
-    // the first 4 bytes are the original size
-    val size: Int = (inputBuff(0).asInstanceOf[Int] & 0xff) |
-                    (inputBuff(1).asInstanceOf[Int] & 0xff) << 8 |
-                    (inputBuff(2).asInstanceOf[Int] & 0xff) << 16 |
-                    (inputBuff(3).asInstanceOf[Int] & 0xff) << 24
-    val lz4 = lz4factory.fastDecompressor()
-    val outputBuff = new Array[Byte](size)
-    lz4.decompress(inputBuff, 4, outputBuff, 0, size)
-    outputBuff
-  }
-}
-
-class ZipKryoCompressor extends Transformation {
-
-
-  def toBinary(inputBuff: Array[Byte]): Array[Byte] = {
-    val deflater = new Deflater(Deflater.BEST_SPEED)
-    val inputSize = inputBuff.length
-    val outputBuff = new mutable.ArrayBuilder.ofByte
-    outputBuff += (inputSize & 0xff).toByte
-    outputBuff += (inputSize >> 8 & 0xff).toByte
-    outputBuff += (inputSize >> 16 & 0xff).toByte
-    outputBuff += (inputSize >> 24 & 0xff).toByte
-
-    deflater.setInput(inputBuff)
-    deflater.finish()
-    val buff = new Array[Byte](4096)
-
-    while (!deflater.finished) {
-      val n = deflater.deflate(buff)
-      outputBuff ++= buff.take(n)
-    }
-    deflater.end()
-    outputBuff.result
-  }
-
-  def fromBinary(inputBuff: Array[Byte]): Array[Byte] = {
-    val inflater = new Inflater()
-    val size: Int = (inputBuff(0).asInstanceOf[Int] & 0xff) |
-                    (inputBuff(1).asInstanceOf[Int] & 0xff) << 8 |
-                    (inputBuff(2).asInstanceOf[Int] & 0xff) << 16 |
-                    (inputBuff(3).asInstanceOf[Int] & 0xff) << 24
-    val outputBuff = new Array[Byte](size)
-    inflater.setInput(inputBuff, 4, inputBuff.length - 4)
-    inflater.inflate(outputBuff)
-    inflater.end()
-    outputBuff
-  }
-}
-
-class KryoCryptographer(key: String, mode: String, ivLength: Int) extends Transformation {
-  private[this] val sKeySpec = new SecretKeySpec(key.getBytes("UTF-8"), "AES")
-  private[this] val iv: Array[Byte] = Array.fill[Byte](ivLength)(0)
-  private lazy val random = new SecureRandom()
-
-  def encrypt(plainTextBytes: Array[Byte]): Array[Byte] = {
-    val cipher = Cipher.getInstance(mode)
-    random.nextBytes(iv)
-    val ivSpec = new IvParameterSpec(iv)
-    cipher.init(Cipher.ENCRYPT_MODE, sKeySpec, ivSpec)
-    iv ++ cipher.doFinal(plainTextBytes)
-  }
-
-  def decrypt(encryptedBytes: Array[Byte]): Array[Byte] = {
-    val cipher = Cipher.getInstance(mode)
-    val ivSpec = new IvParameterSpec(encryptedBytes, 0, ivLength)
-    cipher.init(Cipher.DECRYPT_MODE, sKeySpec, ivSpec)
-    cipher.doFinal(encryptedBytes, ivLength, encryptedBytes.length - ivLength)
-  }
-
-  override def toBinary(inputBuff: Array[Byte]): Array[Byte] = {
-    encrypt(inputBuff)
-  }
-  override def fromBinary(inputBuff: Array[Byte]): Array[Byte] = {
-    decrypt(inputBuff)
-  }
-}
-
 class KryoSerializer(val system: ExtendedActorSystem) extends Serializer {
-
   import io.altoo.akka.serialization.kryo.KryoSerialization._
-  val log = Logging(system, getClass.getName)
 
+  val log = Logging(system, getClass.getName)
   val settings = new Settings(system.settings.config)
 
   locally {
@@ -210,7 +82,7 @@ class KryoSerializer(val system: ExtendedActorSystem) extends Serializer {
         log.error("Class could not be loaded and/or registered: {}", settings.kryoDefaultSerializer)
         throw e
     }
-  
+
   val customAESKeyClass: Some[Class[_ <: AnyRef]] =
     if (settings.aesKeyClass == null) null else
       system.dynamicAccess.getClassFor[AnyRef](settings.aesKeyClass) match {
@@ -224,7 +96,7 @@ class KryoSerializer(val system: ExtendedActorSystem) extends Serializer {
   val aesKeyMethod = Try(customAESKeyClass.map(_.getMethod("kryoAESKey")))
   val aesKey: String = Try(aesKeyMethod.get.get.invoke(customAESKeyInstance.get.get).asInstanceOf[String]).getOrElse(settings.aesKey)
 
-  val transform: String => Transformation = {
+  val transform: String => Transformer = {
     case "lz4" => new LZ4KryoCompressor
     case "deflate" => new ZipKryoCompressor
     case "aes" => new KryoCryptographer(aesKey, settings.aesMode, settings.aesIvLength)
@@ -232,9 +104,7 @@ class KryoSerializer(val system: ExtendedActorSystem) extends Serializer {
     case x => throw new Exception(s"Could not recognise the transformer: [$x]")
   }
 
-  val postSerTransformations: List[Transformation] = settings.postSerTransformations.split(",").toList.map(transform)
-
-  val kryoTransformer = new KryoTransformer(postSerTransformations)
+  val kryoTransformer = new KryoTransformer(settings.postSerTransformations.split(",").toList.map(transform))
 
   val queueBuilder: QueueBuilder =
     if (settings.customQueueBuilder == null) null
@@ -295,7 +165,7 @@ class KryoSerializer(val system: ExtendedActorSystem) extends Serializer {
     instStrategy.setFallbackInstantiatorStrategy(new StdInstantiatorStrategy())
     kryo.setInstantiatorStrategy(instStrategy)
 
-//    setting default serializer
+    //    setting default serializer
     kryo.setDefaultSerializer(defaultSerializerClass)
 
     // Support serialization of some standard or often used Scala classes
@@ -468,10 +338,10 @@ class SerializerPool(queueBuilder: QueueBuilder, newInstance: () => Serializer) 
 }
 
 /**
-  * Kryo custom queue builder, to replace ConcurrentLinkedQueue for another Queue,
-  * Notice that it must be a multiple producer and multiple consumer queue type,
-  * you could use for example a bounded non-blocking queue.
-  */
+ * Kryo custom queue builder, to replace ConcurrentLinkedQueue for another Queue,
+ * Notice that it must be a multiple producer and multiple consumer queue type,
+ * you could use for example a bounded non-blocking queue.
+ */
 trait QueueBuilder {
 
   def build: util.Queue[Serializer]
