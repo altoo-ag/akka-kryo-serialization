@@ -134,7 +134,7 @@ The following options are available for configuring this serializer:
     ```
 
 * You can add a new `akka-kryo-serialization` section to the configuration to customize the serializer.
-    Consult the supplied `reference.conf` for a detailed explanation of all the options available.
+    Consult the supplied [reference.conf](https://github.com/altoo-ag/akka-kryo-serialization/blob/master/src/main/resources/reference.conf) for a detailed explanation of all the options available.
 
 * You should declare in the `akka.actor.serializers` section a new kind of serializer:
     
