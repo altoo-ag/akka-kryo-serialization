@@ -22,14 +22,11 @@ import com.esotericsoftware.kryo.io.{Input, Output}
 import com.esotericsoftware.kryo.{Kryo, Serializer}
 
 /**
- * *
- *
  * Generic serializer for traversable collections
  *
  * @author romix
- *
  */
-class ScalaCollectionSerializer() extends Serializer[Iterable[_]] {
+private[kryo] class ScalaCollectionSerializer() extends Serializer[Iterable[_]] {
 
   override def read(kryo: Kryo, input: Input, typ: Class[Iterable[_]]): Iterable[_] = {
     val len = input.readInt(true)

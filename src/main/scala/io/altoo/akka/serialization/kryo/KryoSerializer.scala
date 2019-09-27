@@ -18,8 +18,6 @@
 
 package io.altoo.akka.serialization.kryo
 
-import java.util
-
 import akka.actor.{ActorRef, ExtendedActorSystem}
 import akka.event.{Logging, LoggingAdapter}
 import akka.serialization._
@@ -40,8 +38,8 @@ import scala.util._
 class KryoSerializer(val system: ExtendedActorSystem) extends Serializer {
   import io.altoo.akka.serialization.kryo.KryoSerialization._
 
-  val log = Logging(system, getClass.getName)
-  val settings = new Settings(system.settings.config)
+  private val log = Logging(system, getClass.getName)
+  private val settings = new Settings(system.settings.config)
 
   locally {
     log.debug("Got mappings: {}", settings.classNameMappings)
@@ -61,7 +59,7 @@ class KryoSerializer(val system: ExtendedActorSystem) extends Serializer {
     log.debug("Got resolveSubclasses: {}", settings.resolveSubclasses)
   }
 
-  val customSerializerInitClass: Some[Class[_ <: AnyRef]] =
+  private val customSerializerInitClass: Some[Class[_ <: AnyRef]] =
     if (settings.kryoCustomSerializerInit == null)
       null
     else
@@ -72,10 +70,10 @@ class KryoSerializer(val system: ExtendedActorSystem) extends Serializer {
           throw e
       }
 
-  val customizerInstance = Try(customSerializerInitClass.map(_.getDeclaredConstructor().newInstance()))
-  val customizerMethod = Try(customSerializerInitClass.map(_.getMethod("customize", classOf[Kryo])))
+  private val customizerInstance = Try(customSerializerInitClass.map(_.getDeclaredConstructor().newInstance()))
+  private val customizerMethod = Try(customSerializerInitClass.map(_.getMethod("customize", classOf[Kryo])))
 
-  val defaultSerializerClass =
+  private val defaultSerializerClass =
     system.dynamicAccess.getClassFor[kryo.Serializer[_]](settings.kryoDefaultSerializer) match {
       case Success(clazz) => clazz
       case Failure(e) =>
@@ -83,7 +81,7 @@ class KryoSerializer(val system: ExtendedActorSystem) extends Serializer {
         throw e
     }
 
-  val customAESKeyClass: Some[Class[_ <: AnyRef]] =
+  private val customAESKeyClass: Some[Class[_ <: AnyRef]] =
     if (settings.aesKeyClass == null) null else
       system.dynamicAccess.getClassFor[AnyRef](settings.aesKeyClass) match {
         case Success(clazz) => Some(clazz)
@@ -92,11 +90,11 @@ class KryoSerializer(val system: ExtendedActorSystem) extends Serializer {
           throw e
       }
 
-  val customAESKeyInstance = Try(customAESKeyClass.map(_.getDeclaredConstructor().newInstance()))
-  val aesKeyMethod = Try(customAESKeyClass.map(_.getMethod("kryoAESKey")))
-  val aesKey: String = Try(aesKeyMethod.get.get.invoke(customAESKeyInstance.get.get).asInstanceOf[String]).getOrElse(settings.aesKey)
+  private val customAESKeyInstance = Try(customAESKeyClass.map(_.getDeclaredConstructor().newInstance()))
+  private val aesKeyMethod = Try(customAESKeyClass.map(_.getMethod("kryoAESKey")))
+  private[kryo] val aesKey: String = Try(aesKeyMethod.get.get.invoke(customAESKeyInstance.get.get).asInstanceOf[String]).getOrElse(settings.aesKey)
 
-  val transform: String => Transformer = {
+  private val transform: String => Transformer = {
     case "lz4" => new LZ4KryoCompressor
     case "deflate" => new ZipKryoCompressor
     case "aes" => new KryoCryptographer(aesKey, settings.aesMode, settings.aesIvLength)
@@ -104,9 +102,9 @@ class KryoSerializer(val system: ExtendedActorSystem) extends Serializer {
     case x => throw new Exception(s"Could not recognise the transformer: [$x]")
   }
 
-  val kryoTransformer = new KryoTransformer(settings.postSerTransformations.split(",").toList.map(transform))
+  private val kryoTransformer = new KryoTransformer(settings.postSerTransformations.split(",").toList.map(transform))
 
-  val queueBuilder: QueueBuilder =
+  private val queueBuilder: QueueBuilder =
     if (settings.customQueueBuilder == null) null
     else system.dynamicAccess.getClassFor[AnyRef](settings.customQueueBuilder) match {
       case Success(clazz) => clazz.getDeclaredConstructor().newInstance().asInstanceOf[QueueBuilder]
@@ -115,21 +113,15 @@ class KryoSerializer(val system: ExtendedActorSystem) extends Serializer {
         throw e
     }
 
-  val serializer: KryoBasedSerializer = try new KryoBasedSerializer(getKryo(settings.idStrategy, settings.serializerType), settings.bufferSize, settings.maxBufferSize, settings.useManifests, settings.useUnsafe)(log)
-  catch {
-    case e: Exception =>
-      log.error("exception caught during akka-kryo-serialization startup: {}", e)
-      throw e
-  }
 
   // This is whether "fromBinary" requires a "clazz" or not
-  def includeManifest: Boolean = settings.useManifests
+  override def includeManifest: Boolean = settings.useManifests
 
   // A unique identifier for this Serializer
-  def identifier = 123454323
+  override def identifier = 123454323
 
   // Delegate to a real serializer
-  def toBinary(obj: AnyRef): Array[Byte] = {
+  override def toBinary(obj: AnyRef): Array[Byte] = {
     val ser = getSerializer
     try
       kryoTransformer.toBinary(ser.toBinary(obj))
@@ -137,7 +129,7 @@ class KryoSerializer(val system: ExtendedActorSystem) extends Serializer {
       releaseSerializer(ser)
   }
 
-  def fromBinary(bytes: Array[Byte], clazz: Option[Class[_]]): AnyRef = {
+  override def fromBinary(bytes: Array[Byte], clazz: Option[Class[_]]): AnyRef = {
     val ser = getSerializer
     try
       ser.fromBinary(kryoTransformer.fromBinary(bytes), clazz)
@@ -145,7 +137,7 @@ class KryoSerializer(val system: ExtendedActorSystem) extends Serializer {
       releaseSerializer(ser)
   }
 
-  val serializerPool = new SerializerPool(queueBuilder, () =>
+  private val serializerPool = new SerializerPool(queueBuilder, () =>
     new KryoBasedSerializer(getKryo(settings.idStrategy, settings.serializerType), settings.bufferSize, settings.maxBufferSize, settings.useManifests, settings.useUnsafe)(log)
   )
 
@@ -255,7 +247,7 @@ class KryoSerializer(val system: ExtendedActorSystem) extends Serializer {
  * *
  * Kryo-based serializer backend
  */
-class KryoBasedSerializer(val kryo: Kryo, val bufferSize: Int, val maxBufferSize: Int, val includeManifest: Boolean, val useUnsafe: Boolean)(log: LoggingAdapter) extends Serializer {
+private[kryo] class KryoBasedSerializer(val kryo: Kryo, val bufferSize: Int, val maxBufferSize: Int, val includeManifest: Boolean, val useUnsafe: Boolean)(log: LoggingAdapter) extends Serializer {
   // A unique identifier for this Serializer
   def identifier = 12454323
 
@@ -313,7 +305,7 @@ class KryoBasedSerializer(val kryo: Kryo, val bufferSize: Int, val maxBufferSize
  * @param queueBuilder queue builder.
  * @param newInstance  Serializer instance builder.
  */
-class SerializerPool(queueBuilder: QueueBuilder, newInstance: () => Serializer) {
+private[kryo] class SerializerPool(queueBuilder: QueueBuilder, newInstance: () => Serializer) {
 
   private val pool =
     if (queueBuilder == null)
