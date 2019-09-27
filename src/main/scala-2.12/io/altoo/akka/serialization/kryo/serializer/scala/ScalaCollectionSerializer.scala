@@ -30,7 +30,7 @@ import com.esotericsoftware.kryo.io.Output
  *
  * @author romix
  */
-private[kryo] class ScalaCollectionSerializer() extends Serializer[Traversable[_]] {
+class ScalaCollectionSerializer() extends Serializer[Traversable[_]] {
 
   override def read(kryo: Kryo, input: Input, typ: Class[Traversable[_]]): Traversable[_] = {
     val len = input.readInt(true)

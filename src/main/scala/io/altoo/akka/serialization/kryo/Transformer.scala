@@ -25,8 +25,7 @@ private[kryo] class KryoTransformer(transformations: List[Transformer]) {
 }
 
 
-@InternalApi
-private[kryo] trait Transformer {
+trait Transformer {
   def toBinary(inputBuff: Array[Byte]): Array[Byte]
   def fromBinary(inputBuff: Array[Byte]): Array[Byte]
 }
@@ -37,8 +36,7 @@ private[kryo] class NoKryoTransformer extends Transformer {
   def fromBinary(inputBuff: Array[Byte]): Array[Byte] = inputBuff
 }
 
-@InternalApi
-private[kryo] class LZ4KryoCompressor extends Transformer {
+class LZ4KryoCompressor extends Transformer {
   private lazy val lz4factory = LZ4Factory.fastestInstance
 
   override def toBinary(inputBuff: Array[Byte]): Array[Byte] = {
@@ -69,8 +67,7 @@ private[kryo] class LZ4KryoCompressor extends Transformer {
   }
 }
 
-@InternalApi
-private[kryo] class ZipKryoCompressor extends Transformer {
+class ZipKryoCompressor extends Transformer {
 
   override def toBinary(inputBuff: Array[Byte]): Array[Byte] = {
     val deflater = new Deflater(Deflater.BEST_SPEED)
@@ -107,8 +104,7 @@ private[kryo] class ZipKryoCompressor extends Transformer {
   }
 }
 
-@InternalApi
-private[kryo] class KryoCryptographer(key: String, mode: String, ivLength: Int) extends Transformer {
+class KryoCryptographer(key: String, mode: String, ivLength: Int) extends Transformer {
   private[this] val sKeySpec = new SecretKeySpec(key.getBytes("UTF-8"), "AES")
   private[this] val iv: Array[Byte] = Array.fill[Byte](ivLength)(0)
   private lazy val random = new SecureRandom()

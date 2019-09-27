@@ -132,7 +132,7 @@ class KryoSerializer(val system: ExtendedActorSystem) extends Serializer {
   private val aesKeyMethod = Try(customAESKeyClass.map(_.getMethod("kryoAESKey")))
   private[kryo] val aesKey: String = Try(aesKeyMethod.get.get.invoke(customAESKeyInstance.get.get).asInstanceOf[String]).getOrElse(settings.aesKey)
 
-  private val transform: String => Transformer = {
+  protected val transform: String => Transformer = {
     case "lz4" => new LZ4KryoCompressor
     case "deflate" => new ZipKryoCompressor
     case "aes" => new KryoCryptographer(aesKey, settings.aesMode, settings.aesIvLength)
