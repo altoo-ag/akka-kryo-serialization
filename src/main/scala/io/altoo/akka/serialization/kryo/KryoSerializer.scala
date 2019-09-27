@@ -36,38 +36,38 @@ import scala.util._
 
 
 private[kryo] class KryoSerializationSettings(val config: Config) {
-  val serializerType: String = config.getString("akka-kryo-serialization.type")
+  val serializerType: String = config.getString("type")
 
-  val bufferSize: Int = config.getInt("akka-kryo-serialization.buffer-size")
-  val maxBufferSize: Int = config.getInt("akka-kryo-serialization.max-buffer-size")
+  val bufferSize: Int = config.getInt("buffer-size")
+  val maxBufferSize: Int = config.getInt("max-buffer-size")
 
   // Each entry should be: FQCN -> integer id
-  val classNameMappings: Map[String, String] = configToMap(config.getConfig("akka-kryo-serialization.mappings"))
-  val classNames: java.util.List[String] = config.getStringList("akka-kryo-serialization.classes")
+  val classNameMappings: Map[String, String] = configToMap(config.getConfig("mappings"))
+  val classNames: java.util.List[String] = config.getStringList("classes")
 
   // Strategy: default, explicit, incremental, automatic
-  val idStrategy: String = config.getString("akka-kryo-serialization.id-strategy")
-  val implicitRegistrationLogging: Boolean = config.getBoolean("akka-kryo-serialization.implicit-registration-logging")
+  val idStrategy: String = config.getString("id-strategy")
+  val implicitRegistrationLogging: Boolean = config.getBoolean("implicit-registration-logging")
 
-  val kryoTrace: Boolean = config.getBoolean("akka-kryo-serialization.kryo-trace")
-  val kryoReferenceMap: Boolean = config.getBoolean("akka-kryo-serialization.kryo-reference-map")
-  val kryoDefaultSerializer: String = config.getString("akka-kryo-serialization.kryo-default-serializer")
-  val kryoCustomSerializerInit: String = Try(config.getString("akka-kryo-serialization.kryo-custom-serializer-init")).getOrElse(null)
+  val kryoTrace: Boolean = config.getBoolean("kryo-trace")
+  val kryoReferenceMap: Boolean = config.getBoolean("kryo-reference-map")
+  val kryoDefaultSerializer: String = config.getString("kryo-default-serializer")
+  val kryoCustomSerializerInit: String = Try(config.getString("kryo-custom-serializer-init")).getOrElse(null)
 
-  val useManifests: Boolean = config.getBoolean("akka-kryo-serialization.use-manifests")
+  val useManifests: Boolean = config.getBoolean("use-manifests")
 
-  val useUnsafe: Boolean = config.getBoolean("akka-kryo-serialization.use-unsafe")
+  val useUnsafe: Boolean = config.getBoolean("use-unsafe")
 
-  val aesKeyClass: String = Try(config.getString("akka-kryo-serialization.encryption.aes.custom-key-class")).getOrElse(null)
-  val aesKey: String = Try(config.getString(s"akka-kryo-serialization.encryption.aes.key")).getOrElse("ThisIsASecretKey")
-  val aesMode: String = Try(config.getString(s"akka-kryo-serialization.encryption.aes.mode")).getOrElse("AES/CBC/PKCS5Padding")
-  val aesIvLength: Int = Try(config.getInt(s"akka-kryo-serialization.encryption.aes.IV-length")).getOrElse(16)
+  val aesKeyClass: String = Try(config.getString("encryption.aes.custom-key-class")).getOrElse(null)
+  val aesKey: String = Try(config.getString(s"encryption.aes.key")).getOrElse("ThisIsASecretKey")
+  val aesMode: String = Try(config.getString(s"encryption.aes.mode")).getOrElse("AES/CBC/PKCS5Padding")
+  val aesIvLength: Int = Try(config.getInt(s"encryption.aes.IV-length")).getOrElse(16)
 
-  val postSerTransformations: String = Try(config.getString("akka-kryo-serialization.post-serialization-transformations")).getOrElse("off")
+  val postSerTransformations: String = Try(config.getString("post-serialization-transformations")).getOrElse("off")
 
-  val customQueueBuilder: String = Try(config.getString("akka-kryo-serialization.custom-queue-builder")).getOrElse(null)
+  val customQueueBuilder: String = Try(config.getString("custom-queue-builder")).getOrElse(null)
 
-  val resolveSubclasses: Boolean = config.getBoolean("akka-kryo-serialization.resolve-subclasses")
+  val resolveSubclasses: Boolean = config.getBoolean("resolve-subclasses")
 
 
   private def configToMap(cfg: Config): Map[String, String] =
@@ -76,8 +76,10 @@ private[kryo] class KryoSerializationSettings(val config: Config) {
 
 class KryoSerializer(val system: ExtendedActorSystem) extends Serializer {
 
+  protected def configKey: String = "akka-kryo-serialization"
+
   private val log = Logging(system, getClass.getName)
-  private val settings = new KryoSerializationSettings(system.settings.config)
+  private val settings = new KryoSerializationSettings(system.settings.config.getConfig(configKey))
 
   locally {
     log.debug("Got mappings: {}", settings.classNameMappings)

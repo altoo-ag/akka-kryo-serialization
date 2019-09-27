@@ -268,7 +268,6 @@ provider class. Such a class can be just any class with a method called `kryoAES
 which has a string return type i.e.
 
 ```scala
-
     public string kryoAESKey(...); // for Java
     def kryoAESKey(...):String // for Scala
 ```
@@ -328,3 +327,36 @@ like `immutable.ListMap` -- the resolver will choose the more-specific one when 
 register most of your classes explicitly, as usual. But it is a helpful way to tame the complexity
 of some class hierarchies, when that complexity can be treated as an implementation detail and all
 of the subclasses can be serialized and deserialized identically.
+
+
+Using serializers with different configurations
+-----------------------------------------------
+
+There may be the need to use different configurations for different use cases.
+To support this the `KryoSerializer` can be extended to use a different configuration path.
+
+Define a custom configuration:
+```hocon
+akka-kryo-serialization-xyz = ${akka-kryo-serialization} {
+  # configuration overrides like...
+  # id-strategy = "explicit"
+}
+```
+
+Create new serializer subclass: 
+```scala
+package xyz
+
+class XyzKryoSerializer(system: ExtendedActorSystem) extends KryoSerializer(system) {
+  override def configKey: String = "akka-kryo-serialization-xyz"
+}
+```
+
+And finally declare the custom serializer in the `akka.actor.serializers` section:
+```hocon
+    serializers {
+        kryo = "io.altoo.akka.serialization.kryo.KryoSerializer"
+        # define additional kryo serializer
+        kryo-xyz = "xyz.XyzKryoSerializer"
+    }
+```
