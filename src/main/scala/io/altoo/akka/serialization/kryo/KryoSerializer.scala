@@ -51,11 +51,9 @@ private[kryo] class KryoSerializationSettings(val config: Config) {
 
   val kryoTrace: Boolean = config.getBoolean("kryo-trace")
   val kryoReferenceMap: Boolean = config.getBoolean("kryo-reference-map")
-  val kryoDefaultSerializer: String = config.getString("kryo-default-serializer")
-  val kryoCustomSerializerInit: String = Try(config.getString("kryo-custom-serializer-init")).getOrElse(null)
+  val kryoInitializer: String = config.getString("kryo-initializer")
 
   val useManifests: Boolean = config.getBoolean("use-manifests")
-
   val useUnsafe: Boolean = config.getBoolean("use-unsafe")
 
   val aesKeyClass: String = Try(config.getString("encryption.aes.custom-key-class")).getOrElse(null)
@@ -63,7 +61,7 @@ private[kryo] class KryoSerializationSettings(val config: Config) {
   val aesMode: String = Try(config.getString(s"encryption.aes.mode")).getOrElse("AES/CBC/PKCS5Padding")
   val aesIvLength: Int = Try(config.getInt(s"encryption.aes.IV-length")).getOrElse(16)
 
-  val postSerTransformations: String = Try(config.getString("post-serialization-transformations")).getOrElse("off")
+  val postSerTransformations: String = config.getString("post-serialization-transformations")
 
   val customQueueBuilder: String = Try(config.getString("custom-queue-builder")).getOrElse(null)
 
@@ -91,35 +89,26 @@ class KryoSerializer(val system: ExtendedActorSystem) extends Serializer {
     log.debug("Got implicit registration logging: {}", settings.implicitRegistrationLogging)
     log.debug("Got use manifests: {}", settings.useManifests)
     log.debug("Got use unsafe: {}", settings.useUnsafe)
-    log.debug("Got default serializer class: {}", settings.kryoDefaultSerializer)
-    log.debug("Got custom serializer init class: {}", settings.kryoCustomSerializerInit)
+    log.debug("Got serializer configuration class: {}", settings.kryoInitializer)
     log.debug("Got custom aes key class: {}", settings.aesKeyClass)
     log.debug("Got transformations: {}", settings.postSerTransformations)
     log.debug("Got queue builder: {}", settings.customQueueBuilder)
     log.debug("Got resolveSubclasses: {}", settings.resolveSubclasses)
   }
 
-  private val customSerializerInitClass: Some[Class[_ <: AnyRef]] =
-    if (settings.kryoCustomSerializerInit == null)
-      null
-    else
-      system.dynamicAccess.getClassFor[AnyRef](settings.kryoCustomSerializerInit) match {
-        case Success(clazz) => Some(clazz)
+  if (settings.kryoTrace)
+    MiniLog.TRACE()
+
+  private val kryoInitializerClass: Class[_ <: DefaultKryoInitializer] =
+      system.dynamicAccess.getClassFor[AnyRef](settings.kryoInitializer) match {
+        case Success(clazz) if classOf[DefaultKryoInitializer].isAssignableFrom(clazz) => clazz.asSubclass(classOf[DefaultKryoInitializer])
+        case Success(clazz) =>
+          log.error("Configured class {} does not extend DefaultKryoInitializer", clazz)
+          throw new IllegalStateException(s"Configured class $clazz does not extend DefaultKryoInitializer")
         case Failure(e) =>
-          log.error("Class could not be loaded and/or registered: {} ", settings.kryoCustomSerializerInit)
+          log.error("Class could not be loaded: {} ", settings.kryoInitializer)
           throw e
       }
-
-  private val customizerInstance = Try(customSerializerInitClass.map(_.getDeclaredConstructor().newInstance()))
-  private val customizerMethod = Try(customSerializerInitClass.map(_.getMethod("customize", classOf[Kryo])))
-
-  private val defaultSerializerClass =
-    system.dynamicAccess.getClassFor[kryo.Serializer[_]](settings.kryoDefaultSerializer) match {
-      case Success(clazz) => clazz
-      case Failure(e) =>
-        log.error("Class could not be loaded and/or registered: {}", settings.kryoDefaultSerializer)
-        throw e
-    }
 
   private val customAESKeyClass: Some[Class[_ <: AnyRef]] =
     if (settings.aesKeyClass == null) null else
@@ -194,56 +183,28 @@ class KryoSerializer(val system: ExtendedActorSystem) extends Serializer {
     instStrategy.setFallbackInstantiatorStrategy(new StdInstantiatorStrategy())
     kryo.setInstantiatorStrategy(instStrategy)
 
-    // setting default serializer
-    kryo.setDefaultSerializer(defaultSerializerClass)
-
-    // Support serialization of some standard or often used Scala classes
-    kryo.addDefaultSerializer(classOf[scala.Enumeration#Value], classOf[EnumerationSerializer])
-    system.dynamicAccess.getClassFor[AnyRef]("scala.Enumeration$Val") match {
-      case Success(clazz) => kryo.register(clazz)
-      case Failure(e) =>
-        log.error("Class could not be loaded and/or registered: {} ", "scala.Enumeration$Val")
-        throw e
+    serializerType match {
+      case "graph" => kryo.setReferences(true)
+      case "nograph" => kryo.setReferences(false)
+      case o => throw new IllegalStateException("Unknown serializer type: " + o)
     }
-    kryo.register(classOf[scala.Enumeration#Value])
 
-    // identity preserving serializers for Unit and BoxedUnit
-    kryo.addDefaultSerializer(classOf[scala.runtime.BoxedUnit], classOf[ScalaUnitSerializer])
+    val initializer = kryoInitializerClass.getDeclaredConstructor().newInstance()
 
-    // mutable maps
-    kryo.addDefaultSerializer(classOf[scala.collection.mutable.Map[_, _]], classOf[ScalaMutableMapSerializer])
+    // setting default serializer
+    initializer.preInit(kryo)
+    // akka byte string serializer must be registered before generic scala collection serializer
+    initializer.initAkkaSerializer(kryo, system)
+    initializer.initScalaSerializer(kryo, system)
 
-    // immutable maps - specialized by mutable, immutable and sortable
-    kryo.addDefaultSerializer(classOf[scala.collection.immutable.SortedMap[_, _]], classOf[ScalaSortedMapSerializer])
-    kryo.addDefaultSerializer(classOf[scala.collection.immutable.Map[_, _]], classOf[ScalaImmutableMapSerializer])
+    // if explicit we require all classes to be registered explicitely
+    if (strategy == "explicit")
+      kryo.setRegistrationRequired(true)
 
-    // Sets - specialized by mutability and sortability
-    kryo.addDefaultSerializer(classOf[scala.collection.immutable.BitSet], classOf[FieldSerializer[scala.collection.immutable.BitSet]])
-    kryo.addDefaultSerializer(classOf[scala.collection.immutable.SortedSet[_]], classOf[ScalaImmutableSortedSetSerializer])
-    kryo.addDefaultSerializer(classOf[scala.collection.immutable.Set[_]], classOf[ScalaImmutableSetSerializer])
-
-    kryo.addDefaultSerializer(classOf[scala.collection.mutable.BitSet], classOf[FieldSerializer[scala.collection.mutable.BitSet]])
-    kryo.addDefaultSerializer(classOf[scala.collection.mutable.SortedSet[_]], classOf[ScalaMutableSortedSetSerializer])
-    kryo.addDefaultSerializer(classOf[scala.collection.mutable.Set[_]], classOf[ScalaMutableSetSerializer])
-
-    // Map/Set Factories
-    ScalaVersionSerializers.mapAndSet(kryo)
-
-    kryo.addDefaultSerializer(classOf[akka.util.ByteString], classOf[AkkaByteStringSerializer])
-    ScalaVersionSerializers.iterable(kryo)
-    kryo.addDefaultSerializer(classOf[ActorRef], new ActorRefSerializer(system))
-
-    if (settings.kryoTrace)
-      MiniLog.TRACE()
-
-    kryo.setRegistrationRequired(strategy == "explicit")
-
+    // register configured class mappings and classes
     if (strategy != "default") {
-
-      // register the class mappings and classes
       for ((fqcn: String, idNum: String) <- settings.classNameMappings) {
         val id = idNum.toInt
-        // Load class
         system.dynamicAccess.getClassFor[AnyRef](fqcn) match {
           case Success(clazz) => kryo.register(clazz, id)
           case Failure(e) =>
@@ -253,22 +214,16 @@ class KryoSerializer(val system: ExtendedActorSystem) extends Serializer {
       }
 
       for (classname <- settings.classNames.asScala) {
-        // Load class
         system.dynamicAccess.getClassFor[AnyRef](classname) match {
           case Success(clazz) => kryo.register(clazz)
           case Failure(e) =>
             log.warning("Class could not be loaded and/or registered: {} ", classname)
-          /* throw e */
+            throw e
         }
       }
     }
 
-    serializerType match {
-      case "graph" => kryo.setReferences(true)
-      case _ => kryo.setReferences(false)
-    }
-
-    Try(customizerMethod.get.get.invoke(customizerInstance.get.get, kryo))
+    initializer.postInit(kryo)
 
     classResolver match {
       // Now that we're done with registration, turn on the SubclassResolver:
