@@ -2,79 +2,76 @@ package io.altoo.akka.serialization.kryo
 
 import akka.actor.ActorSystem
 import akka.serialization.SerializationExtension
-import com.typesafe.config.ConfigFactory
-import io.altoo.akka.serialization.kryo.serializer.scala.ScalaVersionRegistry
-import org.scalatest.FlatSpec
+import com.typesafe.config.{Config, ConfigFactory}
+import org.scalatest.{FlatSpec, Matchers}
 
-import scala.collection.mutable.AnyRefMap
+import scala.collection.immutable.HashMap
 
-class KryoCryptoTestKey {
-  def kryoAESKey = "TheTestSecretKey"
+class KryoCryptoTestKey extends DefaultKeyProvider {
+  override def aesKey(config: Config) = "TheTestSecretKey"
 }
 
-class CryptoCustomKeySerializationTest extends FlatSpec {
-  def testConfig(systemName: String, config: String): Unit = {
-    val system = ActorSystem("example", ConfigFactory.parseString(config))
-    // Get the Serialization Extension
-    val serialization = SerializationExtension(system)
-
-    s"$systemName" should "read the aes key from the custom class specified" in {
-      val atm = List {
-        AnyRefMap[String, Any](
-          "foo" -> "foo",
-          "bar" -> "foo,bar,baz",
-          "baz" -> 124L)
-      }.toArray
-
-      val serializer = serialization.findSerializerFor(atm)
-      assert(serializer.isInstanceOf[KryoSerializer])
-      assert(serializer.asInstanceOf[KryoSerializer].aesKey == (new KryoCryptoTestKey).kryoAESKey)
+object CryptoCustomKeySerializationTest {
+  val config =
+    """
+    akka {
+      actor {
+        serializers {
+          kryo = "io.altoo.akka.serialization.kryo.KryoSerializer"
+        }
+        serialization-bindings {
+          "scala.collection.immutable.HashMap" = kryo
+          "[Lscala.collection.immutable.HashMap;" = kryo
+          "scala.collection.mutable.LongMap" = kryo
+          "[Lscala.collection.mutable.LongMap;" = kryo
+        }
+      }
     }
+    akka-kryo-serialization {
+      post-serialization-transformations = aes
+      encryption {
+        aes {
+          key-provider = "io.altoo.akka.serialization.kryo.KryoCryptoTestKey"
+          mode = "AES/CBC/PKCS5Padding"
+          iv-length = 16
+        }
+      }
+    }
+    """
+}
+class CryptoCustomKeySerializationTest extends FlatSpec with Matchers {
+  private val encryptedSystem = ActorSystem("encrypted", ConfigFactory.parseString(CryptoCustomKeySerializationTest.config))
+  private val unencryptedSystem = ActorSystem("unencrypted", ConfigFactory.parseString("akka-kryo-serialization.post-serialization-transformations = off").withFallback(ConfigFactory.parseString(CryptoCustomKeySerializationTest.config)))
+  private val encryptedSerialization = SerializationExtension(encryptedSystem)
+  private val unencryptedSerialization = SerializationExtension(unencryptedSystem)
+
+  it should "encrypt with custom aes key" in {
+    val atm = List {
+      HashMap[String, Any](
+        "foo" -> "foo",
+        "bar" -> "foo,bar,baz",
+        "baz" -> 124L)
+    }.toArray
+
+    val serialized = encryptedSerialization.findSerializerFor(atm).toBinary(atm)
+    val decrypted = new KryoCryptographer("TheTestSecretKey", "AES/CBC/PKCS5Padding", 16).fromBinary(serialized)
+
+    val deserialized = unencryptedSerialization.findSerializerFor(atm).fromBinary(decrypted)
+    atm shouldBe deserialized
   }
 
-  testConfig("CustomAESKey", """
-      akka {
-        actor {
-         serializers {
-            kryo = "io.altoo.akka.serialization.kryo.KryoSerializer"
-          }
+  it should "decrypt with custom aes key" in {
+    val atm = List {
+      HashMap[String, Any](
+        "foo" -> "foo",
+        "bar" -> "foo,bar,baz",
+        "baz" -> 124L)
+    }.toArray
 
-          serialization-bindings {
-            "scala.collection.mutable.AnyRefMap" = kryo
-            "[Lscala.collection.mutable.AnyRefMap;" = kryo
-            "scala.collection.mutable.LongMap" = kryo
-            "[Lscala.collection.mutable.LongMap;" = kryo
-          }
-        }
-      }
-      akka-kryo-serialization {
-        type = "nograph"
-        id-strategy = "incremental"
-        kryo-reference-map = false
-        buffer-size = 65536
-        post-serialization-transformations = aes
-        encryption {
-          aes {
-            mode = "AES/CBC/PKCS5Padding"
-            custom-key-class = "io.altoo.akka.serialization.kryo.KryoCryptoTestKey"
-          }
-        }
-        implicit-registration-logging = true
-        mappings {
-          """" + ScalaVersionRegistry.immutableHashMapImpl + """" = 30
-          "[L""" + ScalaVersionRegistry.immutableHashMapImpl + """;" = 31
-          "scala.collection.mutable.AnyRefMap"                = 34
-          "[Lscala.collection.mutable.AnyRefMap;"             = 35
-          "scala.collection.mutable.LongMap"                  = 36
-          "[Lscala.collection.mutable.LongMap;"               = 37
-          "[J" = 50
-          "[D" = 51
-          "[Z" = 52
-          "[Ljava.lang.Object;" = 53
-          "[Ljava.lang.String;" = 54
-          "scala.math.Ordering$String$" = 100
-        }
-      }
-  """)
+    val serialized = unencryptedSerialization.findSerializerFor(atm).toBinary(atm)
+    val encrypted = new KryoCryptographer("TheTestSecretKey", "AES/CBC/PKCS5Padding", 16).toBinary(serialized)
 
+    val deserialized = encryptedSerialization.findSerializerFor(atm).fromBinary(encrypted)
+    atm shouldBe deserialized
+  }
 }

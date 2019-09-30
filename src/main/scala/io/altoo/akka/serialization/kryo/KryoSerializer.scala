@@ -31,6 +31,11 @@ import org.objenesis.strategy.StdInstantiatorStrategy
 import scala.jdk.CollectionConverters._
 import scala.util._
 
+private[kryo] class EncryptionSettings(val config: Config) {
+  val keyProvider: String = config.getString("encryption.aes.key-provider")
+  val aesMode: String = config.getString("encryption.aes.mode")
+  val aesIvLength: Int = config.getInt("encryption.aes.iv-length")
+}
 
 private[kryo] class KryoSerializationSettings(val config: Config) {
   val serializerType: String = config.getString("type")
@@ -53,15 +58,10 @@ private[kryo] class KryoSerializationSettings(val config: Config) {
   val useManifests: Boolean = config.getBoolean("use-manifests")
   val useUnsafe: Boolean = config.getBoolean("use-unsafe")
 
-  val aesKeyClass: String = Try(config.getString("encryption.aes.custom-key-class")).getOrElse(null)
-  val aesKey: String = Try(config.getString(s"encryption.aes.key")).getOrElse("ThisIsASecretKey")
-  val aesMode: String = Try(config.getString(s"encryption.aes.mode")).getOrElse("AES/CBC/PKCS5Padding")
-  val aesIvLength: Int = Try(config.getInt(s"encryption.aes.IV-length")).getOrElse(16)
+  val encryptionSettings: Option[EncryptionSettings] = if (config.hasPath("encryption")) Some(new EncryptionSettings(config)) else None
 
   val postSerTransformations: String = config.getString("post-serialization-transformations")
-
   val queueBuilder: String = config.getString("queue-builder")
-
   val resolveSubclasses: Boolean = config.getBoolean("resolve-subclasses")
 
 
@@ -74,7 +74,8 @@ class KryoSerializer(val system: ExtendedActorSystem) extends Serializer {
   protected def configKey: String = "akka-kryo-serialization"
 
   private val log = Logging(system, getClass.getName)
-  private val settings = new KryoSerializationSettings(system.settings.config.getConfig(configKey))
+  private val config = system.settings.config.getConfig(configKey)
+  private val settings = new KryoSerializationSettings(config)
 
   locally {
     log.debug("Got mappings: {}", settings.classNameMappings)
@@ -87,7 +88,7 @@ class KryoSerializer(val system: ExtendedActorSystem) extends Serializer {
     log.debug("Got use manifests: {}", settings.useManifests)
     log.debug("Got use unsafe: {}", settings.useUnsafe)
     log.debug("Got serializer configuration class: {}", settings.kryoInitializer)
-    log.debug("Got custom aes key class: {}", settings.aesKeyClass)
+    log.debug("Got encryption settings: {}", settings.encryptionSettings)
     log.debug("Got transformations: {}", settings.postSerTransformations)
     log.debug("Got queue builder: {}", settings.queueBuilder)
     log.debug("Got resolveSubclasses: {}", settings.resolveSubclasses)
@@ -107,24 +108,29 @@ class KryoSerializer(val system: ExtendedActorSystem) extends Serializer {
           throw e
       }
 
-  private val customAESKeyClass: Some[Class[_ <: AnyRef]] =
-    if (settings.aesKeyClass == null) null else
-      system.dynamicAccess.getClassFor[AnyRef](settings.aesKeyClass) match {
-        case Success(clazz) => Some(clazz)
+  private val aesKeyProviderClass: Option[Class[_ <: DefaultKeyProvider]] =
+    settings.encryptionSettings.map(c =>
+      system.dynamicAccess.getClassFor[AnyRef](c.keyProvider) match {
+        case Success(clazz) if classOf[DefaultKeyProvider].isAssignableFrom(clazz) => clazz.asSubclass(classOf[DefaultKeyProvider])
+        case Success(clazz) =>
+          log.error("Configured class {} does not extend DefaultKeyProvider", clazz)
+          throw new IllegalStateException(s"Configured class $clazz does not extend DefaultKryoInitializer")
         case Failure(e) =>
-          log.error("Class could not be loaded {} ", settings.aesKeyClass)
+          log.error("Class could not be loaded: {} ", c.keyProvider)
           throw e
       }
-
-  private val customAESKeyInstance = Try(customAESKeyClass.map(_.getDeclaredConstructor().newInstance()))
-  private val aesKeyMethod = Try(customAESKeyClass.map(_.getMethod("kryoAESKey")))
-  private[kryo] val aesKey: String = Try(aesKeyMethod.get.get.invoke(customAESKeyInstance.get.get).asInstanceOf[String]).getOrElse(settings.aesKey)
+    )
 
   protected val transform: String => Transformer = {
+    case "off" => new NoKryoTransformer
     case "lz4" => new LZ4KryoCompressor
     case "deflate" => new ZipKryoCompressor
-    case "aes" => new KryoCryptographer(aesKey, settings.aesMode, settings.aesIvLength)
-    case "off" => new NoKryoTransformer
+    case "aes" => settings.encryptionSettings match {
+      case Some(es) =>
+        new KryoCryptographer(aesKeyProviderClass.get.getDeclaredConstructor().newInstance().aesKey(config), es.aesMode, es.aesIvLength)
+      case None =>
+        throw new Exception("Encryption transformation selected but encryption has not been configured properly")
+    }
     case x => throw new Exception(s"Could not recognise the transformer: [$x]")
   }
 

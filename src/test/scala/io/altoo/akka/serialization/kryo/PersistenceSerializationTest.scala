@@ -22,19 +22,19 @@ case object SnapshotSaveFail
 case class Person(fName: String, lName: String)
 case class ExampleState(received: List[Person] = Nil) {
   def updated(s: Person): ExampleState = copy(s :: received)
-  override def toString = received.reverse.toString
+  override def toString: String = received.reverse.toString
 }
 
 object SnapshotRecoveryLocalStoreSpec {
   class SnapshotTestPersistentActor(name: String, probe: ActorRef) extends PersistentActor {
     def persistenceId: String = name
 
-    var state = ExampleState()
+    private var state = ExampleState()
 
     def receiveCommand: Receive = {
       case TakeSnapshot                          => saveSnapshot(state)
-      case SaveSnapshotSuccess(metadata)         => probe ! SnapshotSaveSuccess
-      case SaveSnapshotFailure(metadata, reason) => probe ! SnapshotSaveFail
+      case SaveSnapshotSuccess(_)         => probe ! SnapshotSaveSuccess
+      case SaveSnapshotFailure(_, _) => probe ! SnapshotSaveFail
       case s: Person                             => persist(s) { evt => state = state.updated(evt) }
       case GetState                              => sender() ! state.received.reverse
       case Boom                                  => throw new Exception("Intentionally throwing exception to test persistence by restarting the actor")
@@ -98,7 +98,7 @@ class SnapshotRecoveryTest extends PersistenceSpec with ImplicitSender {
 
 abstract class PersistenceSpec extends TestKit(ActorSystem("testSystem", ConfigFactory.parseString(TestConfig.config)))
   with WordSpecLike with Matchers with BeforeAndAfterAll {
-  val storageLocations = List("akka.persistence.snapshot-store.local.dir").map(s => new File(system.settings.config.getString(s)))
+  private val storageLocations = List("akka.persistence.snapshot-store.local.dir").map(s => new File(system.settings.config.getString(s)))
 
   override def beforeAll(): Unit = {
     storageLocations.foreach(FileUtils.deleteDirectory)
@@ -142,7 +142,9 @@ object TestConfig {
     post-serialization-transformations = "lz4,aes"
     encryption {
       aes {
+        key-provider = "io.altoo.akka.serialization.kryo.DefaultKeyProvider"
         mode = "AES/CBC/PKCS5Padding"
+        iv-length = 16
         key = j68KkRjq21ykRGAQ
       }
     }
