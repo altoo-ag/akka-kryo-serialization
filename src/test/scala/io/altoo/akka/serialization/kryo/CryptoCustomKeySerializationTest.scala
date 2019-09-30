@@ -12,7 +12,7 @@ class KryoCryptoTestKey {
   def kryoAESKey = "TheTestSecretKey"
 }
 
-class AkkaKryoCryptoWithCustomKeyTests extends FlatSpec {
+class CryptoCustomKeySerializationTest extends FlatSpec {
   def testConfig(systemName: String, config: String): Unit = {
     val system = ActorSystem("example", ConfigFactory.parseString(config))
     // Get the Serialization Extension
