@@ -6,7 +6,7 @@ import akka.util.ByteString
 import com.typesafe.config.ConfigFactory
 import org.scalatest.{Matchers, WordSpecLike}
 
-class ByteStringTest extends WordSpecLike with Matchers {
+class ByteStringSerializationTest extends WordSpecLike with Matchers {
   val system = ActorSystem("example", ConfigFactory.parseString(
     """
     akka {

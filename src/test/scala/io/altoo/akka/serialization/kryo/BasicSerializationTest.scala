@@ -27,7 +27,7 @@ import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 import scala.concurrent.duration._
 
-class AkkaKryoSerializationTests extends FlatSpec with Matchers {
+class BasicSerializationTest extends FlatSpec with Matchers {
 
   Log.ERROR()
 

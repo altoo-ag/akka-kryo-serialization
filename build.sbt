@@ -62,6 +62,8 @@ javaOptions in run += "-XX:+UseAES -XX:+UseAESIntrinsics"
 OsgiKeys.privatePackage := Nil
 OsgiKeys.exportPackage := Seq("io.altoo.*")
 
+addCommandAlias("validatePullRequest", ";+test")
+
 publishTo := {
   val nexus = "https://oss.sonatype.org/"
   if (version.value.trim.endsWith("SNAPSHOT"))
