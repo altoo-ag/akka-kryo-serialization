@@ -18,16 +18,13 @@
 
 package io.altoo.akka.serialization.kryo
 
-import akka.actor.{ActorRef, ExtendedActorSystem}
+import akka.actor.ExtendedActorSystem
 import akka.event.Logging
 import akka.serialization._
-import com.esotericsoftware.kryo
 import com.esotericsoftware.kryo.Kryo
-import com.esotericsoftware.kryo.serializers.FieldSerializer
 import com.esotericsoftware.kryo.util._
 import com.esotericsoftware.minlog.{Log => MiniLog}
 import com.typesafe.config.Config
-import io.altoo.akka.serialization.kryo.serializer.akka.ActorRefSerializer
 import io.altoo.akka.serialization.kryo.serializer.scala.{ScalaKryo, _}
 import org.objenesis.strategy.StdInstantiatorStrategy
 
@@ -63,7 +60,7 @@ private[kryo] class KryoSerializationSettings(val config: Config) {
 
   val postSerTransformations: String = config.getString("post-serialization-transformations")
 
-  val customQueueBuilder: String = Try(config.getString("custom-queue-builder")).getOrElse(null)
+  val queueBuilder: String = config.getString("queue-builder")
 
   val resolveSubclasses: Boolean = config.getBoolean("resolve-subclasses")
 
@@ -92,7 +89,7 @@ class KryoSerializer(val system: ExtendedActorSystem) extends Serializer {
     log.debug("Got serializer configuration class: {}", settings.kryoInitializer)
     log.debug("Got custom aes key class: {}", settings.aesKeyClass)
     log.debug("Got transformations: {}", settings.postSerTransformations)
-    log.debug("Got queue builder: {}", settings.customQueueBuilder)
+    log.debug("Got queue builder: {}", settings.queueBuilder)
     log.debug("Got resolveSubclasses: {}", settings.resolveSubclasses)
   }
 
@@ -133,17 +130,19 @@ class KryoSerializer(val system: ExtendedActorSystem) extends Serializer {
 
   private val kryoTransformer = new KryoTransformer(settings.postSerTransformations.split(",").toList.map(transform))
 
-  private val queueBuilder: QueueBuilder =
-    if (settings.customQueueBuilder == null) null
-    else system.dynamicAccess.getClassFor[AnyRef](settings.customQueueBuilder) match {
-      case Success(clazz) => clazz.getDeclaredConstructor().newInstance().asInstanceOf[QueueBuilder]
+  private val queueBuilderClass: Class[_ <: DefaultQueueBuilder] =
+    system.dynamicAccess.getClassFor[AnyRef](settings.queueBuilder) match {
+      case Success(clazz) if classOf[DefaultQueueBuilder].isAssignableFrom(clazz) => clazz.asSubclass(classOf[DefaultQueueBuilder])
+      case Success(clazz) =>
+        log.error("Configured class {} does not extend DefaultQueueBuilder", clazz)
+        throw new IllegalStateException(s"Configured class $clazz does not extend DefaultQueueBuilder")
       case Failure(e) =>
-        log.error("Class could not be loaded: {} ", settings.customQueueBuilder)
+        log.error("Class could not be loaded: {} ", settings.queueBuilder)
         throw e
     }
 
   // serializer pool to delegate actual serialization
-  private val serializerPool = new SerializerPool(queueBuilder, () => new KryoSerializerBackend(getKryo(settings.idStrategy, settings.serializerType), settings.bufferSize, settings.maxBufferSize, settings.useManifests, settings.useUnsafe)(log))
+  private val serializerPool = new SerializerPool(queueBuilderClass.getDeclaredConstructor().newInstance(), () => new KryoSerializerBackend(getKryo(settings.idStrategy, settings.serializerType), settings.bufferSize, settings.maxBufferSize, settings.useManifests, settings.useUnsafe)(log))
 
   // this is whether "fromBinary" requires a "clazz" or not
   override def includeManifest: Boolean = settings.useManifests
