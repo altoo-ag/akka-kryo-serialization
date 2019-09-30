@@ -16,7 +16,7 @@
  * ****************************************************************************
  */
 
-package io.altoo.akka.serialization.kryo.serializer.scala
+package io.altoo.akka.serialization.kryo.serializer.akka
 
 import akka.util.ByteString
 import com.esotericsoftware.kryo.io.{Input, Output}
@@ -30,7 +30,7 @@ import com.esotericsoftware.kryo.{Kryo, Serializer}
  * @author luben
  *
  */
-class AkkaByteStringSerializer() extends Serializer[ByteString] {
+class ByteStringSerializer() extends Serializer[ByteString] {
 
   override def read(kryo: Kryo, input: Input, typ: Class[ByteString]): ByteString = {
     val len = input.readInt(true)
