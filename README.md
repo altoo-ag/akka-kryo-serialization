@@ -150,38 +150,6 @@ only an object of a top-level class to be sent. It picks a matching serializer f
 this top-level class, e.g. a default Java serializer, and then it serializes the
 whole object graph with this object as a root using this Java serializer.
 
-Kryo queue builder examples:
-----------------------------
-
-* Scala bounded queue builder with a capacity of CPUs x 4:
-
-        import akka.serialization.Serializer
-        import io.altoo.akka.serialization.kryo.QueueBuilder
-        import org.agrona.concurrent.ManyToManyConcurrentArrayQueue
-        import java.util.Queue
-
-        class KryoQueueBuilder extends QueueBuilder {
-          def build: Queue[Serializer] = {
-            new ManyToManyConcurrentArrayQueue[Serializer](Runtime.getRuntime.availableProcessors * 4)
-          }
-        }
-
-* Java bounded queue builder with a capacity of CPUs x 4:
-
-        import akka.serialization.Serializer;
-        import io.altoo.akka.serialization.kryo.QueueBuilder;
-        import org.agrona.concurrent.ManyToManyConcurrentArrayQueue
-        import java.util.Queue;
-
-        public class KryoQueueBuilder implements QueueBuilder {
-
-          @Override
-          public Queue<Serializer> build() {
-            return new ManyToManyConcurrentArrayQueue<>(Runtime.getRuntime().availableProcessors() * 4);
-          }
-        }
-
-
 How do you create mappings or classes sections with proper content?
 -------------------------------------------------------------------
 
