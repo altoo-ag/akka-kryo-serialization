@@ -41,7 +41,6 @@ object EnumPerformanceTests {
     import Time._
 
     private val serialization = SerializationExtension(system)
-
     private var iterations: Int = 10000
 
     override def beforeAll(configMap: ConfigMap): Unit = {
@@ -73,20 +72,6 @@ object EnumPerformanceTests {
       timeIt("Enum Deserialize: ", iterations)(serialization.deserialize(bytes, classOf[List[Time]]))
       timeIt("Enum Deserialize: ", iterations)(serialization.deserialize(bytes, classOf[List[Time]]))
       timeIt("Enum Deserialize: ", iterations)(serialization.deserialize(bytes, classOf[List[Time]]))
-    }
-
-    it should "be threadsafe" in {
-      import scala.concurrent.ExecutionContext.Implicits.global
-
-      val listOfTimes = Time.values.toList
-      val bytes = serialization.serialize(listOfTimes).get
-      val futures = 1 to 2 map (_ => Future[List[Time]] {
-        serialization.deserialize(bytes.clone, classOf[List[Time]]).get
-      })
-
-      val result = Await.result(Future.sequence(futures), Duration.Inf)
-
-      assert(result.forall { res => res == listOfTimes })
     }
   }
 }
