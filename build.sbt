@@ -2,7 +2,15 @@
 val typesafe = "Typesafe Repository" at "http://repo.typesafe.com/typesafe/releases/"
 val typesafeSnapshot = "Typesafe Snapshots Repository" at "http://repo.typesafe.com/typesafe/snapshots/"
 val sonatypeSnapshot = "Sonatype Snapshots Repository" at "https://oss.sonatype.org/content/repositories/snapshots/"
-val akkaVersion = "2.5.25"
+
+
+val defaultAkkaVersion = "2.5.25"
+val akkaVersion =
+  System.getProperty("akka.build.version", defaultAkkaVersion) match {
+    case "default" => defaultAkkaVersion
+    case x => x
+  }
+
 
 enablePlugins(SbtOsgi, ReleasePlugin)
 
@@ -13,7 +21,12 @@ resolvers += typesafeSnapshot
 resolvers += sonatypeSnapshot
 // publishArtifact in packageDoc := false,
 scalaVersion := "2.13.1"
-crossScalaVersions := Seq(scalaVersion.value, "2.11.12", "2.12.10")
+
+if(akkaVersion.startsWith("2.6.")) {
+  crossScalaVersions := Seq(scalaVersion.value, "2.12.10")
+} else {
+  crossScalaVersions := Seq(scalaVersion.value, "2.11.12", "2.12.10")
+}
 libraryDependencies += "com.typesafe.akka" %% "akka-remote" % akkaVersion
 libraryDependencies += "com.esotericsoftware" % "kryo" % "4.0.2"
 libraryDependencies += "org.lz4" % "lz4-java" % "1.6.0"
