@@ -57,6 +57,9 @@ To use this serializer, you need to do two things:
 * Add some new elements to your Akka configuration file, e.g. `application.conf`
 
 
+Note that from release 1.0.0 on we use semantic versioning - see [semver.org](https://semver.org/)
+
+
 Which Maven repository contains this library?
 ---------------------------------------------
 
