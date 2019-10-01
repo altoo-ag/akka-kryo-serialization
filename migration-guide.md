@@ -1,5 +1,5 @@
 akka-kryo-serialization - migration guide
-=====================================================================
+=========================================
 
 Migration from 0.5.x/0.6.x to 1.0.x
 -----------------------------------
@@ -22,4 +22,6 @@ Migration from 0.5.x/0.6.x to 1.0.x
 * The configuration property `kryo-custom-serializer-init` has been replaced with `kryo-initializer` and requires the initialize class to extend the `DefaultKryoInitializer`
 * The configuration property `kryo-default-serializer` has been removed and setting the default field serializer can be done by subclassing the `DefaultKryoInitializer`
 * The configuration property `custom-queue-builder` has been replaced with `queue-builder` and now requires the custom queue build to extend the `DefaultQueueBuilder`
-* The configuration property `encryption.aes.custom-key-class` has been replaced with `encryption.aes.key-provider` and requies the custom key provider to extend the `DefaultKeyProvider`
+* The configuration property `encryption.aes.custom-key-class` has been replaced with `encryption.aes.key-provider` and requires the custom key provider to extend the `DefaultKeyProvider`
+
+If there are any further questions, please don't hesitate and open an issue on GitHub.

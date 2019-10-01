@@ -10,6 +10,7 @@ of such Scala types like Option, Tuple, Enumeration and most of Scala's collecti
 
 For upgrading to upcomming 1.0.0 version see [migration-guide](migration-guide.md).
 
+
 Features
 --------
 
@@ -54,6 +55,10 @@ To use this serializer, you need to do two things:
     `libraryDependencies += "com.github.romix.akka" %% "akka-kryo-serialization" % "0.3.3"`
 
 * Add some new elements to your Akka configuration file, e.g. `application.conf`
+
+
+Note that from release 1.0.0 on we use semantic versioning - see [semver.org](https://semver.org/)
+
 
 Which Maven repository contains this library?
 ---------------------------------------------
@@ -123,6 +128,7 @@ Note that the OSGi build uses the sbt-osgi plugin, which may not be available fr
 Typesafe repo, so it may require a local build as well. sbt-osgi can be found at
 https://github.com/sbt/sbt-osgi.
 
+
 Configuration of akka-kryo-serialization
 ----------------------------------------------
 
@@ -149,6 +155,7 @@ be a class that is used internally by a top-level class. The reason for it: Akka
 only an object of a top-level class to be sent. It picks a matching serializer for
 this top-level class, e.g. a default Java serializer, and then it serializes the
 whole object graph with this object as a root using this Java serializer.
+
 
 How do you create mappings or classes sections with proper content?
 -------------------------------------------------------------------
@@ -187,118 +194,8 @@ between actors, it is extremely important that the order of class registration a
 the assigned class IDs are the same for senders and for receivers!
 
 
-How to create a custom initializer for Kryo
--------------------------------------------
-
-Sometimes you need to customize Kryo beyond what is possible by means of the
-configuration parameters in the config file. Typically, you may want to register very
-specific serializers for certain classes or tweak some settings of the Kryo instance.
-This is possible by providing the following optional parameter in the config file:
-
-    kryo-custom-serializer-init = "CustomKryoSerializerInitFQCN"
-
-Where `CustomKryoSerializerInitFQCN` is a fully qualified class name of your custom
-serializer class. And custom serializer class can be just any class with a default
-no-arg constructor and a method called `customize`, which takes one parameter of
-type Kryo and has a voidreturn type, i.e.
-
-```scala
-    public void customize(Kryo kryo); // for Java
-    def customize(kryo:Kryo):Unit // for Scala
-```
-
-An example of such a custom Kryo serializer initialization class could be something
-like this:
-
-```scala
-    class KryoInit {
-        def customize(kryo: Kryo): Unit  = {
-            kryo.register(classOf[DateTime], new JodaDateTimeSerializer)
-            kryo.setReferences(false)
-        }
-    }
-```
-
-How to use a custom key for aes
--------------------------------
-
-Sometimes you need to pass a custom aes key, depending on the context you are in,
-instead of having a static key. For example, you might have the key in a data
-store, or provided by some other application. In such instances, you might want
-to provide the key dynamically to kryo serializer.
-
-You can provide the following optional parameter in the config file:
-
-    custom-key-class = "CustomAESKeyClass"
-
-Where `CustomAESKeyClass` is a fully qualified class name of your custom aes key
-provider class. Such a class can be just any class with a method called `kryoAESKey`,
-which has a string return type i.e.
-
-```scala
-    public string kryoAESKey(...); // for Java
-    def kryoAESKey(...):String // for Scala
-```
-
-An example of such a custom aes-key supplier class could be something like this:
-
-```scala
-    class KryoAESKeySupplier {
-        def kryoAESKey: String  = {
-            "ThisIsASecretKey"
-        }
-    }
-```
-
-Resolving Subclasses
---------------------
-
-If you are using `id-strategy="explicit"`, you may find that some of the standard Scala and
-Akka types are a bit hard to register properly. This is because these types are exposed in
-the API as simple traits or abstract classes, but they are actually implemented as many
-specialized subclasses that are used as necessary. Examples include:
-
-* scala.collection.immutable.Map
-* scala.collection.immutable.Set
-* akka.actor.ActorRef
-* akka.actor.ActorPath
-
-The problem is that Kryo thinks in terms of the *exact* class being serialized, but you are
-rarely working with the actual implementation class -- the application code only cares about
-the more abstract trait. The implementation class often isn't obvious, and is sometimes
-private to the library it comes from. This isn't an issue for idstrategies that add registrations
-when needed, or which use the class name, but in `explicit` you must register every class to be
-serialized, and that may turn out to be more than you expect.
-
-For cases like these, you can use the `SubclassResolver`. This is a variant of the standard
-Kryo ClassResolver, which is able to deal with subclasses of the registered types. You turn it
-on by setting
-
-    resolve-subclasses = true
-
-With that turned on, unregistered subclasses of a registered supertype are serialized as that
-supertype. So for example, if you have registered `immutable.Set`, and the object being serialized
-is actually an `immutable.Set.Set3` (the subclass used for Sets of 3 elements), it will serialize and
-deserialize that as an `immutable.Set`.
-
-If you register `immutable.Map`, you should use the `ScalaImmutableAbstractMapSerializer` with it.
-If you register `immutable.Set`, you should use the `ScalaImmutableAbstractSetSerializer`. These
-serializers are specifically designed to work with those traits.
-
-The `SubclassResolver` approach should only be used in cases where the implementation types are completely
-opaque, chosen by the implementation library, and not used explicitly in application code. If you have
-subclasses that have their own distinct semantics, such as `immutable.ListMap`, you should register
-those separately. You can register both a higher-level class like `immutable.Map` and a subclass
-like `immutable.ListMap` -- the resolver will choose the more-specific one when appropriate.
-
-`SubclassResolver` should be used with care -- even when it is turned on, you should define and
-register most of your classes explicitly, as usual. But it is a helpful way to tame the complexity
-of some class hierarchies, when that complexity can be treated as an implementation detail and all
-of the subclasses can be serialized and deserialized identically.
-
-
-Further customization of kryo
------------------------------
+How to customize kryo initialization
+------------------------------------
 
 To further customize kryo you can extend the `io.altoo.akka.serialization.kryo.DefaultKryoInitializer` and 
 configure the FQCN under `akka-kryo-serialization.kryo-initializer`.
@@ -354,6 +251,79 @@ The available options are:
     is not supported.
 
 
+How to configure and customize encryption
+-----------------------------------------
+
+Using the `DefaultKeyProvider` an encryption key can statically be set by defining `encryption.aes.key`
+
+Sometimes you need to pass a custom aes key, depending on the context you are in,
+instead of having a static key. For example, you might have the key in a data
+store, or provided by some other application. In such instances, you might want
+to provide the key dynamically to kryo serializer.
+
+You can override the 
+```hocon
+  encryption.aes.key-provider = "CustomKeyProviderFQCN"
+```
+Where `CustomKeyProviderFQCN` is a fully qualified class name of your custom aes key
+provider class. The key provider must extend the `DefaultKeyProvider` and can override the `aesKey` method.
+
+An example of such a custom aes-key supplier class could be something like this:
+
+```scala
+class CustomKeyProvider extends DefaultKeyProvider {
+  override def aesKey(config: Config): String = "ThisIsASecretKey"
+}
+```
+
+
+Resolving Subclasses
+--------------------
+
+If you are using `id-strategy="explicit"`, you may find that some of the standard Scala and
+Akka types are a bit hard to register properly. This is because these types are exposed in
+the API as simple traits or abstract classes, but they are actually implemented as many
+specialized subclasses that are used as necessary. Examples include:
+
+* scala.collection.immutable.Map
+* scala.collection.immutable.Set
+* akka.actor.ActorRef
+* akka.actor.ActorPath
+
+The problem is that Kryo thinks in terms of the *exact* class being serialized, but you are
+rarely working with the actual implementation class -- the application code only cares about
+the more abstract trait. The implementation class often isn't obvious, and is sometimes
+private to the library it comes from. This isn't an issue for idstrategies that add registrations
+when needed, or which use the class name, but in `explicit` you must register every class to be
+serialized, and that may turn out to be more than you expect.
+
+For cases like these, you can use the `SubclassResolver`. This is a variant of the standard
+Kryo ClassResolver, which is able to deal with subclasses of the registered types. You turn it
+on by setting
+```hocon
+  resolve-subclasses = true
+```
+With that turned on, unregistered subclasses of a registered supertype are serialized as that
+supertype. So for example, if you have registered `immutable.Set`, and the object being serialized
+is actually an `immutable.Set.Set3` (the subclass used for Sets of 3 elements), it will serialize and
+deserialize that as an `immutable.Set`.
+
+If you register `immutable.Map`, you should use the `ScalaImmutableAbstractMapSerializer` with it.
+If you register `immutable.Set`, you should use the `ScalaImmutableAbstractSetSerializer`. These
+serializers are specifically designed to work with those traits.
+
+The `SubclassResolver` approach should only be used in cases where the implementation types are completely
+opaque, chosen by the implementation library, and not used explicitly in application code. If you have
+subclasses that have their own distinct semantics, such as `immutable.ListMap`, you should register
+those separately. You can register both a higher-level class like `immutable.Map` and a subclass
+like `immutable.ListMap` -- the resolver will choose the more-specific one when appropriate.
+
+`SubclassResolver` should be used with care -- even when it is turned on, you should define and
+register most of your classes explicitly, as usual. But it is a helpful way to tame the complexity
+of some class hierarchies, when that complexity can be treated as an implementation detail and all
+of the subclasses can be serialized and deserialized identically.
+
+
 Using serializers with different configurations
 -----------------------------------------------
 
@@ -368,7 +338,7 @@ akka-kryo-serialization-xyz = ${akka-kryo-serialization} {
 }
 ```
 
-Create new serializer subclass: 
+Create new serializer subclass overriding the config key to the matching config section.
 ```scala
 package xyz
 
