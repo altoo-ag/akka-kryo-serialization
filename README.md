@@ -254,7 +254,8 @@ The available options are:
 How to configure and customize encryption
 -----------------------------------------
 
-Using the `DefaultKeyProvider` an encryption key can statically be set by defining `encryption.aes.key`
+Using the `DefaultKeyProvider` an encryption key can statically be set by defining `encryption.aes.key`.
+Refere to the [reference.conf](https://github.com/altoo-ag/akka-kryo-serialization/blob/master/src/main/resources/reference.conf) for an example configuration.
 
 Sometimes you need to pass a custom aes key, depending on the context you are in,
 instead of having a static key. For example, you might have the key in a data
@@ -275,6 +276,13 @@ class CustomKeyProvider extends DefaultKeyProvider {
   override def aesKey(config: Config): String = "ThisIsASecretKey"
 }
 ```
+
+The encryption transformer (selected for `aes` in post serialization transformations) only 
+supports GCM modes (currently recommended default mode is `AES/GCM/PKCS5Padding`). 
+
+Important: The old encryption transformer only supported CBC modes without manual authentication which is 
+deemed problematic. It is currently available for backwards compatibility by specifying `aesLegacy` in 
+post serialization transformations instead of `aes`. Its usage is deprecated and will be removed in future versions.
 
 
 Resolving Subclasses

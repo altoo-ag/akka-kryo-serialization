@@ -1,11 +1,12 @@
 package io.altoo.akka.serialization.kryo
 
+import java.nio.ByteBuffer
 import java.security.SecureRandom
 import java.util.zip.{Deflater, Inflater}
 
 import akka.annotation.InternalApi
 import javax.crypto.Cipher
-import javax.crypto.spec.{IvParameterSpec, SecretKeySpec}
+import javax.crypto.spec.{GCMParameterSpec, IvParameterSpec, SecretKeySpec}
 import net.jpountz.lz4.LZ4Factory
 
 import scala.collection.mutable
@@ -105,6 +106,55 @@ class ZipKryoCompressor extends Transformer {
 }
 
 class KryoCryptographer(key: String, mode: String, ivLength: Int) extends Transformer {
+  if (ivLength < 12 || ivLength >= 16) {
+    throw new IllegalStateException("invalid iv length")
+  }
+
+  private final val AuthTagLength = 128
+  private[this] val keySpec = new SecretKeySpec(key.getBytes("UTF-8"), "AES")
+  private lazy val random = new SecureRandom()
+
+  override def toBinary(plaintext: Array[Byte]): Array[Byte] = {
+    val cipher = Cipher.getInstance(mode)
+    // fill randomized IV
+    val iv = Array.fill[Byte](ivLength)(0)
+    random.nextBytes(iv)
+    // set up encryption
+    val parameterSpec = new GCMParameterSpec(AuthTagLength, iv)
+    cipher.init(Cipher.ENCRYPT_MODE, keySpec, parameterSpec)
+    val ciphertext = cipher.doFinal(plaintext)
+    // concat IV length, IV and ciphertext
+    val byteBuffer = ByteBuffer.allocate(4 + iv.length + ciphertext.length)
+    byteBuffer.putInt(iv.length)
+    byteBuffer.put(iv)
+    byteBuffer.put(ciphertext)
+    byteBuffer.array // output
+  }
+
+  override def fromBinary(input: Array[Byte]): Array[Byte] = {
+    val cipher = Cipher.getInstance(mode)
+    // extract IV length, IV and ciphertext
+    val byteBuffer = ByteBuffer.wrap(input)
+    val ivLength = byteBuffer.getInt()
+    if (ivLength < 12 || ivLength >= 16) { // check input parameter to protect against attacks
+      throw new IllegalStateException("invalid iv length")
+    }
+    val iv = new Array[Byte](ivLength)
+    byteBuffer.get(iv)
+    val ciphertext = new Array[Byte](byteBuffer.remaining())
+    byteBuffer.get(ciphertext)
+    // set up decryption
+    val parameterSpec = new GCMParameterSpec(AuthTagLength, iv)
+    cipher.init(Cipher.DECRYPT_MODE, keySpec, parameterSpec)
+    cipher.doFinal(ciphertext) // plaintext
+  }
+}
+
+/**
+ * This cryptographer does not support authentication and is considered insecure - only available as fallback to read data persisted with older versions.
+ */
+@Deprecated
+class KryoLegacyCryptographer(key: String, mode: String, ivLength: Int) extends Transformer {
   private[this] val sKeySpec = new SecretKeySpec(key.getBytes("UTF-8"), "AES")
   private[this] val iv: Array[Byte] = Array.fill[Byte](ivLength)(0)
   private lazy val random = new SecureRandom()
