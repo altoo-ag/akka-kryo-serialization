@@ -24,5 +24,17 @@ Migration from 0.5.x/0.6.x to 1.0.x
 * The configuration property `custom-queue-builder` has been replaced with `queue-builder` and now requires the custom queue build to extend the `DefaultQueueBuilder`.
 * The configuration property `encryption.aes.custom-key-class` has been replaced with `encryption.aes.key-provider` and requires the custom key provider to extend the `DefaultKeyProvider`.
 * The old encryption scheme is deemed problematic due to lacking authentication, if you have persisted data written in the old format configure `legacyAes` as post serialization transformation.
+    Configure the `io.altoo.akka.serialization.kryo.LegacyKeyProvider` to provide the correct key using the old scheme. 
+    Example configuration:
+    ```hocon
+        encryption {
+          aes {
+            key-provider = "io.altoo.akka.serialization.kryo.LegacyKeyProvider"
+            mode = "AES/CBC/PKCS5Padding"
+            iv-length = 16
+            key = j68KkRjq21ykRGAQ
+          }
+        }  
+    ```
 
 If there are any further questions, please don't hesitate and open an issue on GitHub.

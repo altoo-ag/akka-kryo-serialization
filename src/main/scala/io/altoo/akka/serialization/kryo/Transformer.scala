@@ -105,13 +105,14 @@ class ZipKryoCompressor extends Transformer {
   }
 }
 
-class KryoCryptographer(key: String, mode: String, ivLength: Int) extends Transformer {
+class KryoCryptographer(key: Array[Byte], mode: String, ivLength: Int) extends Transformer {
+  private final val AuthTagLength = 128
+
   if (ivLength < 12 || ivLength >= 16) {
     throw new IllegalStateException("invalid iv length")
   }
 
-  private final val AuthTagLength = 128
-  private[this] val keySpec = new SecretKeySpec(key.getBytes("UTF-8"), "AES")
+  private[this] val keySpec = new SecretKeySpec(key, "AES")
   private lazy val random = new SecureRandom()
 
   override def toBinary(plaintext: Array[Byte]): Array[Byte] = {
@@ -154,8 +155,9 @@ class KryoCryptographer(key: String, mode: String, ivLength: Int) extends Transf
  * This cryptographer does not support authentication and is considered insecure - only available as fallback to read data persisted with older versions.
  */
 @Deprecated
-class KryoLegacyCryptographer(key: String, mode: String, ivLength: Int) extends Transformer {
-  private[this] val sKeySpec = new SecretKeySpec(key.getBytes("UTF-8"), "AES")
+@deprecated("Legacy encryption scheme is replaced with authenticated encryption", "1.0.0")
+class KryoLegacyCryptographer(key: Array[Byte], mode: String, ivLength: Int) extends Transformer {
+  private[this] val sKeySpec = new SecretKeySpec(key, "AES")
   private[this] val iv: Array[Byte] = Array.fill[Byte](ivLength)(0)
   private lazy val random = new SecureRandom()
 

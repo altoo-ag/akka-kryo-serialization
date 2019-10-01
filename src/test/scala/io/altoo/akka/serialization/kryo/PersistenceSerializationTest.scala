@@ -145,7 +145,8 @@ object TestConfig {
         key-provider = "io.altoo.akka.serialization.kryo.DefaultKeyProvider"
         mode = "AES/GCM/PKCS5Padding"
         iv-length = 12
-        key = j68KkRjq21ykRGAQ
+        password = "j68KkRjq21ykRGAQ"
+        salt = "pepper"
       }
     }
     implicit-registration-logging = true
