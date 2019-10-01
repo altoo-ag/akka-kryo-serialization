@@ -8,7 +8,7 @@ used for more efficient akka actor's remoting.
 It can also be used for a general purpose and very efficient Kryo-based serialization
 of such Scala types like Option, Tuple, Enumeration and most of Scala's collection types.
 
-For upgrading to upcomming 1.0.0 version see [migration-guide](migration-guide.md).
+For upgrading to upcoming 1.0.0 version see [migration-guide](migration-guide.md).
 
 
 Features
