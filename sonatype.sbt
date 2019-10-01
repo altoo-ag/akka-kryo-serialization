@@ -1,4 +1,4 @@
-sonatypeProfileName := "com.github.romix"
+sonatypeProfileName := "dschroeter"
 
 import ReleaseTransformations._
 
