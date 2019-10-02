@@ -120,4 +120,15 @@ pomExtra := <url>https://github.com/altoo-ag/akka-kryo-serialization</url>
     <url>git@github.com:altoo-ag/akka-kryo-serialization.git</url>
     <connection>scm:git:git@github.com:altoo-ag/akka-kryo-serialization.git</connection>
   </scm>
-
+  <developers>
+    <developer>
+      <id>danischroeter</id>
+      <name>Daniel Schröter</name>
+      <email>dsc@scaling.ch</email>
+    </developer>
+    <developer>
+      <id>nvollmar</id>
+      <name>Nicolas Vollmar</name>
+      <email>nvo@scaling.ch</email>
+    </developer>
+  </developers>
