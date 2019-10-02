@@ -143,9 +143,10 @@ object TestConfig {
     encryption {
       aes {
         key-provider = "io.altoo.akka.serialization.kryo.DefaultKeyProvider"
-        mode = "AES/CBC/PKCS5Padding"
-        iv-length = 16
-        key = j68KkRjq21ykRGAQ
+        mode = "AES/GCM/PKCS5Padding"
+        iv-length = 12
+        password = "j68KkRjq21ykRGAQ"
+        salt = "pepper"
       }
     }
     implicit-registration-logging = true

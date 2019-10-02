@@ -8,7 +8,7 @@ import org.scalatest.{FlatSpec, Matchers}
 import scala.collection.immutable.HashMap
 
 class KryoCryptoTestKey extends DefaultKeyProvider {
-  override def aesKey(config: Config) = "TheTestSecretKey"
+  override def aesKey(config: Config): Array[Byte] = "TheTestSecretKey".getBytes("UTF-8")
 }
 
 object CryptoCustomKeySerializationTest {
@@ -32,8 +32,8 @@ object CryptoCustomKeySerializationTest {
       encryption {
         aes {
           key-provider = "io.altoo.akka.serialization.kryo.KryoCryptoTestKey"
-          mode = "AES/CBC/PKCS5Padding"
-          iv-length = 16
+          mode = "AES/GCM/PKCS5Padding"
+          iv-length = 12
         }
       }
     }
@@ -54,7 +54,7 @@ class CryptoCustomKeySerializationTest extends FlatSpec with Matchers {
     }.toArray
 
     val serialized = encryptedSerialization.findSerializerFor(atm).toBinary(atm)
-    val decrypted = new KryoCryptographer("TheTestSecretKey", "AES/CBC/PKCS5Padding", 16).fromBinary(serialized)
+    val decrypted = new KryoCryptographer("TheTestSecretKey".getBytes("UTF-8"), "AES/GCM/PKCS5Padding", 12).fromBinary(serialized)
 
     val deserialized = unencryptedSerialization.findSerializerFor(atm).fromBinary(decrypted)
     atm shouldBe deserialized
@@ -69,7 +69,7 @@ class CryptoCustomKeySerializationTest extends FlatSpec with Matchers {
     }.toArray
 
     val serialized = unencryptedSerialization.findSerializerFor(atm).toBinary(atm)
-    val encrypted = new KryoCryptographer("TheTestSecretKey", "AES/CBC/PKCS5Padding", 16).toBinary(serialized)
+    val encrypted = new KryoCryptographer("TheTestSecretKey".getBytes("UTF-8"), "AES/GCM/PKCS5Padding", 12).toBinary(serialized)
 
     val deserialized = encryptedSerialization.findSerializerFor(atm).fromBinary(encrypted)
     atm shouldBe deserialized

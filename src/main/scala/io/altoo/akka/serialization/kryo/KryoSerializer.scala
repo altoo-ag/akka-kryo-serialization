@@ -126,8 +126,24 @@ class KryoSerializer(val system: ExtendedActorSystem) extends Serializer {
     case "lz4" => new LZ4KryoCompressor
     case "deflate" => new ZipKryoCompressor
     case "aes" => settings.encryptionSettings match {
-      case Some(es) =>
+      case Some(es) if es.aesMode.contains("GCM") =>
         new KryoCryptographer(aesKeyProviderClass.get.getDeclaredConstructor().newInstance().aesKey(config), es.aesMode, es.aesIvLength)
+      case Some(es) =>
+        throw new Exception(s"Mode ${es.aesMode} is not supported for 'aes'")
+      case None =>
+        throw new Exception("Encryption transformation selected but encryption has not been configured")
+    }
+    case "legacyAes" => settings.encryptionSettings match {
+      case Some(es) if es.aesMode.contains("CBC") =>
+        new KryoLegacyCryptographer(aesKeyProviderClass.get.getDeclaredConstructor().newInstance().aesKey(config), es.aesMode, es.aesIvLength)
+      case Some(es) =>
+        throw new Exception(s"Mode ${es.aesMode} is not supported for 'legacyAes'")
+      case None =>
+        throw new Exception("Encryption transformation selected but encryption has not been configured")
+    }
+    case "legacyAes" => settings.encryptionSettings match {
+      case Some(es) if es.aesMode.contains("CBC") =>
+        new KryoLegacyCryptographer(aesKeyProviderClass.get.getDeclaredConstructor().newInstance().aesKey(config), es.aesMode, es.aesIvLength)
       case None =>
         throw new Exception("Encryption transformation selected but encryption has not been configured properly")
     }
