@@ -31,9 +31,10 @@ We provide several versions of the library:
   this version is tested with JDK: OpenJdk8,OpenJdk11 and Scala: 2.11.12,2.12.10,2.13.1 and Akka: 2.5.25,2.6.0-M7
   we will make this release again available at maven central
   (this version is supposed to be a big step forward in simplicity of usage... see [milestone 1.0](https://github.com/altoo-ag/akka-kryo-serialization/milestone/2)
+  
+Older versions previously published com.github.romix.akka/com.romix are:
 * v0.6.0 is build against Akka-2.5 and Kryo-4.0 and is available for Scala-2.11, Scala-2.12 and Scala-2.13
   this version is tested with JDK: OpenJdk8,OpenJdk11 and Scala: 2.11.12,2.12.10,2.13.1
-  this is the last version published under com.github.romix.akka/com.romix since we cannot publish it under these coordinates
   the binaries are available under [release 0.6](https://github.com/altoo-ag/akka-kryo-serialization/releases/tag/v0.6.0)
   (we cleaned up the repository - this version includes all pull requests/issues that got stale and where mergeable - [milestone cleanup](https://github.com/altoo-ag/akka-kryo-serialization/milestone/1) - thx a lot for the great work)
 * v0.5.1 is build against Akka-2.4 and Kryo-4.0 and is available for Scala-2.11 and Scala-2.12
@@ -44,15 +45,11 @@ To use this serializer, you need to do two things:
 
 * Include a dependency on this library into your project:
 
-    `libraryDependencies += "com.github.romix.akka" %% "akka-kryo-serialization" % "0.5.1"`
+    `libraryDependencies += "io.altoo" %% "akka-kryo-serialization" % "1.0.0-RC1"`
 
-  or if you need Kryo-3.0 compatibility:
+  or for previously published versions
 
-    `libraryDependencies += "com.github.romix.akka" %% "akka-kryo-serialization" % "0.4.2"`
-
-  or if you are building for Akka-2.3 or Scala-2.10:
-
-    `libraryDependencies += "com.github.romix.akka" %% "akka-kryo-serialization" % "0.3.3"`
+    `libraryDependencies += "com.github.romix.akka" %% "akka-kryo-serialization" % "0.x.y"`
 
 * Add some new elements to your Akka configuration file, e.g. `application.conf`
 
@@ -65,9 +62,25 @@ Which Maven repository contains this library?
 
 You can find the JARs on Sonatype Maven repository.
 
-Please use the following fragment in your pom.xml:
+#### sbt projects
 
-To use the official release of akka-kryo-serialization, please use the following snippet in your pom.xml
+To use the latest release of akka-kryo-serialization in sbt projects you just need to add
+the dependency as this repo is default in your project, so you don’t need to manually add it.
+
+`libraryDependencies += "io.altoo" %% "akka-kryo-serialization" % "1.0.0-RC1"`
+
+For the latest snapshots need to add the Sonatype snapshot repository to your `plugins.sbt`
+
+`resolvers += Resolver.sonatypeRepo("snapshots")`
+
+And the snapshot dependency to your project
+
+`libraryDependencies += "io.altoo" %% "akka-kryo-serialization" % "1.0.0-SNAPSHOT"`
+
+
+#### maven projects
+
+To use the official release of akka-kryo-serialization in Maven projects, please use the following snippet in your pom.xml
 
 ```xml
     <repository>
@@ -80,13 +93,13 @@ To use the official release of akka-kryo-serialization, please use the following
     </repository>
 
     <dependency>
-        <groupId>com.github.romix.akka</groupId>
-        <artifactId>akka-kryo-serialization_2.11</artifactId>
-        <version>0.5.1</version>
+        <groupId>io.altoo</groupId>
+        <artifactId>akka-kryo-serialization_2.13</artifactId>
+        <version>1.0.0-RC4</version>
     </dependency>
 ```
 
-If you want to test the latest snapshot of this library, please use the following snippet in your pom.xml
+For the latest snapshots use:
 
 ```xml
     <repository>
@@ -96,37 +109,12 @@ If you want to test the latest snapshot of this library, please use the followin
     </repository>
 
     <dependency>
-       <groupId>com.github.romix.akka</groupId>
-       <artifactId>akka-kryo-serialization_2.11</artifactId>
-        <version>0.5.2-SNAPSHOT</version>
+        <groupId>io.altoo</groupId>
+        <artifactId>akka-kryo-serialization_2.13</artifactId>
+        <version>1.0.0-SNAPSHOT</version>
     </dependency>
 ```
 
-For your SBT project files, you can use the following coordinates:
-
-    "com.github.romix.akka" %% "akka-kryo-serialization" % "0.5.1"
-
-or
-
-    "com.github.romix.akka" %% "akka-kryo-serialization" % "0.4.2"
-
-or
-
-    "com.github.romix.akka" %% "akka-kryo-serialization" % "0.3.3"
-
-
-How do I build this library on my own?
---------------------------------------------
-If you wish to build the library on your own, you need to check out the project from Github and do
-
-    `sbt compile publish-local`
-
-If you wish to use it within an OSGi environment, you can add OSGi headers to the build by executing:
-    `sbt osgi-bundle publish-local`
-
-Note that the OSGi build uses the sbt-osgi plugin, which may not be available from Maven Central or the
-Typesafe repo, so it may require a local build as well. sbt-osgi can be found at
-https://github.com/sbt/sbt-osgi.
 
 
 Configuration of akka-kryo-serialization
@@ -363,3 +351,17 @@ And finally declare the custom serializer in the `akka.actor.serializers` sectio
         kryo-xyz = "xyz.XyzKryoSerializer"
     }
 ```
+
+
+How do I build this library on my own?
+--------------------------------------------
+If you wish to build the library on your own, you need to check out the project from Github and do
+
+    sbt compile publish-local
+
+If you wish to use it within an OSGi environment, you can add OSGi headers to the build by executing:
+    
+    sbt osgi-bundle publish-local
+
+Note that the OSGi build uses the sbt-osgi plugin, which may not be available from Maven Central or the
+Typesafe repo, so it may require a local build as well. sbt-osgi can be found at [sbt/sbt-osgi](https://github.com/sbt/sbt-osgi).
