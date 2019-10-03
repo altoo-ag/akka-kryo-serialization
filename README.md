@@ -1,6 +1,7 @@
 akka-kryo-serialization - kryo-based serializers for Scala and Akka
 =====================================================================
 [![Build Status](https://travis-ci.org/altoo-ag/akka-kryo-serialization.svg?branch=master)](https://travis-ci.org/altoo-ag/akka-kryo-serialization)
+[![Latest version](https://index.scala-lang.org/altoo-ag/akka-kryo-serialization/akka-kryo-serialization/latest.svg)](https://index.scala-lang.org/altoo-ag/akka-kryo-serialization/akka-kryo-serialization)
 
 This library provides custom Kryo-based serializers for Scala and Akka. It can be
 used for more efficient akka actor's remoting.
