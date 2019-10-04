@@ -46,7 +46,7 @@ To use this serializer, you need to do two things:
 
 * Include a dependency on this library into your project:
 
-    `libraryDependencies += "io.altoo" %% "akka-kryo-serialization" % "1.0.0-RC1"`
+    `libraryDependencies += "io.altoo" %% "akka-kryo-serialization" % "1.0.0-RC4"`
 
   or for previously published versions
 
@@ -61,16 +61,16 @@ Note that from release 1.0.0 on we use semantic versioning - see [semver.org](ht
 Which Maven repository contains this library?
 ---------------------------------------------
 
-You can find the JARs on Sonatype Maven repository.
+You can find the JARs on [Sonatype's Maven repository](https://repo1.maven.org/maven2/io/altoo/).
 
 #### sbt projects
 
 To use the latest release of akka-kryo-serialization in sbt projects you just need to add
-the dependency as this repo is default in your project, so you don’t need to manually add it.
+this dependency:
 
-`libraryDependencies += "io.altoo" %% "akka-kryo-serialization" % "1.0.0-RC1"`
+`libraryDependencies += "io.altoo" %% "akka-kryo-serialization" % "1.0.0-RC4"`
 
-For the latest snapshots need to add the Sonatype snapshot repository to your `plugins.sbt`
+For the latest snapshots you need to add the Sonatype's snapshot repository to your `plugins.sbt`
 
 `resolvers += Resolver.sonatypeRepo("snapshots")`
 
