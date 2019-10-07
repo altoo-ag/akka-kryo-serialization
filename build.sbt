@@ -21,12 +21,8 @@ resolvers += typesafeSnapshot
 resolvers += sonatypeSnapshot
 // publishArtifact in packageDoc := false,
 scalaVersion := "2.13.1"
+crossScalaVersions := Seq(scalaVersion.value, "2.12.10")
 
-if(akkaVersion.startsWith("2.6.")) {
-  crossScalaVersions := Seq(scalaVersion.value, "2.12.10")
-} else {
-  crossScalaVersions := Seq(scalaVersion.value, "2.11.12", "2.12.10")
-}
 libraryDependencies += "com.typesafe.akka" %% "akka-remote" % akkaVersion
 libraryDependencies += "com.esotericsoftware" % "kryo" % "4.0.2"
 libraryDependencies += "org.lz4" % "lz4-java" % "1.6.0"
@@ -38,15 +34,15 @@ libraryDependencies += "org.scala-lang.modules" %% "scala-collection-compat" % "
 
 unmanagedSourceDirectories in Compile += {
   scalaBinaryVersion.value match {
-    case "2.10" | "2.11" | "2.12" => baseDirectory.value / "src" / "main" / "scala-2.12"
-    case _                        => baseDirectory.value / "src" / "main" / "scala-2.13"
+    case "2.12" => baseDirectory.value / "src" / "main" / "scala-2.12"
+    case _      => baseDirectory.value / "src" / "main" / "scala-2.13"
   }
 }
 
 unmanagedSourceDirectories in Test += {
   scalaBinaryVersion.value match {
-    case "2.10" | "2.11" | "2.12" => baseDirectory.value / "src" / "test" / "scala-2.12"
-    case _                        => baseDirectory.value / "src" / "test" / "scala-2.13"
+    case "2.12" => baseDirectory.value / "src" / "test" / "scala-2.12"
+    case _      => baseDirectory.value / "src" / "test" / "scala-2.13"
   }
 }
 
@@ -62,11 +58,7 @@ scalacOptions := Seq(
 )
 
 scalacOptions ++= {
-  if (scalaVersion.value.startsWith("2.11")) {
-    Seq("-optimise")
-  } else {
-    Seq("-opt:l:inline", "-opt-inline-from:io.altoo.akka.serialization.kryo.*")
-  }
+  Seq("-opt:l:inline", "-opt-inline-from:io.altoo.akka.serialization.kryo.*")
 }
 
 //Enabling hardware AES support if available
