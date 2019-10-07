@@ -1,9 +1,9 @@
 package io.altoo.akka.serialization.kryo.serializer.scala
 
+import java.util.Collections
+
 import com.esotericsoftware.kryo.Registration
 import com.esotericsoftware.kryo.util.DefaultClassResolver
-
-import scala.collection.mutable
 
 class SubclassResolver extends DefaultClassResolver {
 
@@ -19,13 +19,13 @@ class SubclassResolver extends DefaultClassResolver {
   /**
    * Keep track of the Types we've tried to look up and failed, to reduce wasted effort.
    */
-  private lazy val unregisteredTypes:mutable.Set[Class[_]] = mutable.Set(classOf[Object])
+  private val unregisteredTypes = Collections.newSetFromMap[Class[_]](new java.util.WeakHashMap())
 
   /**
    * Given Class clazz, this recursively walks up the reflection tree and collects all of its
    * ancestors, so we can check whether any of them are registered.
    */
-  def findRegistered(clazz:Class[_]):Option[Registration] = {
+  def findRegistered(clazz: Class[_]): Option[Registration] = {
     if (clazz == null || unregisteredTypes.contains(clazz))
       // Hit the top, so give up
       None
@@ -38,7 +38,7 @@ class SubclassResolver extends DefaultClassResolver {
             res orElse findRegistered(interf)
           }
         if (result.isEmpty) {
-          unregisteredTypes += clazz
+          unregisteredTypes.add(clazz)
         }
         result
       } else {
@@ -47,7 +47,7 @@ class SubclassResolver extends DefaultClassResolver {
     }
   }
 
-  override def getRegistration(tpe:Class[_]):Registration = {
+  override def getRegistration(tpe: Class[_]): Registration = {
     val found = super.getRegistration(tpe)
     if (enabled && found == null) {
       findRegistered(tpe) match {
