@@ -6,7 +6,7 @@ import java.util.zip.{Deflater, Inflater}
 
 import akka.annotation.InternalApi
 import javax.crypto.Cipher
-import javax.crypto.spec.{GCMParameterSpec, IvParameterSpec, SecretKeySpec}
+import javax.crypto.spec.{GCMParameterSpec, SecretKeySpec}
 import net.jpountz.lz4.LZ4Factory
 
 import scala.collection.mutable
@@ -148,31 +148,5 @@ class KryoCryptographer(key: Array[Byte], mode: String, ivLength: Int) extends T
     val parameterSpec = new GCMParameterSpec(AuthTagLength, iv)
     cipher.init(Cipher.DECRYPT_MODE, keySpec, parameterSpec)
     cipher.doFinal(ciphertext) // plaintext
-  }
-}
-
-/**
- * This cryptographer does not support authentication and is considered insecure - only available as fallback to read data persisted with older versions.
- */
-@Deprecated
-@deprecated("Legacy encryption scheme is replaced with authenticated encryption", "1.0.0")
-class KryoLegacyCryptographer(key: Array[Byte], mode: String, ivLength: Int) extends Transformer {
-  private[this] val sKeySpec = new SecretKeySpec(key, "AES")
-  private[this] val iv: Array[Byte] = Array.fill[Byte](ivLength)(0)
-  private lazy val random = new SecureRandom()
-
-  override def toBinary(inputBuff: Array[Byte]): Array[Byte] = {
-    val cipher = Cipher.getInstance(mode)
-    random.nextBytes(iv)
-    val ivSpec = new IvParameterSpec(iv)
-    cipher.init(Cipher.ENCRYPT_MODE, sKeySpec, ivSpec)
-    iv ++ cipher.doFinal(inputBuff)
-  }
-
-  override def fromBinary(inputBuff: Array[Byte]): Array[Byte] = {
-    val cipher = Cipher.getInstance(mode)
-    val ivSpec = new IvParameterSpec(inputBuff, 0, ivLength)
-    cipher.init(Cipher.DECRYPT_MODE, sKeySpec, ivSpec)
-    cipher.doFinal(inputBuff, ivLength, inputBuff.length - ivLength)
   }
 }
