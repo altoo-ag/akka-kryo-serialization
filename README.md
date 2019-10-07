@@ -23,6 +23,9 @@ Features
 * Supports transparent AES encryption and different modes of compression
 * Apache 2.0 license
 
+Note that this serializer is mainly intended to be used for akka-remoting and not for (long term) persisted data. 
+The underlying kryo serializer does not guarantee compatibility between major versions.
+
 
 How to use this library in your project
 ---------------------------------------
