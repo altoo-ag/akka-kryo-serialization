@@ -24,7 +24,7 @@ scalaVersion := "2.13.1"
 crossScalaVersions := Seq(scalaVersion.value, "2.12.10")
 
 libraryDependencies += "com.typesafe.akka" %% "akka-remote" % akkaVersion
-libraryDependencies += "com.esotericsoftware" % "kryo" % "4.0.2"
+libraryDependencies += "com.esotericsoftware" % "kryo-shaded" % "4.0.2"
 libraryDependencies += "org.lz4" % "lz4-java" % "1.6.0"
 libraryDependencies += "commons-io" % "commons-io" % "2.6" % "test"
 libraryDependencies += "org.scalatest" %% "scalatest" % "3.0.8" % "test"
