@@ -31,6 +31,8 @@ How to use this library in your project
 ---------------------------------------
 
 We provide several versions of the library:
+* (upcoming) v1.1.0 is build against Akka-2.5 and Kryo-4.0 and is available for Scala-2.12 and Scala-2.13
+  this version is tested with JDK: OpenJdk8,OpenJdk11 and Scala: 2.12.10,2.13.1 and Akka: 2.5.25,2.6.0-M7
 * v1.0.0 is build against Akka-2.5 and Kryo-4.0 and is available for Scala-2.11, Scala-2.12 and Scala-2.13
   this version is tested with JDK: OpenJdk8,OpenJdk11 and Scala: 2.11.12,2.12.10,2.13.1 and Akka: 2.5.25,2.6.0-M7
   
@@ -353,6 +355,19 @@ And finally declare the custom serializer in the `akka.actor.serializers` sectio
         kryo-xyz = "xyz.XyzKryoSerializer"
     }
 ```
+
+
+ASM conflicts and kryo shaded
+-----------------------------
+Kryo depends on [ASM](https://asm.ow2.io), which is used by many different projects in different versions.
+This can lead to unintended version conflicts. To avoid this, Kryo provides a [shaded](https://maven.apache.org/plugins/maven-shade-plugin/) 
+version to work around this issue.
+
+To use kryo-shaded you can add the following dependency instead:
+    
+    libraryDependencies += "io.altoo" %% "akka-kryo-serialization-shaded" % "1.1.0"
+    
+Note that only the ASM dependency is shaded and not kryo itself.
 
 
 How do I build this library on my own?
