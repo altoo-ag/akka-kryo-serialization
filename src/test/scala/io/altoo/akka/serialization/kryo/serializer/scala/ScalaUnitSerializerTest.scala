@@ -1,7 +1,7 @@
 package io.altoo.akka.serialization.kryo.serializer.scala
 
 
-class UnitSerializerTest extends SpecCase {
+class ScalaUnitSerializerTest extends SpecCase {
 
 
   "Kryo" should "roundtrip unit " in {

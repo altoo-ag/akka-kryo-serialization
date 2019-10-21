@@ -121,7 +121,6 @@ class MapSerializerTest extends SpecCase {
     kryo.addDefaultSerializer(classOf[scala.collection.immutable.Set[_]], classOf[ScalaImmutableSetSerializer])
     kryo.addDefaultSerializer(classOf[scala.collection.Map[_, _]], classOf[ScalaImmutableMapSerializer])
     kryo.addDefaultSerializer(classOf[scala.collection.immutable.Seq[_]], classOf[ScalaCollectionSerializer])
-    kryo.addDefaultSerializer(classOf[scala.Product], classOf[ScalaProductSerializer])
     val scl1 = new ScalaClass1()
     var map1: Map[String, String] = Map.empty[String, String]
 
