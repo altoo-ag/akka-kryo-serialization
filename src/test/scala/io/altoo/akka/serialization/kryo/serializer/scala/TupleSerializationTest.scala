@@ -15,7 +15,6 @@ class TupleSerializationTest extends SpecCase {
     kryo.register(classOf[scala.Tuple4[Any, Any, Any, Any]], 48)
     kryo.register(classOf[scala.Tuple5[Any, Any, Any, Any, Any]], 49)
     kryo.register(classOf[scala.Tuple6[Any, Any, Any, Any, Any, Any]], 50)
-    kryo.addDefaultSerializer(classOf[scala.Product], classOf[ScalaProductSerializer])
 
     roundTrip((1, '2', "Three"))
     roundTrip((1, '2', "Three"))
