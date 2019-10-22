@@ -31,10 +31,13 @@ import scala.collection.immutable
  * This includes all Tuple classes.
  *
  * @author Roman Levenstein
- *
+ * @deprecated This serializer fails for case classes with additional parameter lists/additional fields.
+ *             As it does not provide any benefit ofer standard kryo serialization it will be removed in future versions
  */
-
+@Deprecated
 class ScalaProductSerializer(val kryo: Kryo) extends Serializer[Product] {
+  println("Using deprecated ScalaProductSerializer")
+
   private var elementsCanBeNull = true
   private var serializer: Serializer[_] = _
   private var elementClass: Class[_] = _
