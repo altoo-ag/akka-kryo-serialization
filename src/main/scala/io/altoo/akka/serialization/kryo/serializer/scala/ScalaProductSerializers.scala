@@ -36,6 +36,8 @@ import scala.collection.immutable
  */
 @Deprecated
 class ScalaProductSerializer(val kryo: Kryo) extends Serializer[Product] {
+  println("Using deprecated ScalaProductSerializer")
+
   private var elementsCanBeNull = true
   private var serializer: Serializer[_] = _
   private var elementClass: Class[_] = _
