@@ -4,7 +4,7 @@ val typesafeSnapshot = "Typesafe Snapshots Repository" at "http://repo.typesafe.
 val sonatypeSnapshot = "Sonatype Snapshots Repository" at "https://oss.sonatype.org/content/repositories/snapshots/"
 
 
-val defaultAkkaVersion = "2.5.25"
+val defaultAkkaVersion = "2.5.26"
 val akkaVersion =
   System.getProperty("akka.build.version", defaultAkkaVersion) match {
     case "default" => defaultAkkaVersion
@@ -23,14 +23,15 @@ resolvers += sonatypeSnapshot
 scalaVersion := "2.13.1"
 crossScalaVersions := Seq(scalaVersion.value, "2.12.10")
 
-libraryDependencies += "com.typesafe.akka" %% "akka-remote" % akkaVersion
+libraryDependencies += "com.typesafe.akka" %% "akka-actor" % akkaVersion
 libraryDependencies += "com.esotericsoftware" % "kryo-shaded" % "4.0.2"
 libraryDependencies += "org.lz4" % "lz4-java" % "1.6.0"
+libraryDependencies += "org.agrona" % "agrona" % "0.9.31" // should match akka-remote/aeron inherited version
+libraryDependencies += "org.scala-lang.modules" %% "scala-collection-compat" % "2.1.2"
 libraryDependencies += "commons-io" % "commons-io" % "2.6" % "test"
 libraryDependencies += "org.scalatest" %% "scalatest" % "3.0.8" % "test"
 libraryDependencies += "com.typesafe.akka" %% "akka-persistence" % akkaVersion % "test"
 libraryDependencies += "com.typesafe.akka" %% "akka-testkit" % akkaVersion % "test"
-libraryDependencies += "org.scala-lang.modules" %% "scala-collection-compat" % "2.1.2"
 
 unmanagedSourceDirectories in Compile += {
   scalaBinaryVersion.value match {
