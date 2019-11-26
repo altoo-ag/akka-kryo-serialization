@@ -32,7 +32,7 @@ How to use this library in your project
 
 We provide several versions of the library:
 * (upcoming) v1.1.0 is build against Akka-2.5 and Kryo-4.0 and is available for Scala-2.12 and Scala-2.13
-  this version is tested with JDK: OpenJdk8,OpenJdk11 and Scala: 2.12.10,2.13.1 and Akka: 2.5.25,2.6.0-M7
+  this version is tested with JDK: OpenJdk8,OpenJdk11 and Scala: 2.12.10,2.13.1 and Akka: 2.5.26,2.6.0
 * v1.0.0 is build against Akka-2.5 and Kryo-4.0 and is available for Scala-2.11, Scala-2.12 and Scala-2.13
   this version is tested with JDK: OpenJdk8,OpenJdk11 and Scala: 2.11.12,2.12.10,2.13.1 and Akka: 2.5.25,2.6.0-M7
   

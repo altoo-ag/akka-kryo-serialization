@@ -1,7 +1,7 @@
 language: scala
 script:
   - sbt +test
-  - sbt -Dakka.build.version=2.6.0-M7 clean test
+  - sbt -Dakka.build.version=2.6.0 clean test
 scala:
   - 2.13.1
 jdk:
