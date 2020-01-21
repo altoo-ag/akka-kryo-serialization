@@ -192,7 +192,7 @@ How to customize kryo initialization
 To further customize kryo you can extend the `io.altoo.akka.serialization.kryo.DefaultKryoInitializer` and 
 configure the FQCN under `akka-kryo-serialization.kryo-initializer`.
 
-#### Configuring default serializer
+#### Configuring default field serializers
 In `preInit` a different default serializer can be configured 
 as it will be picked up by serailizers added afterwards.
 By default the `com.esotericsoftware.kryo.serializers.FieldSerializer` will be used.
@@ -239,8 +239,25 @@ The available options are:
     Deprecation effectively removes the field from serialization, though
     the field and @Tag annotation must remain in the class. The downside is that
     it has a small amount of additional overhead compared to
-    VersionFieldSerializer (an additional varint per field). Forward compatibility
+    VersionFieldSerializer (additional per field variant). Forward compatibility
     is not supported.
+    
+### Example for configuring a different field serializer
+
+Create a custom initializer
+
+```scala
+class XyzKryoInitializer extends DefaultKryoInitializer {
+  def preInit(kryo: ScalaKryo): Unit = {
+    kryo.setDefaultSerializer(classOf[com.esotericsoftware.kryo.serializers.TaggedFieldSerializer[_]])
+  }
+}
+```
+
+And register the custom initializer in your `application.conf` by overriding
+
+    akka-kryo-serialization.kryo-initializer = "com.example.XyzKryoInitializer"
+
 
 
 How to configure and customize encryption
