@@ -31,21 +31,10 @@ How to use this library in your project
 ---------------------------------------
 
 We provide several versions of the library:
-(upcoming) v1.2.0 is build against Akka-2.6 and Kryo-4.0 and is available for Scala-2.12 and Scala-2.13
-  this version is tested with JDK: OpenJdk8,OpenJdk11 and Scala: 2.12.10,2.13.1 and Akka: 2.5.29,2.6.3
 * v1.1.0 is build against Akka-2.5 and Kryo-4.0 and is available for Scala-2.12 and Scala-2.13
   this version is tested with JDK: OpenJdk8,OpenJdk11 and Scala: 2.12.10,2.13.1 and Akka: 2.5.26,2.6.0
 * v1.0.0 is build against Akka-2.5 and Kryo-4.0 and is available for Scala-2.11, Scala-2.12 and Scala-2.13
   this version is tested with JDK: OpenJdk8,OpenJdk11 and Scala: 2.11.12,2.12.10,2.13.1 and Akka: 2.5.25,2.6.0-M7
-  
-Older versions previously published com.github.romix.akka/com.romix are:
-* v0.6.0 is build against Akka-2.5 and Kryo-4.0 and is available for Scala-2.11, Scala-2.12 and Scala-2.13
-  this version is tested with JDK: OpenJdk8,OpenJdk11 and Scala: 2.11.12,2.12.10,2.13.1
-  the binaries are available under [release 0.6](https://github.com/altoo-ag/akka-kryo-serialization/releases/tag/v0.6.0)
-  (we cleaned up the repository - this version includes all pull requests/issues that got stale and where mergeable - [milestone cleanup](https://github.com/altoo-ag/akka-kryo-serialization/milestone/1) - thx a lot for the great work)
-* v0.5.1 is build against Akka-2.4 and Kryo-4.0 and is available for Scala-2.11 and Scala-2.12
-* v0.4.2 is build against Akka-2.4 and Kryo-3.0 and is available for Scala-2.11
-* v0.3.3 is build against Akka-2.3 and in available for Scala-2.10 and 2.11
 
 To use this serializer, you need to do two things:
 
@@ -53,14 +42,10 @@ To use this serializer, you need to do two things:
 
     `libraryDependencies += "io.altoo" %% "akka-kryo-serialization" % "1.0.0"`
 
-  or for previously published versions
-
-    `libraryDependencies += "com.github.romix.akka" %% "akka-kryo-serialization" % "0.x.y"`
-
 * Add some new elements to your Akka configuration file, e.g. `application.conf`
 
 
-Note that from release 1.0.0 on we use semantic versioning - see [semver.org](https://semver.org/)
+Note that we use semantic versioning - see [semver.org](https://semver.org/)
 
 
 Which Maven repository contains this library?
@@ -73,15 +58,8 @@ You can find the JARs on [Sonatype's Maven repository](https://repo1.maven.org/m
 To use the latest release of akka-kryo-serialization in sbt projects you just need to add
 this dependency:
 
-`libraryDependencies += "io.altoo" %% "akka-kryo-serialization" % "1.0.0"`
+`libraryDependencies += "io.altoo" %% "akka-kryo-serialization" % "1.1.0"`
 
-For the latest snapshots you need to add the Sonatype's snapshot repository to your `plugins.sbt`
-
-`resolvers += Resolver.sonatypeRepo("snapshots")`
-
-And the snapshot dependency to your project
-
-`libraryDependencies += "io.altoo" %% "akka-kryo-serialization" % "1.0.0-SNAPSHOT"`
 
 
 #### maven projects
@@ -105,21 +83,6 @@ To use the official release of akka-kryo-serialization in Maven projects, please
     </dependency>
 ```
 
-For the latest snapshots use:
-
-```xml
-    <repository>
-       <id>sonatype-snapshots</id>
-       <name>sonatype snapshots repo</name>
-       <url>https://oss.sonatype.org/content/repositories/snapshots</url>
-    </repository>
-
-    <dependency>
-        <groupId>io.altoo</groupId>
-        <artifactId>akka-kryo-serialization_2.13</artifactId>
-        <version>1.0.0-SNAPSHOT</version>
-    </dependency>
-```
 
 
 
