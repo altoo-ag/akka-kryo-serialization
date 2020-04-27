@@ -42,10 +42,12 @@ To use this serializer, you need to do two things:
 
     `libraryDependencies += "io.altoo" %% "akka-kryo-serialization" % "1.0.0"`
 
-* Add some new elements to your Akka configuration file, e.g. `application.conf`
+* Add some new elements to your Akka configuration file, e.g. `application.conf`.
 
 
-Note that we use semantic versioning - see [semver.org](https://semver.org/)
+Note that we use semantic versioning - see [semver.org](https://semver.org/).
+
+For past versions see [Legacy.md](Legacy.md).
 
 
 Which Maven repository contains this library?
@@ -83,7 +85,7 @@ To use the official release of akka-kryo-serialization in Maven projects, please
     </dependency>
 ```
 
-
+For snapshots see [Snapshots.md](Snapshots.md)
 
 
 Configuration of akka-kryo-serialization
