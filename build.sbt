@@ -1,6 +1,6 @@
 
-val typesafe = "Typesafe Repository" at "http://repo.typesafe.com/typesafe/releases/"
-val typesafeSnapshot = "Typesafe Snapshots Repository" at "http://repo.typesafe.com/typesafe/snapshots/"
+val typesafe = "Typesafe Repository" at "https://repo.typesafe.com/typesafe/releases/"
+val typesafeSnapshot = "Typesafe Snapshots Repository" at "https://repo.typesafe.com/typesafe/snapshots/"
 val sonatypeSnapshot = "Sonatype Snapshots Repository" at "https://oss.sonatype.org/content/repositories/snapshots/"
 
 
