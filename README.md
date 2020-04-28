@@ -30,24 +30,23 @@ The underlying kryo serializer does not guarantee compatibility between major ve
 How to use this library in your project
 ---------------------------------------
 
-We provide several versions of the library:
-* v1.1.x is built against Akka-2.5 and Kryo-4.0 and is available for Scala-2.12 and Scala-2.13
-  this version is tested with JDK: OpenJdk8,OpenJdk11,OpenJdk13 and Scala: 2.12.11,2.13.2 and Akka: 2.5.26,2.6.4
-* v1.0.x is built against Akka-2.5 and Kryo-4.0 and is available for Scala-2.11, Scala-2.12 and Scala-2.13
-  this version is tested with JDK: OpenJdk8,OpenJdk11 and Scala: 2.11.12,2.12.10,2.13.1 and Akka: 2.5.25,2.6.0-M7
-
 To use this serializer, you need to do two things:
 
 * Include a dependency on this library into your project:
 
-    `libraryDependencies += "io.altoo" %% "akka-kryo-serialization" % "1.1.0"`
+    `libraryDependencies += "io.altoo" %% "akka-kryo-serialization" % "1.1.5"`
 
 * Register and configure the serializer in your Akka configuration file, e.g. `application.conf`.
 
+We provide several versions of the library:
+
+Version | Akka & Kryo Compatibility | Available Scala Versions  | Tested with                                                                            |
+--------|---------------------------|---------------------------|----------------------------------------------------------------------------------------|
+v1.1.x  | Akka-2.5,2.6 and Kryo-4.0 | 2.12,2.13                 | JDK: OpenJdk8,OpenJdk11,OpenJdk13  Scala: 2.12.11,2.13.2 Akka: 2.5.26,2.6.4            |
+v1.0.x  | Akka-2.5,2.6 and Kryo-4.0 | 2.11,2.12,2.13            | JDK: OpenJdk8,OpenJdk11            Scala: 2.11.12,2.12.10,2.13.1 Akka: 2.5.25,2.6.0-M7 |
+For past versions see [Legacy.md](Legacy.md).
 
 Note that we use semantic versioning - see [semver.org](https://semver.org/).
-
-For past versions see [Legacy.md](Legacy.md).
 
 
 Which Maven repository contains this library?
@@ -57,12 +56,10 @@ You can find the JARs on [Sonatype's Maven repository](https://repo1.maven.org/m
 
 #### sbt projects
 
-To use the latest release of akka-kryo-serialization in sbt projects you just need to add
+To use the latest stable release of akka-kryo-serialization in sbt projects you just need to add
 this dependency:
 
-`libraryDependencies += "io.altoo" %% "akka-kryo-serialization" % "1.1.0"`
-
-
+`libraryDependencies += "io.altoo" %% "akka-kryo-serialization" % "1.1.5"`
 
 #### maven projects
 
@@ -81,7 +78,7 @@ To use the official release of akka-kryo-serialization in Maven projects, please
     <dependency>
         <groupId>io.altoo</groupId>
         <artifactId>akka-kryo-serialization_2.13</artifactId>
-        <version>1.0.0</version>
+        <version>1.1.5</version>
     </dependency>
 ```
 
