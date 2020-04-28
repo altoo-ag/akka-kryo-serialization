@@ -3,7 +3,7 @@ package io.altoo.akka.serialization.kryo.serializer.scala
 import java.util.concurrent.ConcurrentHashMap
 import java.util.{HashMap, Random, TreeMap}
 
-import com.esotericsoftware.kryo.Kryo
+import com.esotericsoftware.kryo.{Kryo, Serializer}
 import com.esotericsoftware.kryo.io.{Input, Output}
 import com.esotericsoftware.kryo.serializers.MapSerializer
 
@@ -257,8 +257,8 @@ class MapSerializerTest extends SpecCase {
     0 until inserts foreach { case e => map.put(random.nextLong(), random.nextBoolean()) }
 
     val kryo = new Kryo()
-    kryo.register(classOf[HashMap[Any, Any]], new MapSerializer())
-    kryo.register(classOf[ConcurrentHashMap[Any, Any]], new MapSerializer())
+    kryo.register(classOf[HashMap[Any, Any]], new MapSerializer().asInstanceOf[Serializer[Map[Any,Any]]])
+    kryo.register(classOf[ConcurrentHashMap[Any, Any]], new MapSerializer().asInstanceOf[Serializer[Map[Any,Any]]])
 
     val output = new Output(2048, -1)
     kryo.writeClassAndObject(output, map)
