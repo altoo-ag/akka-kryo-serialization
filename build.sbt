@@ -1,6 +1,6 @@
 
-val typesafe = "Typesafe Repository" at "http://repo.typesafe.com/typesafe/releases/"
-val typesafeSnapshot = "Typesafe Snapshots Repository" at "http://repo.typesafe.com/typesafe/snapshots/"
+val typesafe = "Typesafe Repository" at "https://repo.typesafe.com/typesafe/releases/"
+val typesafeSnapshot = "Typesafe Snapshots Repository" at "https://repo.typesafe.com/typesafe/snapshots/"
 val sonatypeSnapshot = "Sonatype Snapshots Repository" at "https://oss.sonatype.org/content/repositories/snapshots/"
 
 
@@ -20,8 +20,8 @@ resolvers += typesafe
 resolvers += typesafeSnapshot
 resolvers += sonatypeSnapshot
 // publishArtifact in packageDoc := false,
-scalaVersion := "2.13.1"
-crossScalaVersions := Seq(scalaVersion.value, "2.12.10")
+scalaVersion := "2.13.2"
+crossScalaVersions := Seq(scalaVersion.value, "2.12.11")
 
 libraryDependencies += "com.typesafe.akka" %% "akka-actor" % akkaVersion
 libraryDependencies += "com.esotericsoftware" % "kryo-shaded" % "4.0.2"

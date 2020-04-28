@@ -31,18 +31,18 @@ How to use this library in your project
 ---------------------------------------
 
 We provide several versions of the library:
-* v1.1.0 is build against Akka-2.5 and Kryo-4.0 and is available for Scala-2.12 and Scala-2.13
-  this version is tested with JDK: OpenJdk8,OpenJdk11 and Scala: 2.12.10,2.13.1 and Akka: 2.5.26,2.6.0
-* v1.0.0 is build against Akka-2.5 and Kryo-4.0 and is available for Scala-2.11, Scala-2.12 and Scala-2.13
+* v1.1.x is built against Akka-2.5 and Kryo-4.0 and is available for Scala-2.12 and Scala-2.13
+  this version is tested with JDK: OpenJdk8,OpenJdk11,OpenJdk13 and Scala: 2.12.11,2.13.2 and Akka: 2.5.26,2.6.4
+* v1.0.x is built against Akka-2.5 and Kryo-4.0 and is available for Scala-2.11, Scala-2.12 and Scala-2.13
   this version is tested with JDK: OpenJdk8,OpenJdk11 and Scala: 2.11.12,2.12.10,2.13.1 and Akka: 2.5.25,2.6.0-M7
 
 To use this serializer, you need to do two things:
 
 * Include a dependency on this library into your project:
 
-    `libraryDependencies += "io.altoo" %% "akka-kryo-serialization" % "1.0.0"`
+    `libraryDependencies += "io.altoo" %% "akka-kryo-serialization" % "1.1.0"`
 
-* Add some new elements to your Akka configuration file, e.g. `application.conf`.
+* Register and configure the serializer in your Akka configuration file, e.g. `application.conf`.
 
 
 Note that we use semantic versioning - see [semver.org](https://semver.org/).
