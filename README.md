@@ -222,7 +222,7 @@ And register the custom initializer in your `application.conf` by overriding
 
     akka-kryo-serialization.kryo-initializer = "com.example.XyzKryoInitializer"
 
-
+To configure the field serializer a serializer factory can be used as described here: https://github.com/EsotericSoftware/kryo#serializer-factories
 
 How to configure and customize encryption
 -----------------------------------------
