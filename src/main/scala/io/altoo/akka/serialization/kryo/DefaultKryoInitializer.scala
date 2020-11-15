@@ -1,8 +1,9 @@
 package io.altoo.akka.serialization.kryo
 
 import akka.actor.{ActorRef, ExtendedActorSystem}
+import akka.actor.typed
 import com.esotericsoftware.kryo.serializers.FieldSerializer
-import io.altoo.akka.serialization.kryo.serializer.akka.{ActorRefSerializer, ByteStringSerializer}
+import io.altoo.akka.serialization.kryo.serializer.akka.{ActorRefSerializer, ByteStringSerializer, TypedActorRefSerializer}
 import io.altoo.akka.serialization.kryo.serializer.scala._
 
 import scala.util.{Failure, Success}
@@ -26,6 +27,7 @@ class DefaultKryoInitializer {
   def initAkkaSerializer(kryo: ScalaKryo, system: ExtendedActorSystem): Unit = {
     kryo.addDefaultSerializer(classOf[akka.util.ByteString], classOf[ByteStringSerializer])
     kryo.addDefaultSerializer(classOf[ActorRef], new ActorRefSerializer(system))
+    kryo.addDefaultSerializer(classOf[typed.ActorRef[Nothing]], new TypedActorRefSerializer(typed.ActorSystem.wrap(system)))
   }
 
   /**
