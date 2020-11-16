@@ -81,19 +81,19 @@ object Time extends Enumeration {
 }
 
 object Planet extends Enumeration {
-  protected case class Val(mass: Double, radius: Double) extends super.Val {
+  protected case class PlanetVal(mass: Double, radius: Double) extends super.Val {
     def surfaceGravity: Double = Planet.G * mass / (radius * radius)
     def surfaceWeight(otherMass: Double): Double = otherMass * surfaceGravity
   }
   implicit def valueToPlanetVal(x: Value): Val = x.asInstanceOf[Val]
 
   final val G: Double = 6.67300E-11
-  final val Mercury = Val(3.303e+23, 2.4397e6)
-  final val Venus   = Val(4.869e+24, 6.0518e6)
-  final val Earth   = Val(5.976e+24, 6.37814e6)
-  final val Mars    = Val(6.421e+23, 3.3972e6)
-  final val Jupiter = Val(1.9e+27, 7.1492e7)
-  final val Saturn  = Val(5.688e+26, 6.0268e7)
-  final val Uranus  = Val(8.686e+25, 2.5559e7)
-  final val Neptune = Val(1.024e+26, 2.4746e7)
+  final val Mercury = PlanetVal(3.303e+23, 2.4397e6)
+  final val Venus   = PlanetVal(4.869e+24, 6.0518e6)
+  final val Earth   = PlanetVal(5.976e+24, 6.37814e6)
+  final val Mars    = PlanetVal(6.421e+23, 3.3972e6)
+  final val Jupiter = PlanetVal(1.9e+27, 7.1492e7)
+  final val Saturn  = PlanetVal(5.688e+26, 6.0268e7)
+  final val Uranus  = PlanetVal(8.686e+25, 2.5559e7)
+  final val Neptune = PlanetVal(1.024e+26, 2.4746e7)
 }

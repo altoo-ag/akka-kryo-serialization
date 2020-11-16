@@ -21,14 +21,14 @@ import akka.serialization.{Serialization, _}
 import com.esotericsoftware.minlog.Log
 import com.typesafe.config.ConfigFactory
 import io.altoo.akka.serialization.kryo.serializer.scala.ScalaVersionRegistry
-import org.scalatest._
+import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 import scala.concurrent.duration._
 
-class BasicSerializationTest extends FlatSpec with Matchers {
+class BasicSerializationTest extends AnyFlatSpec with Matchers {
 
   Log.ERROR()
 

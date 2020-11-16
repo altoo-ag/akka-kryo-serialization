@@ -3,7 +3,8 @@ package io.altoo.akka.serialization.kryo
 import akka.actor.ActorSystem
 import akka.serialization.SerializationExtension
 import com.typesafe.config.ConfigFactory
-import org.scalatest.{BeforeAndAfterAllConfigMap, FlatSpec}
+import org.scalatest.BeforeAndAfterAllConfigMap
+import org.scalatest.flatspec.AnyFlatSpec
 
 import scala.collection.immutable.{HashMap, TreeMap}
 import scala.collection.mutable.AnyRefMap
@@ -50,7 +51,7 @@ object CompressionSerializationTest {
       |""".stripMargin
 }
 
-class CompressionSerializationTest extends FlatSpec with BeforeAndAfterAllConfigMap {
+class CompressionSerializationTest extends AnyFlatSpec with BeforeAndAfterAllConfigMap {
 
   testConfig("Zip", "akka.actor.kryo.post-serialization-transformations = deflate")
   testConfig("LZ4", "akka.actor.kryo.post-serialization-transformations = lz4")

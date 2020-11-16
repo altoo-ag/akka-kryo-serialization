@@ -5,6 +5,7 @@ import akka.serialization.SerializationExtension
 import akka.testkit.TestKit
 import com.typesafe.config.ConfigFactory
 import org.scalatest._
+import org.scalatest.flatspec.AnyFlatSpecLike
 
 object Time extends Enumeration {
   type Time = Value
@@ -34,16 +35,10 @@ object EnumPerformanceTests {
   }
   """
 
-  class PerformanceTests extends TestKit(ActorSystem("testSystem", ConfigFactory.parseString(EnumPerformanceTests.defaultConfig))) with FlatSpecLike with BeforeAndAfterAllConfigMap {
+  class PerformanceTests extends TestKit(ActorSystem("testSystem", ConfigFactory.parseString(EnumPerformanceTests.defaultConfig))) with AnyFlatSpecLike with BeforeAndAfterAllConfigMap {
     import Time._
 
     private val serialization = SerializationExtension(system)
-    private var iterations: Int = 10000
-
-    override def beforeAll(configMap: ConfigMap): Unit = {
-      configMap.getOptional[String]("iterations")
-          .foreach { i => iterations = i.toInt }
-    }
 
     private def timeIt[A](name: String, loops: Int)(a: () => A): Unit = {
       val now = System.nanoTime

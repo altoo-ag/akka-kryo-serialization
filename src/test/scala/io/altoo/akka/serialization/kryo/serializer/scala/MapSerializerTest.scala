@@ -1,12 +1,12 @@
 package io.altoo.akka.serialization.kryo.serializer.scala
 
 import java.util
+import java.util.Random
 import java.util.concurrent.ConcurrentHashMap
-import java.util.{HashMap, Random, TreeMap}
 
-import com.esotericsoftware.kryo.{Kryo, Serializer}
 import com.esotericsoftware.kryo.io.{Input, Output}
 import com.esotericsoftware.kryo.serializers.MapSerializer
+import com.esotericsoftware.kryo.{Kryo, Serializer}
 
 import scala.collection.immutable.{Map, Set, Vector}
 
@@ -70,13 +70,13 @@ class MapSerializerTest extends AbstractScalaSerializerTest {
 
   it should "roundtrip mutable AnyRefMap" in {
     kryo.setRegistrationRequired(false)
-    kryo.addDefaultSerializer(classOf[scala.collection.mutable.AnyRefMap[_,_]], classOf[ScalaMutableMapSerializer])
+    kryo.addDefaultSerializer(classOf[scala.collection.mutable.AnyRefMap[_, _]], classOf[ScalaMutableMapSerializer])
     kryo.addDefaultSerializer(classOf[scala.collection.immutable.List[_]], classOf[ScalaCollectionSerializer])
     kryo.register(classOf[scala.collection.mutable.AnyRefMap[AnyRef, Any]], 3040)
 
-    var map1 = scala.collection.mutable.AnyRefMap[String, String]()
+    val map1 = scala.collection.mutable.AnyRefMap[String, String]()
 
-    0 until hugeCollectionSize foreach { case i => map1 += ("k" + i) -> ("v" + i) }
+    0 until hugeCollectionSize foreach { i => map1 += ("k" + i) -> ("v" + i) }
     val map2 = map1 ++ Seq("Moscow" -> "Russia")
     val map3 = map2 ++ Seq("Berlin" -> "Germany")
     val map4 = map3 ++ Seq("Germany" -> "Berlin") ++ Seq("Russia" -> "Moscow")
@@ -93,9 +93,9 @@ class MapSerializerTest extends AbstractScalaSerializerTest {
     kryo.addDefaultSerializer(classOf[scala.collection.immutable.List[_]], classOf[ScalaCollectionSerializer])
     kryo.register(classOf[scala.collection.mutable.LongMap[Any]], 3041)
 
-    var map1 = scala.collection.mutable.LongMap[String]()
+    val map1 = scala.collection.mutable.LongMap[String]()
 
-    0 until hugeCollectionSize foreach { case i => map1 += i.toLong -> ("v" + i) }
+    0 until hugeCollectionSize foreach { i => map1 += i.toLong -> ("v" + i) }
     val map2 = map1 ++ Seq(110L -> "Russia")
     val map3 = map2 ++ Seq(111L -> "Germany")
     val map4 = map3 ++ Seq(112L -> "Berlin") ++ Seq(113L -> "Moscow")
@@ -267,7 +267,7 @@ class MapSerializerTest extends AbstractScalaSerializerTest {
   it should "roundtrip tree map" in {
     kryo.setRegistrationRequired(false)
     kryo.register(classOf[util.TreeMap[Any, Any]])
-    var map = new util.TreeMap[Any, Any]()
+    val map = new util.TreeMap[Any, Any]()
     map.put("123", "456")
     map.put("789", "abc")
     roundTrip(map)
@@ -279,8 +279,8 @@ class MapSerializerTest extends AbstractScalaSerializerTest {
     0 until inserts foreach { _ => map.put(random.nextLong(), random.nextBoolean()) }
 
     val kryo = new Kryo()
-    kryo.register(classOf[util.HashMap[Any, Any]], new MapSerializer().asInstanceOf[Serializer[Map[Any,Any]]])
-    kryo.register(classOf[ConcurrentHashMap[Any, Any]], new MapSerializer().asInstanceOf[Serializer[Map[Any,Any]]])
+    kryo.register(classOf[util.HashMap[Any, Any]], new MapSerializer().asInstanceOf[Serializer[Map[Any, Any]]])
+    kryo.register(classOf[ConcurrentHashMap[Any, Any]], new MapSerializer().asInstanceOf[Serializer[Map[Any, Any]]])
 
     val output = new Output(2048, -1)
     kryo.writeClassAndObject(output, map)
@@ -295,7 +295,7 @@ class MapSerializerTest extends AbstractScalaSerializerTest {
 }
 
 case class ScalaClass1(
-  var opt: Option[java.lang.Integer] = Some(3),
-  var vector11: Vector[String] = Vector("LL", "ee", "oo"),
-  var list11: List[String] = List("LL", "ee", "oo"),
-  var map11: Map[String, String] = Map("Leo" -> "John", "Luke" -> "Lea"))
+                          var opt: Option[java.lang.Integer] = Some(3),
+                          var vector11: Vector[String] = Vector("LL", "ee", "oo"),
+                          var list11: List[String] = List("LL", "ee", "oo"),
+                          var map11: Map[String, String] = Map("Leo" -> "John", "Luke" -> "Lea"))
