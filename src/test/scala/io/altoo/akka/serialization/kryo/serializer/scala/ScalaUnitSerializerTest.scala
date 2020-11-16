@@ -1,10 +1,11 @@
 package io.altoo.akka.serialization.kryo.serializer.scala
 
 
-class ScalaUnitSerializerTest extends SpecCase {
+class ScalaUnitSerializerTest extends AbstractScalaSerializerTest {
 
+  behavior of "ScalaUnitSerializer"
 
-  "Kryo" should "roundtrip unit " in {
+  it should "roundtrip unit " in {
     kryo.setRegistrationRequired(true)
     kryo.addDefaultSerializer(classOf[scala.runtime.BoxedUnit], classOf[ScalaUnitSerializer])
     kryo.register(classOf[scala.runtime.BoxedUnit], 50)

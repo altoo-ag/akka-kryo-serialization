@@ -9,7 +9,7 @@ import scala.collection.immutable.{HashMap, TreeMap}
 import scala.collection.mutable.AnyRefMap
 
 object CompressionSerializationTest {
-  val defaultConfig =
+  private val defaultConfig =
     """
       |akka {
       |  actor {

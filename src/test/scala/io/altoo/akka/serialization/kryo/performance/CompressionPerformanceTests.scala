@@ -140,7 +140,7 @@ object CompressionPerformanceTests {
         val now = System.nanoTime
         var i = 0
         while (i < loops) {
-          val x = a
+          a
           i += 1
         }
         val ms = (System.nanoTime - now) / 1000000.0

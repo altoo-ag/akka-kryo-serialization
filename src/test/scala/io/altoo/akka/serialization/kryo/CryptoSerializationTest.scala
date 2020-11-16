@@ -2,13 +2,14 @@ package io.altoo.akka.serialization.kryo
 
 import akka.actor.ActorSystem
 import akka.serialization.SerializationExtension
-import com.typesafe.config.{Config, ConfigFactory}
-import org.scalatest.{FlatSpec, Matchers}
+import com.typesafe.config.ConfigFactory
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers.should.Matchers
 
 import scala.collection.immutable.HashMap
 
 object CryptoSerializationTest {
-  val config =
+  private val config =
     """
     akka {
       actor {
@@ -37,7 +38,7 @@ object CryptoSerializationTest {
     }
     """
 }
-class CryptoSerializationTest extends FlatSpec with Matchers {
+class CryptoSerializationTest extends AnyFlatSpec with Matchers {
   private val sourceSystem = ActorSystem("encrypted", ConfigFactory.parseString(CryptoSerializationTest.config))
   private val targetSystem = ActorSystem("encrypted", ConfigFactory.parseString(CryptoSerializationTest.config))
   private val sourceSerialization = SerializationExtension(sourceSystem)

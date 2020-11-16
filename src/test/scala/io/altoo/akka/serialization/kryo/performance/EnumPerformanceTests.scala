@@ -6,9 +6,6 @@ import akka.testkit.TestKit
 import com.typesafe.config.ConfigFactory
 import org.scalatest._
 
-import scala.concurrent._
-import scala.concurrent.duration._
-
 object Time extends Enumeration {
   type Time = Value
   val Second, Minute, Hour, Day, Month, Year = Value
@@ -48,10 +45,11 @@ object EnumPerformanceTests {
           .foreach { i => iterations = i.toInt }
     }
 
-    private def timeIt[A](name: String, loops: Int)(a: => A): Unit = {
+    private def timeIt[A](name: String, loops: Int)(a: () => A): Unit = {
       val now = System.nanoTime
       var i = 0
       while (i < loops) {
+        a()
         i += 1
       }
       val ms = (System.nanoTime - now) / 1000000.0
@@ -59,19 +57,21 @@ object EnumPerformanceTests {
     }
 
 
-    "Enumeration serialization" should "be fast" in {
+    behavior of "Enumeration serialization"
+
+    it should "be fast" in {
       val iterations = 10000
 
       val listOfTimes = 1 to 1000 flatMap { _ => Time.values.toList }
-      timeIt("Enum Serialize:   ", iterations) {serialization.serialize(listOfTimes)}
-      timeIt("Enum Serialize:   ", iterations) {serialization.serialize(listOfTimes)}
-      timeIt("Enum Serialize:   ", iterations) {serialization.serialize(listOfTimes)}
+      timeIt("Enum Serialize:   ", iterations) { () => serialization.serialize(listOfTimes) }
+      timeIt("Enum Serialize:   ", iterations) { () => serialization.serialize(listOfTimes) }
+      timeIt("Enum Serialize:   ", iterations) { () => serialization.serialize(listOfTimes) }
 
       val bytes = serialization.serialize(listOfTimes).get
 
-      timeIt("Enum Deserialize: ", iterations)(serialization.deserialize(bytes, classOf[List[Time]]))
-      timeIt("Enum Deserialize: ", iterations)(serialization.deserialize(bytes, classOf[List[Time]]))
-      timeIt("Enum Deserialize: ", iterations)(serialization.deserialize(bytes, classOf[List[Time]]))
+      timeIt("Enum Deserialize: ", iterations)(() => serialization.deserialize(bytes, classOf[List[Time]]))
+      timeIt("Enum Deserialize: ", iterations)(() => serialization.deserialize(bytes, classOf[List[Time]]))
+      timeIt("Enum Deserialize: ", iterations)(() => serialization.deserialize(bytes, classOf[List[Time]]))
     }
   }
 }
