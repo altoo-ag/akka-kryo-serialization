@@ -1,10 +1,13 @@
 package io.altoo.akka.serialization.kryo.serializer.scala
 
-class SubclassResolverTest extends SpecCase {
+class SubclassResolverTest extends AbstractScalaSerializerTest {
 
   override val useSubclassResolver:Boolean = true
 
-  "SubclassResolver" should "work with normal Map" in {
+
+  behavior of "SubclassResolver"
+
+  it should "work with normal Map" in {
     kryo.setRegistrationRequired(true)
     kryo.addDefaultSerializer(classOf[scala.collection.Map[_, _]], classOf[ScalaImmutableAbstractMapSerializer])
     kryo.register(classOf[scala.collection.immutable.Map[_,_]], 40)
@@ -21,7 +24,7 @@ class SubclassResolverTest extends SpecCase {
     roundTrip(map4)
   }
 
-  "SubclassResolver" should "work with empty HashMap" in {
+  it should "work with empty HashMap" in {
     kryo.setRegistrationRequired(true)
     kryo.addDefaultSerializer(classOf[scala.collection.Map[_, _]], classOf[ScalaImmutableAbstractMapSerializer])
     kryo.register(classOf[scala.collection.immutable.Map[_,_]], 40)
@@ -32,7 +35,7 @@ class SubclassResolverTest extends SpecCase {
     roundTrip(map1)
   }
 
-  "SubclassResolver" should "permit more-specific types to work when specified" in {
+  it should "permit more-specific types to work when specified" in {
     import scala.collection.immutable.{HashMap, ListMap}
 
     kryo.setRegistrationRequired(true)
@@ -52,7 +55,7 @@ class SubclassResolverTest extends SpecCase {
     assert(map2Copy.isInstanceOf[ListMap[_,_]])
   }
 
-  "SubclassResolver" should "work with normal Set" in {
+  it should "work with normal Set" in {
     kryo.setRegistrationRequired(true)
     kryo.addDefaultSerializer(classOf[scala.collection.Set[_]], classOf[ScalaImmutableAbstractSetSerializer])
     kryo.register(classOf[scala.collection.immutable.Set[_]], 40)
@@ -61,7 +64,6 @@ class SubclassResolverTest extends SpecCase {
     }
 
     val set1 = Set(83, 84, 959)
-    val set2 = Set("hello", "world")
     roundTrip(set1)
   }
 }

@@ -6,7 +6,8 @@ import akka.testkit.TestKit
 import com.typesafe.config.ConfigFactory
 import io.altoo.akka.serialization.kryo.performance.Time
 import io.altoo.akka.serialization.kryo.performance.Time.Time
-import org.scalatest.{BeforeAndAfterAllConfigMap, FlatSpecLike}
+import org.scalatest.BeforeAndAfterAllConfigMap
+import org.scalatest.flatspec.AnyFlatSpecLike
 
 import scala.concurrent.duration.Duration
 import scala.concurrent.{Await, Future}
@@ -30,10 +31,13 @@ object EnumSerializationTest {
   """
 }
 
-class EnumSerializationTest extends TestKit(ActorSystem("testSystem", ConfigFactory.parseString(EnumSerializationTest.defaultConfig))) with FlatSpecLike with BeforeAndAfterAllConfigMap {
+class EnumSerializationTest extends TestKit(ActorSystem("testSystem", ConfigFactory.parseString(EnumSerializationTest.defaultConfig))) with AnyFlatSpecLike with BeforeAndAfterAllConfigMap {
   private val serialization = SerializationExtension(system)
 
-  "Enumeration serialization" should "be threadsafe" in {
+
+  behavior of "Enumeration serialization"
+
+  it should "be threadsafe" in {
     import scala.concurrent.ExecutionContext.Implicits.global
 
     val listOfTimes = Time.values.toList

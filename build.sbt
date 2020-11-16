@@ -36,14 +36,14 @@ libraryDependencies += "com.typesafe.akka" %% "akka-testkit" % akkaVersion % "te
 unmanagedSourceDirectories in Compile += {
   scalaBinaryVersion.value match {
     case "2.12" => baseDirectory.value / "src" / "main" / "scala-2.12"
-    case _      => baseDirectory.value / "src" / "main" / "scala-2.13"
+    case _ => baseDirectory.value / "src" / "main" / "scala-2.13"
   }
 }
 
 unmanagedSourceDirectories in Test += {
   scalaBinaryVersion.value match {
     case "2.12" => baseDirectory.value / "src" / "test" / "scala-2.12"
-    case _      => baseDirectory.value / "src" / "test" / "scala-2.13"
+    case _ => baseDirectory.value / "src" / "test" / "scala-2.13"
   }
 }
 
@@ -58,8 +58,68 @@ scalacOptions := Seq(
   "-Xlog-reflective-calls"
 )
 
+scalacOptions ++= Seq("-opt:l:inline", "-opt-inline-from:io.altoo.akka.serialization.kryo.*")
+
+// strict options
 scalacOptions ++= {
-  Seq("-opt:l:inline", "-opt-inline-from:io.altoo.akka.serialization.kryo.*")
+  scalaBinaryVersion.value match {
+    case "2.12" =>
+      Seq(
+        "-Xfatal-warnings",
+        "-Yno-adapted-args",
+        "-Ywarn-adapted-args",
+        "-Ywarn-dead-code",
+        "-Ywarn-extra-implicit",
+        "-Ywarn-inaccessible",
+        "-Ywarn-nullary-override",
+        "-Ywarn-nullary-unit",
+        "-Ywarn-unused:-explicits,-implicits,_"
+      )
+    case "2.13" =>
+      Seq(
+        "-Werror",
+        "-Wdead-code",
+        "-Wextra-implicit",
+        "-Wunused:imports",
+        "-Wunused:patvars",
+        "-Wunused:privates",
+        "-Wunused:locals",
+        //"-Wunused:params", enable once 2.12 support is dropped
+        "-Wunused:nowarn",
+      )
+  }
+}
+
+// lint options
+scalacOptions ++= {
+  scalaBinaryVersion.value match {
+    case "2.12" =>
+      Seq(
+        "-Xlint:private-shadow",
+        "-Xlint:type-parameter-shadow",
+        "-Xlint:adapted-args",
+        "-Xlint:unsound-match",
+        "-Xlint:option-implicit"
+      )
+    case "2.13" =>
+      Seq(
+        "-Xlint:inaccessible",
+        "-Xlint:nullary-unit",
+        "-Xlint:private-shadow",
+        "-Xlint:type-parameter-shadow",
+        "-Xlint:adapted-args",
+        "-Xlint:option-implicit",
+        "-Xlint:missing-interpolator",
+        "-Xlint:poly-implicit-overload",
+        "-Xlint:option-implicit",
+        "-Xlint:package-object-classes",
+        "-Xlint:constant",
+        "-Xlint:nonlocal-return",
+        "-Xlint:valpattern",
+        "-Xlint:eta-zero",
+        "-Xlint:deprecation"
+      )
+  }
 }
 
 //Enabling hardware AES support if available
@@ -84,7 +144,7 @@ publishArtifact in Test := false
 
 pomIncludeRepository := { _ => false }
 
-import ReleaseTransformations._
+import sbtrelease.ReleasePlugin.autoImport.ReleaseTransformations._
 // Configure cross builds.
 releaseProcess := Seq[ReleaseStep](
   checkSnapshotDependencies,
@@ -102,26 +162,26 @@ releaseProcess := Seq[ReleaseStep](
 )
 
 pomExtra := <url>https://github.com/altoo-ag/akka-kryo-serialization</url>
-  <licenses>
-    <license>
-      <name>The Apache Software License, Version 2.0</name>
-      <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
-      <distribution>repo</distribution>
-    </license>
-  </licenses>
-  <scm>
-    <url>git@github.com:altoo-ag/akka-kryo-serialization.git</url>
-    <connection>scm:git:git@github.com:altoo-ag/akka-kryo-serialization.git</connection>
-  </scm>
-  <developers>
-    <developer>
-      <id>danischroeter</id>
-      <name>Daniel Schröter</name>
-      <email>dsc@scaling.ch</email>
-    </developer>
-    <developer>
-      <id>nvollmar</id>
-      <name>Nicolas Vollmar</name>
-      <email>nvo@scaling.ch</email>
-    </developer>
-  </developers>
+    <licenses>
+      <license>
+        <name>The Apache Software License, Version 2.0</name>
+        <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+        <distribution>repo</distribution>
+      </license>
+    </licenses>
+    <scm>
+      <url>git@github.com:altoo-ag/akka-kryo-serialization.git</url>
+      <connection>scm:git:git@github.com:altoo-ag/akka-kryo-serialization.git</connection>
+    </scm>
+    <developers>
+      <developer>
+        <id>danischroeter</id>
+        <name>Daniel Schröter</name>
+        <email>dsc@scaling.ch</email>
+      </developer>
+      <developer>
+        <id>nvollmar</id>
+        <name>Nicolas Vollmar</name>
+        <email>nvo@scaling.ch</email>
+      </developer>
+    </developers>

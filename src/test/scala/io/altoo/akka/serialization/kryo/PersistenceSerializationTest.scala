@@ -9,6 +9,9 @@ import akka.testkit.{ImplicitSender, TestKit}
 import com.typesafe.config.ConfigFactory
 import org.apache.commons.io.FileUtils
 import org.scalatest._
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.wordspec.AnyWordSpecLike
+
 import scala.concurrent.duration._
 import scala.language.postfixOps
 
@@ -32,28 +35,29 @@ object SnapshotRecoveryLocalStoreSpec {
     private var state = ExampleState()
 
     def receiveCommand: Receive = {
-      case TakeSnapshot                          => saveSnapshot(state)
-      case SaveSnapshotSuccess(_)         => probe ! SnapshotSaveSuccess
+      case TakeSnapshot => saveSnapshot(state)
+      case SaveSnapshotSuccess(_) => probe ! SnapshotSaveSuccess
       case SaveSnapshotFailure(_, _) => probe ! SnapshotSaveFail
-      case s: Person                             => persist(s) { evt => state = state.updated(evt) }
-      case GetState                              => sender() ! state.received.reverse
-      case Boom                                  => throw new Exception("Intentionally throwing exception to test persistence by restarting the actor")
+      case s: Person => persist(s) { evt => state = state.updated(evt) }
+      case GetState => sender() ! state.received.reverse
+      case Boom => throw new Exception("Intentionally throwing exception to test persistence by restarting the actor")
     }
 
     def receiveRecover: Receive = {
-      case SnapshotOffer(_, s: ExampleState)     => state = s
-      case evt: Person                           => state = state.updated(evt)
+      case SnapshotOffer(_, s: ExampleState) => state = s
+      case evt: Person => state = state.updated(evt)
     }
   }
 }
 
 class SnapshotRecoveryTest extends PersistenceSpec with ImplicitSender {
-
   import io.altoo.akka.serialization.kryo.SnapshotRecoveryLocalStoreSpec._
-  "A persistent actor which is persisted" should {
-    val persistentActor = system.actorOf(Props(classOf[SnapshotTestPersistentActor], "PersistentActor", testActor))
 
-    "should get right serializer" in {
+  private val persistentActor = system.actorOf(Props(classOf[SnapshotTestPersistentActor], "PersistentActor", testActor))
+
+  "A persistent actor which is persisted" should {
+
+    "get right serializer" in {
       val serialization = SerializationExtension(system)
       val sample = List(Person("John", "Doe"), Person("Bruce", "Wayne"), Person("Tony", "Stark"))
       val sampleHead: Person = sample.head
@@ -83,7 +87,7 @@ class SnapshotRecoveryTest extends PersistenceSpec with ImplicitSender {
     }
 
     "recover correct state after explicitly killing the actor and starting it again" in {
-      persistentActor ! Kill   //default supervision stops the actor on ActorKilledException
+      persistentActor ! Kill //default supervision stops the actor on ActorKilledException
 
       val newPersistentActor = system.actorOf(Props(classOf[SnapshotTestPersistentActor], "PersistentActor", testActor))
       within(3 seconds) {
@@ -95,9 +99,7 @@ class SnapshotRecoveryTest extends PersistenceSpec with ImplicitSender {
 }
 
 
-
-abstract class PersistenceSpec extends TestKit(ActorSystem("testSystem", ConfigFactory.parseString(TestConfig.config)))
-  with WordSpecLike with Matchers with BeforeAndAfterAll {
+abstract class PersistenceSpec extends TestKit(ActorSystem("testSystem", ConfigFactory.parseString(TestConfig.config))) with AnyWordSpecLike with Matchers with BeforeAndAfterAll {
   private val storageLocations = List("akka.persistence.snapshot-store.local.dir").map(s => new File(system.settings.config.getString(s)))
 
   override def beforeAll(): Unit = {
@@ -105,14 +107,15 @@ abstract class PersistenceSpec extends TestKit(ActorSystem("testSystem", ConfigF
     super.beforeAll()
   }
 
-//  override def afterAll() {
-//    storageLocations.foreach(FileUtils.deleteDirectory)
-//    super.afterAll()
-//  }
+  //  override def afterAll() {
+  //    storageLocations.foreach(FileUtils.deleteDirectory)
+  //    super.afterAll()
+  //  }
 }
 
 object TestConfig {
-  val config = """
+  val config =
+    """
   akka {
     actor {
       serializers {

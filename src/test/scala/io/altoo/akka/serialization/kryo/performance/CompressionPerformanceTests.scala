@@ -6,6 +6,7 @@ import com.typesafe.config.ConfigFactory
 import io.altoo.akka.serialization.kryo.KryoSerializer
 import io.altoo.akka.serialization.kryo.serializer.scala.ScalaVersionRegistry
 import org.scalatest._
+import org.scalatest.flatspec.AnyFlatSpec
 
 import scala.collection.immutable.{HashMap, TreeMap}
 import scala.collection.mutable.{AnyRefMap, LongMap}
@@ -15,8 +16,8 @@ object CompressionPerformanceTests {
     (new PerformanceTests).execute()
   }
 
-  private class PerformanceTests extends FlatSpec with BeforeAndAfterAllConfigMap {
-    val defaultConfig = ConfigFactory.parseString(
+  private class PerformanceTests extends AnyFlatSpec with BeforeAndAfterAllConfigMap {
+    private val defaultConfig = ConfigFactory.parseString(
       """
       akka {
         actor {
@@ -140,7 +141,7 @@ object CompressionPerformanceTests {
         val now = System.nanoTime
         var i = 0
         while (i < loops) {
-          val x = a
+          a
           i += 1
         }
         val ms = (System.nanoTime - now) / 1000000.0

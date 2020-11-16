@@ -3,7 +3,7 @@ package io.altoo.akka.serialization.kryo.serializer.scala
 
 /** @author romix */
 // @Ignore
-class TupleSerializationTest extends SpecCase {
+class TupleSerializationTest extends AbstractScalaSerializerTest {
 
   type IntTuple6 = (Int, Int, Int, Int, Int, Int)
 

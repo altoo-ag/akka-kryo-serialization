@@ -6,14 +6,15 @@ import com.esotericsoftware.kryo.Kryo
 import com.esotericsoftware.kryo.io.{Input, Output}
 import com.esotericsoftware.kryo.util.MapReferenceResolver
 import org.objenesis.strategy.StdInstantiatorStrategy
-import org.scalatest.FlatSpec
+import org.scalatest.Outcome
+import org.scalatest.flatspec.AnyFlatSpec
 
-abstract class SpecCase extends FlatSpec {
-  var kryo: Kryo = null
+abstract class AbstractScalaSerializerTest extends AnyFlatSpec {
+  var kryo: Kryo = _
 
-  val useSubclassResolver:Boolean = false
+  val useSubclassResolver: Boolean = false
 
-  override def withFixture(test: NoArgTest) = {
+  override def withFixture(test: NoArgTest): Outcome = {
     val referenceResolver = new MapReferenceResolver()
     if (useSubclassResolver)
       kryo = new Kryo(new SubclassResolver(), referenceResolver)
@@ -26,7 +27,7 @@ abstract class SpecCase extends FlatSpec {
     super.withFixture(test)
   }
 
-  def roundTrip[T](obj: T): T = {
+  protected def roundTrip[T](obj: T): T = {
     val outStream = new ByteArrayOutputStream()
     val output = new Output(outStream, 4096)
     kryo.writeClassAndObject(output, obj)

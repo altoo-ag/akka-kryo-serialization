@@ -21,17 +21,19 @@ import akka.serialization.{Serialization, _}
 import com.esotericsoftware.minlog.Log
 import com.typesafe.config.ConfigFactory
 import io.altoo.akka.serialization.kryo.serializer.scala.ScalaVersionRegistry
-import org.scalatest._
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers.should.Matchers
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 import scala.concurrent.duration._
 
-class BasicSerializationTest extends FlatSpec with Matchers {
+class BasicSerializationTest extends AnyFlatSpec with Matchers {
 
   Log.ERROR()
 
-  val system = ActorSystem("example", ConfigFactory.parseString("""
+  private val system = ActorSystem("example", ConfigFactory.parseString(
+    """
     akka {
       loggers = ["akka.event.Logging$DefaultLogger"]
       loglevel = "WARNING"
@@ -49,11 +51,14 @@ class BasicSerializationTest extends FlatSpec with Matchers {
       mappings {
             "akka.actor.ActorRef" = 20
             "akka.actor.DeadLetterActorRef" = 21
-            """" + ScalaVersionRegistry.immutableHashMapImpl+ """" = 30
-            "[L""" + ScalaVersionRegistry.immutableHashMapImpl + """;" = 31
+            """" + ScalaVersionRegistry.immutableHashMapImpl +
+    """" = 30
+            "[L""" + ScalaVersionRegistry.immutableHashMapImpl +
+    """;" = 31
             "scala.collection.immutable.TreeMap"                = 32
             "[Lscala.collection.immutable.TreeMap;"             = 33
-            """" + ScalaVersionRegistry.immutableHashSetImpl + """" = 34
+            """" + ScalaVersionRegistry.immutableHashSetImpl +
+    """" = 34
             "scala.collection.immutable.$colon$colon" = 35
             "[J" = 50
             "[D" = 51
@@ -68,15 +73,18 @@ class BasicSerializationTest extends FlatSpec with Matchers {
       "scala.Product" = kryo
       "scala.collection.Map" = kryo
       "scala.collection.Set" = kryo
-      """" + ScalaVersionRegistry.immutableHashMapImpl + """" = kryo
-      """" + ScalaVersionRegistry.immutableHashSetImpl + """" = kryo
+      """" + ScalaVersionRegistry.immutableHashMapImpl +
+    """" = kryo
+      """" + ScalaVersionRegistry.immutableHashSetImpl +
+    """" = kryo
       "scala.collection.immutable.TreeMap" = kryo
       "[Ljava.lang.Object;" = kryo
       "akka.actor.ActorRef" = kryo
     }
   """))
 
-  val systemWithCompression = ActorSystem("exampleWithCompression", ConfigFactory.parseString("""
+  private val systemWithCompression = ActorSystem("exampleWithCompression", ConfigFactory.parseString(
+    """
 	akka {
 	  loggers = ["akka.event.Logging$DefaultLogger"]
 	  loglevel = "WARNING"
@@ -94,11 +102,14 @@ class BasicSerializationTest extends FlatSpec with Matchers {
       mappings {
             "akka.actor.ActorRef" = 20
             "akka.actor.DeadLetterActorRef" = 21
-            """" + ScalaVersionRegistry.immutableHashMapImpl+ """" = 30
-            "[L""" + ScalaVersionRegistry.immutableHashMapImpl + """;" = 31
+            """" + ScalaVersionRegistry.immutableHashMapImpl +
+    """" = 30
+            "[L""" + ScalaVersionRegistry.immutableHashMapImpl +
+    """;" = 31
             "scala.collection.immutable.TreeMap"                = 32
             "[Lscala.collection.immutable.TreeMap;"             = 33
-            """" + ScalaVersionRegistry.immutableHashSetImpl + """" = 34
+            """" + ScalaVersionRegistry.immutableHashSetImpl +
+    """" = 34
             "scala.collection.immutable.$colon$colon" = 35
             "[J" = 50
             "[D" = 51
@@ -113,8 +124,10 @@ class BasicSerializationTest extends FlatSpec with Matchers {
       "scala.Product" = kryo
       "scala.collection.Map" = kryo
       "scala.collection.Set" = kryo
-      """" + ScalaVersionRegistry.immutableHashMapImpl + """" = kryo
-      """" + ScalaVersionRegistry.immutableHashSetImpl + """" = kryo
+      """" + ScalaVersionRegistry.immutableHashMapImpl +
+    """" = kryo
+      """" + ScalaVersionRegistry.immutableHashSetImpl +
+    """" = kryo
       "scala.collection.immutable.TreeMap" = kryo
       "[Ljava.lang.Object;" = kryo
       "akka.actor.ActorRef" = kryo
@@ -122,19 +135,19 @@ class BasicSerializationTest extends FlatSpec with Matchers {
   """))
 
   // Get the Serialization Extension
-  val serialization = SerializationExtension(system)
-  val serializationWithCompression = SerializationExtension(systemWithCompression)
+  private val serialization = SerializationExtension(system)
+  private val serializationWithCompression = SerializationExtension(systemWithCompression)
 
-  val hugeCollectionSize = 500
+  private val hugeCollectionSize = 500
 
   // Long list for testing serializers and compression
-  val testList =
+  private val testList =
     List(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 10, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40,
       1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 10, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40,
       1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 10, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40,
       1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 10, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40)
 
-  val testSeq = Seq(
+  private val testSeq = Seq(
     "Rome", "Italy", "London", "England", "Paris", "France", "New York", "USA", "Tokio", "Japan", "Peking", "China", "Brussels", "Belgium",
     "Rome", "Italy", "London", "England", "Paris", "France", "New York", "USA", "Tokio", "Japan", "Peking", "China", "Brussels", "Belgium",
     "Rome", "Italy", "London", "England", "Paris", "France", "New York", "USA", "Tokio", "Japan", "Peking", "China", "Brussels", "Belgium",
@@ -159,7 +172,7 @@ class BasicSerializationTest extends FlatSpec with Matchers {
     val selection = system.actorSelection("akka://test-system/test-actor")
     val actorRefFuture: Future[ActorRef] = selection.resolveOne(5.seconds)
     // val actorRefFuture = Await.ready(f, 5.seconds)
-    actorRefFuture .map { actorRef =>
+    actorRefFuture.map { actorRef =>
       val serializer = serialization.findSerializerFor(actorRef)
       serializer.getClass.equals(classOf[KryoSerializer]) should be(true)
     }
@@ -168,7 +181,7 @@ class BasicSerializationTest extends FlatSpec with Matchers {
   it should "serialize and deserialize ActorRef successfully" in {
     val selection = system.actorSelection("akka://test-system/test-actor")
     val actorRefFuture: Future[ActorRef] = selection.resolveOne(5.seconds)
-    actorRefFuture .map { actorRef =>
+    actorRefFuture.map { actorRef =>
       val serialized = serialization.serialize(actorRef)
       serialized.isSuccess should be(true)
 

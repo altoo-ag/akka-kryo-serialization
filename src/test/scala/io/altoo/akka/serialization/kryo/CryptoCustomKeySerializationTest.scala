@@ -3,7 +3,8 @@ package io.altoo.akka.serialization.kryo
 import akka.actor.ActorSystem
 import akka.serialization.SerializationExtension
 import com.typesafe.config.{Config, ConfigFactory}
-import org.scalatest.{FlatSpec, Matchers}
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers.should.Matchers
 
 import scala.collection.immutable.HashMap
 
@@ -39,7 +40,7 @@ object CryptoCustomKeySerializationTest {
     }
     """
 }
-class CryptoCustomKeySerializationTest extends FlatSpec with Matchers {
+class CryptoCustomKeySerializationTest extends AnyFlatSpec with Matchers {
   private val encryptedSystem = ActorSystem("encrypted", ConfigFactory.parseString(CryptoCustomKeySerializationTest.config))
   private val unencryptedSystem = ActorSystem("unencrypted", ConfigFactory.parseString("akka-kryo-serialization.post-serialization-transformations = off").withFallback(ConfigFactory.parseString(CryptoCustomKeySerializationTest.config)))
   private val encryptedSerialization = SerializationExtension(encryptedSystem)
