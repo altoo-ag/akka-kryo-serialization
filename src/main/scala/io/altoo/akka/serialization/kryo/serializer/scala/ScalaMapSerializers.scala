@@ -37,7 +37,7 @@ import scala.collection.mutable.{Map => MMap}
 
 class ScalaMutableMapSerializer() extends Serializer[MMap[_, _]] {
 
-  override def read(kryo: Kryo, input: Input, typ: Class[MMap[_, _]]): MMap[_, _] = {
+  override def read(kryo: Kryo, input: Input, typ: Class[_ <: MMap[_, _]]): MMap[_, _] = {
     val len = input.readInt(true)
     val coll = kryo.newInstance(typ).empty.asInstanceOf[MMap[Any, Any]]
     if (len != 0) {
@@ -68,7 +68,7 @@ class ScalaImmutableMapSerializer() extends Serializer[IMap[_, _]] {
 
   setImmutable(true)
 
-  override def read(kryo: Kryo, input: Input, typ: Class[IMap[_, _]]): IMap[_, _] = {
+  override def read(kryo: Kryo, input: Input, typ: Class[_ <: IMap[_, _]]): IMap[_, _] = {
     val len = input.readInt(true)
     var coll: IMap[Any, Any] = kryo.newInstance(typ).asInstanceOf[IMap[Any, Any]].empty
 
@@ -100,7 +100,7 @@ class ScalaImmutableAbstractMapSerializer() extends Serializer[IMap[_, _]] {
 
   setImmutable(true)
 
-  override def read(kryo: Kryo, input: Input, typ: Class[IMap[_, _]]): IMap[_, _] = {
+  override def read(kryo: Kryo, input: Input, typ: Class[_ <: IMap[_, _]]): IMap[_, _] = {
     val len = input.readInt(true)
     var coll: IMap[Any, Any] = IMap.empty
 
@@ -134,7 +134,7 @@ class ScalaSortedMapSerializer() extends Serializer[SortedMap[_, _]] {
   // All sorted maps are immutable
   setImmutable(true)
 
-  override def read(kryo: Kryo, input: Input, typ: Class[SortedMap[_, _]]): SortedMap[_, _] = {
+  override def read(kryo: Kryo, input: Input, typ: Class[_ <: SortedMap[_, _]]): SortedMap[_, _] = {
     val len = input.readInt(true)
     implicit val mapOrdering: Ordering[Any] = kryo.readClassAndObject(input).asInstanceOf[scala.math.Ordering[Any]]
     var coll: SortedMap[Any, Any] =

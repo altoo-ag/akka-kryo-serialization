@@ -183,10 +183,10 @@ class KryoSerializer(val system: ExtendedActorSystem) extends Serializer {
       if (settings.idStrategy == "incremental") new KryoClassResolver(settings.implicitRegistrationLogging)
       else if (settings.resolveSubclasses) new SubclassResolver()
       else new DefaultClassResolver()
-    val kryo = new ScalaKryo(classResolver, referenceResolver, new DefaultStreamFactory())
+    val kryo = new ScalaKryo(classResolver, referenceResolver)
     kryo.setClassLoader(system.dynamicAccess.classLoader)
     // support deserialization of classes without no-arg constructors
-    val instStrategy = kryo.getInstantiatorStrategy.asInstanceOf[Kryo.DefaultInstantiatorStrategy]
+    val instStrategy = kryo.getInstantiatorStrategy.asInstanceOf[DefaultInstantiatorStrategy]
     instStrategy.setFallbackInstantiatorStrategy(new StdInstantiatorStrategy())
     kryo.setInstantiatorStrategy(instStrategy)
 
@@ -205,8 +205,7 @@ class KryoSerializer(val system: ExtendedActorSystem) extends Serializer {
     initializer.initScalaSerializer(kryo, system)
 
     // if explicit we require all classes to be registered explicitely
-    if (strategy == "explicit")
-      kryo.setRegistrationRequired(true)
+    kryo.setRegistrationRequired(strategy == "explicit")
 
     // register configured class mappings and classes
     if (strategy != "default") {

@@ -259,6 +259,8 @@ class MapSerializerTest extends AbstractScalaSerializerTest {
   }
 
   it should "roundtrip scala hash map" in {
+    kryo.setRegistrationRequired(false)
+    kryo.register(classOf[scala.collection.immutable.HashMap[_, _]])
     var map = new scala.collection.immutable.HashMap[String, Int]()
     map ++= Seq("foo" -> 1, "bar" -> 2)
     roundTrip(map)
@@ -266,7 +268,7 @@ class MapSerializerTest extends AbstractScalaSerializerTest {
 
   it should "roundtrip tree map" in {
     kryo.setRegistrationRequired(false)
-    kryo.register(classOf[util.TreeMap[Any, Any]])
+    kryo.register(classOf[util.TreeMap[_, _]])
     val map = new util.TreeMap[Any, Any]()
     map.put("123", "456")
     map.put("789", "abc")

@@ -32,7 +32,7 @@ import com.esotericsoftware.kryo.{Kryo, Serializer}
  */
 class ByteStringSerializer() extends Serializer[ByteString] {
 
-  override def read(kryo: Kryo, input: Input, typ: Class[ByteString]): ByteString = {
+  override def read(kryo: Kryo, input: Input, typ: Class[_ <: ByteString]): ByteString = {
     val len = input.readInt(true)
     ByteString(input.readBytes(len))
   }

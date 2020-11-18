@@ -3,17 +3,21 @@ package io.altoo.akka.serialization.kryo.serializer.scala
 
 import com.esotericsoftware.kryo.Kryo
 import com.esotericsoftware.kryo.io.{Input, Output}
+import org.scalatest.flatspec.AnyFlatSpec
+
 import scala.language.implicitConversions
 
 /** @author romix */
-class EnumerationSerializerTest extends AbstractScalaSerializerTest {
+class EnumerationSerializerTest extends AnyFlatSpec {
+  import Planet._
+  import Time._
+  import WeekDay._
+
 
   behavior of "EnumerationSerializer"
 
   it should "serialize and deseialize" in {
-    import Planet._
-    import Time._
-    import WeekDay._
+    var kryo: Kryo = new Kryo()
     kryo.setRegistrationRequired(false)
     kryo.addDefaultSerializer(classOf[scala.Enumeration#Value], classOf[EnumerationSerializer])
     kryo.register(Class.forName("scala.Enumeration$Val"))
@@ -89,11 +93,11 @@ object Planet extends Enumeration {
 
   final val G: Double = 6.67300E-11
   final val Mercury = PlanetVal(3.303e+23, 2.4397e6)
-  final val Venus   = PlanetVal(4.869e+24, 6.0518e6)
-  final val Earth   = PlanetVal(5.976e+24, 6.37814e6)
-  final val Mars    = PlanetVal(6.421e+23, 3.3972e6)
+  final val Venus = PlanetVal(4.869e+24, 6.0518e6)
+  final val Earth = PlanetVal(5.976e+24, 6.37814e6)
+  final val Mars = PlanetVal(6.421e+23, 3.3972e6)
   final val Jupiter = PlanetVal(1.9e+27, 7.1492e7)
-  final val Saturn  = PlanetVal(5.688e+26, 6.0268e7)
-  final val Uranus  = PlanetVal(8.686e+25, 2.5559e7)
+  final val Saturn = PlanetVal(5.688e+26, 6.0268e7)
+  final val Uranus = PlanetVal(8.686e+25, 2.5559e7)
   final val Neptune = PlanetVal(1.024e+26, 2.4746e7)
 }

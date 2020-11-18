@@ -28,7 +28,7 @@ import com.esotericsoftware.kryo.{Kryo, Serializer}
  */
 class ScalaCollectionSerializer() extends Serializer[Iterable[_]] {
 
-  override def read(kryo: Kryo, input: Input, typ: Class[Iterable[_]]): Iterable[_] = {
+  override def read(kryo: Kryo, input: Input, typ: Class[_ <: Iterable[_]]): Iterable[_] = {
     val len = input.readInt(true)
     val inst = kryo.newInstance(typ)
     val coll = inst.iterableFactory.newBuilder[Any]
