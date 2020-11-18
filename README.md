@@ -9,7 +9,8 @@ used for more efficient akka actor's remoting.
 It can also be used for a general purpose and very efficient Kryo-based serialization
 of such Scala types like Option, Tuple, Enumeration and most of Scala's collection types.
 
-For upgrading to version 1.0.0 see [migration-guide](migration-guide.md).
+For upgrading to version 2.0.0-RC1 from previous versions see [migration-guide](migration-guide.md). 
+Note that due to the upgrade to Kryo 5, data written with older versions is most likely not readable anymore.
 
 
 Features
@@ -34,7 +35,7 @@ To use this serializer, you need to do two things:
 
 * Include a dependency on this library into your project:
 
-    `libraryDependencies += "io.altoo" %% "akka-kryo-serialization" % "1.1.5"`
+    `libraryDependencies += "io.altoo" %% "akka-kryo-serialization" % "2.0.0-RC1"`
 
 * Register and configure the serializer in your Akka configuration file, e.g. `application.conf`.
 
