@@ -67,7 +67,7 @@ class ScalaImmutableSortedSetSerializer() extends Serializer[imSSet[_]] {
 
     val it = collection.iterator
     while (it.hasNext) {
-      kryo.writeClassAndObject(output, it.next)
+      kryo.writeClassAndObject(output, it.next())
     }
   }
 }
@@ -91,7 +91,7 @@ class ScalaImmutableSetSerializer() extends Serializer[imSet[_]] {
     output.writeInt(collection.size, true)
     val it = collection.iterator
     while (it.hasNext) {
-      kryo.writeClassAndObject(output, it.next)
+      kryo.writeClassAndObject(output, it.next())
     }
   }
 }
@@ -115,7 +115,7 @@ class ScalaImmutableAbstractSetSerializer() extends Serializer[imSet[_]] {
     output.writeInt(collection.size, true)
     val it = collection.iterator
     while (it.hasNext) {
-      kryo.writeClassAndObject(output, it.next)
+      kryo.writeClassAndObject(output, it.next())
     }
   }
 }
@@ -158,7 +158,7 @@ class ScalaMutableSortedSetSerializer() extends Serializer[mSSet[_]] {
 
     val it = collection.iterator
     while (it.hasNext) {
-      kryo.writeClassAndObject(output, it.next)
+      kryo.writeClassAndObject(output, it.next())
     }
   }
 }
@@ -180,7 +180,7 @@ class ScalaMutableSetSerializer() extends Serializer[mSet[_]] {
     output.writeInt(collection.size, true)
     val it = collection.iterator
     while (it.hasNext) {
-      kryo.writeClassAndObject(output, it.next)
+      kryo.writeClassAndObject(output, it.next())
     }
   }
 }

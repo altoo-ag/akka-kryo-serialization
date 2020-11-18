@@ -38,7 +38,7 @@ class ScalaCollectionSerializer() extends Serializer[Iterable[_]] {
       coll += kryo.readClassAndObject(input)
       i += 1
     }
-    coll.result
+    coll.result()
   }
 
   override def write(kryo: Kryo, output: Output, obj: Iterable[_]): Unit = {

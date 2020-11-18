@@ -1,9 +1,9 @@
 language: scala
 script:
   - sbt +test
-  - sbt -Dakka.build.version=2.5.29 clean test
+  - sbt -Dakka.build.version=2.5.32 clean test
 scala:
-  - 2.13.2
+  - 2.13.3
 jdk:
   - openjdk8
   - openjdk11

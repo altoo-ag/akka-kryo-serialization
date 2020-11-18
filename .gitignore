@@ -10,6 +10,7 @@ project/boot/
 project/plugins/project/
 .metals
 .bloop
+.bsp
 
 # Scala-IDE specific
 .scala_dependencies

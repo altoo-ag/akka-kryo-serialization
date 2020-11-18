@@ -121,10 +121,10 @@ class CompressionSerializationTest extends AnyFlatSpec with BeforeAndAfterAllCon
       if (systemName != "Java") {
         val r = new scala.util.Random(0L)
         val tm = AnyRefMap[String, Any](
-          "foo" -> r.nextDouble,
+          "foo" -> r.nextDouble(),
           "bar" -> "foo,bar,baz",
           "baz" -> 124L,
-          "hash" -> HashMap[Int, Int](r.nextInt -> r.nextInt, 5 -> 500, 10 -> r.nextInt))
+          "hash" -> HashMap[Int, Int](r.nextInt() -> r.nextInt(), 5 -> 500, 10 -> r.nextInt()))
 
         assert(serialization.findSerializerFor(tm).getClass == classOf[KryoSerializer])
 
