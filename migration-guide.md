@@ -4,7 +4,7 @@ akka-kryo-serialization - migration guide
 Migration from 1.1.x to 2.0.x
 -----------------------------
 
-* By moving to Kryo 5, it is unlikely to read bytes written with older versions. Please refer to Kryo's [Migrationto v5](https://github.com/EsotericSoftware/kryo/wiki/Migration-to-v5) guide for hints how to migrate data if necessary.
+* By moving to Kryo 5 data created by a previous versions is unlikely to be readable with this version. Please refer to Kryo's [Migrationto v5](https://github.com/EsotericSoftware/kryo/wiki/Migration-to-v5) guide for hints how to migrate data if necessary.
 
 Migration from 1.0.x to 1.1.x
 -----------------------------

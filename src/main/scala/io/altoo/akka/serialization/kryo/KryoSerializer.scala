@@ -205,10 +205,7 @@ class KryoSerializer(val system: ExtendedActorSystem) extends Serializer {
     initializer.initScalaSerializer(kryo, system)
 
     // if explicit we require all classes to be registered explicitely
-    if (strategy == "explicit")
-      kryo.setRegistrationRequired(true)
-    else
-      kryo.setRegistrationRequired(false)
+    kryo.setRegistrationRequired(strategy == "explicit")
 
     // register configured class mappings and classes
     if (strategy != "default") {
