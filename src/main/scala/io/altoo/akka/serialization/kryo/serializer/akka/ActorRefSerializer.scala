@@ -30,7 +30,7 @@ import com.esotericsoftware.kryo.{Kryo, Serializer}
  */
 class ActorRefSerializer(val system: ExtendedActorSystem) extends Serializer[ActorRef] {
 
-  override def read(kryo: Kryo, input: Input, typ: Class[ActorRef]): ActorRef = {
+  override def read(kryo: Kryo, input: Input, typ: Class[_ <: ActorRef]): ActorRef = {
     val path = input.readString()
     system.provider.resolveActorRef(path)
   }

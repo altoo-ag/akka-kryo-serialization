@@ -4,6 +4,7 @@ val typesafeSnapshot = "Typesafe Snapshots Repository" at "https://repo.typesafe
 val sonatypeSnapshot = "Sonatype Snapshots Repository" at "https://oss.sonatype.org/content/repositories/snapshots/"
 
 
+val kryoVersion = "5.0.0"
 val defaultAkkaVersion = "2.6.10"
 val akkaVersion =
   System.getProperty("akka.build.version", defaultAkkaVersion) match {
@@ -24,7 +25,7 @@ scalaVersion := "2.13.3"
 crossScalaVersions := Seq(scalaVersion.value, "2.12.12")
 
 libraryDependencies += "com.typesafe.akka" %% "akka-actor" % akkaVersion
-libraryDependencies += "com.esotericsoftware" % "kryo-shaded" % "4.0.2"
+libraryDependencies += "com.esotericsoftware" % "kryo" % kryoVersion
 libraryDependencies += "org.lz4" % "lz4-java" % "1.7.1"
 libraryDependencies += "org.agrona" % "agrona" % "1.7.2" // should match akka-remote/aeron inherited version
 libraryDependencies += "org.scala-lang.modules" %% "scala-collection-compat" % "2.2.0"

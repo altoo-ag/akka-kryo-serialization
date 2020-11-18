@@ -31,7 +31,7 @@ import com.esotericsoftware.kryo.{Kryo, Serializer}
 
 class EnumerationSerializer extends Serializer[Enumeration#Value] {
 
-  def read(kryo: Kryo, input: Input, typ: Class[Enumeration#Value]): Enumeration#Value = {
+  def read(kryo: Kryo, input: Input, typ: Class[_ <: Enumeration#Value]): Enumeration#Value = {
     val clazz = kryo.readClass(input).getType
     val id = input.readInt()
     clazz.getDeclaredField("MODULE$").get(null).asInstanceOf[Enumeration](id)

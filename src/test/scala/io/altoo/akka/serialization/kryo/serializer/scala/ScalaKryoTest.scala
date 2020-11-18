@@ -1,14 +1,16 @@
 package io.altoo.akka.serialization.kryo.serializer.scala
 
-import com.esotericsoftware.kryo.util._
+import com.esotericsoftware.kryo.util.{DefaultClassResolver, ListReferenceResolver}
 import org.scalatest.Outcome
 
 class ScalaKryoTest extends AbstractScalaSerializerTest {
-  kryo = new ScalaKryo(new DefaultClassResolver(), new ListReferenceResolver(), new DefaultStreamFactory())
+  kryo = new ScalaKryo(new DefaultClassResolver(), new ListReferenceResolver())
+  kryo.setRegistrationRequired(false)
 
   override def withFixture(test: NoArgTest): Outcome = {
     test()
   }
+
 
   behavior of "ScalaKryo"
 

@@ -32,7 +32,7 @@ import com.esotericsoftware.kryo.io.Output
  */
 class ScalaCollectionSerializer() extends Serializer[Traversable[_]] {
 
-  override def read(kryo: Kryo, input: Input, typ: Class[Traversable[_]]): Traversable[_] = {
+  override def read(kryo: Kryo, input: Input, typ: Class[_ <: Traversable[_]]): Traversable[_] = {
     val len = input.readInt(true)
     val inst = kryo.newInstance(typ)
     val coll = inst.asInstanceOf[Traversable[Any]].genericBuilder[Any]

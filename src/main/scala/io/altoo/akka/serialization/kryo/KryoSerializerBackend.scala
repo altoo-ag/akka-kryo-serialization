@@ -4,7 +4,8 @@ import akka.annotation.InternalApi
 import akka.event.LoggingAdapter
 import akka.serialization.Serializer
 import com.esotericsoftware.kryo.Kryo
-import com.esotericsoftware.kryo.io.{Input, Output, UnsafeInput, UnsafeOutput}
+import com.esotericsoftware.kryo.io.{Input, Output}
+import com.esotericsoftware.kryo.unsafe.{UnsafeInput, UnsafeOutput}
 
 @InternalApi
 private[kryo] class KryoSerializerBackend(val kryo: Kryo, val bufferSize: Int, val maxBufferSize: Int, val includeManifest: Boolean, val useUnsafe: Boolean)(log: LoggingAdapter) extends Serializer {
@@ -55,6 +56,6 @@ private[kryo] class KryoSerializerBackend(val kryo: Kryo, val bufferSize: Int, v
       new Input(bytes)
 
   private def releaseBuffer(buffer: Output): Unit = {
-    buffer.clear()
+    buffer.reset()
   }
 }
