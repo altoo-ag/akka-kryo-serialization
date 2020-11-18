@@ -5,6 +5,9 @@ Migration from 1.1.x to 2.0.x
 -----------------------------
 
 * By moving to Kryo 5 data created by a previous versions is unlikely to be readable with this version. Please refer to Kryo's [Migrationto v5](https://github.com/EsotericSoftware/kryo/wiki/Migration-to-v5) guide for hints how to migrate data if necessary.
+* Deprecated `io.altoo.akka.serialization.kryo.LegacyKeyProvider` has been removed, the `DefaultKeyProvider` can be extended and be configured to provide the same behaviour.
+* Deprecated `io.altoo.akka.serialization.kryo.serializer.scala.ScalaProductSerializer` has been removed since since the standard kryo serializer should be used instead. Persistent data created by previous versions would have to be migrated manually.
+
 
 Migration from 1.0.x to 1.1.x
 -----------------------------

@@ -24,13 +24,3 @@ class DefaultKeyProvider {
     factory.generateSecret(spec).getEncoded
   }
 }
-
-
-/**
- * Provides key for legacy aes encryption.
- */
-@Deprecated
-@deprecated("Legacy encryption scheme is replaced with authenticated encryption", "1.0.0")
-class LegacyKeyProvider extends DefaultKeyProvider {
-  override def aesKey(config: Config): Array[Byte] = config.getString("encryption.aes.key").getBytes("UTF-8")
-}

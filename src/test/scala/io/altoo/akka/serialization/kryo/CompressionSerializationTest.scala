@@ -57,12 +57,12 @@ class CompressionSerializationTest extends AnyFlatSpec with BeforeAndAfterAllCon
   testConfig("LZ4", "akka.actor.kryo.post-serialization-transformations = lz4")
   testConfig("AES", "akka.actor.kryo.post-serialization-transformations = aes")
   testConfig("ZipAES",
-    """akka.actor.kryo.post-serialization-transformations = "deflate,aes"
-      |akka.actor.kryo.encryption.aes.key = j68KkRjq21ykRGAQ
+    """
+       |akka.actor.kryo.post-serialization-transformations = "deflate,aes"
     """.stripMargin)
   testConfig("LZ4AES",
-    """akka.actor.kryo.post-serialization-transformations = "lz4,aes"
-      |akka.actor.kryo.encryption.aes.key = j68KkRjq21ykRGAQ
+    """
+      |akka.actor.kryo.post-serialization-transformations = "lz4,aes"
     """.stripMargin)
   testConfig("Off", "")
   testConfig("Unsafe", "akka.actor.kryo.use-unsafe = true")

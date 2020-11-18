@@ -229,7 +229,7 @@ To configure the field serializer a serializer factory can be used as described 
 How to configure and customize encryption
 -----------------------------------------
 
-Using the `DefaultKeyProvider` an encryption key can statically be set by defining `encryption.aes.key`.
+Using the `DefaultKeyProvider` an encryption key can statically be set by defining `encryption.aes.password` and `encryption.aes.salt`.
 Refere to the [reference.conf](https://github.com/altoo-ag/akka-kryo-serialization/blob/master/src/main/resources/reference.conf) for an example configuration.
 
 Sometimes you need to pass a custom aes key, depending on the context you are in,
