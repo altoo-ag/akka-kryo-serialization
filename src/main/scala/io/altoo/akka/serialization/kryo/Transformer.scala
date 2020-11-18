@@ -88,7 +88,7 @@ class ZipKryoCompressor extends Transformer {
       outputBuff ++= buff.take(n)
     }
     deflater.end()
-    outputBuff.result
+    outputBuff.result()
   }
 
   override def fromBinary(inputBuff: Array[Byte]): Array[Byte] = {

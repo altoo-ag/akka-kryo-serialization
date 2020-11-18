@@ -157,7 +157,7 @@ object CompressionPerformanceTests {
         val r = new scala.util.Random(0L)
         val atm = Array.fill(listLength) {
           HashMap[String, Any](
-            "foo" -> r.nextDouble,
+            "foo" -> r.nextDouble(),
             "bar" -> "foo,bar,baz",
             "baz" -> 124L
           )
@@ -190,7 +190,7 @@ object CompressionPerformanceTests {
         val r = new scala.util.Random(0L)
         val atm = Array.fill(listLength) {
           TreeMap[String, Any](
-            "foo" -> r.nextDouble,
+            "foo" -> r.nextDouble(),
             "bar" -> "foo,bar,baz",
             "baz" -> 124L
           )
@@ -224,7 +224,7 @@ object CompressionPerformanceTests {
         val r = new scala.util.Random(0L)
         val atm = Array.fill(listLength) {
           LongMap[Any](
-            1L -> r.nextDouble,
+            1L -> r.nextDouble(),
             2L -> "foo,bar,baz",
             3L -> 124L
           )
@@ -258,7 +258,7 @@ object CompressionPerformanceTests {
           val r = new scala.util.Random(0L)
           val atm = Array.fill(listLength) {
             AnyRefMap[String, Any](
-              "foo" -> r.nextDouble,
+              "foo" -> r.nextDouble(),
               "bar" -> "foo,bar,baz",
               "baz" -> 124L
             )
@@ -288,7 +288,7 @@ object CompressionPerformanceTests {
         val r = new scala.util.Random(0L)
         val atm = Array.fill(listLength) {
           scala.collection.mutable.HashMap[String, Any](
-            "foo" -> r.nextDouble,
+            "foo" -> r.nextDouble(),
             "bar" -> "foo,bar,baz",
             "baz" -> 124L
           )
@@ -322,7 +322,7 @@ object CompressionPerformanceTests {
         val r = new scala.util.Random(0L)
         val atm = Array.fill(listLength) {
           LongMap[Any](
-            1L -> r.nextDouble,
+            1L -> r.nextDouble(),
             2L -> "foo,bar,baz",
             3L -> 124L
           )

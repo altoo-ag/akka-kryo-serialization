@@ -56,7 +56,7 @@ class ScalaMutableMapSerializer() extends Serializer[MMap[_, _]] {
     if (len != 0) {
       val it = collection.iterator
       while (it.hasNext) {
-        val t = it.next
+        val t = it.next()
         kryo.writeClassAndObject(output, t._1)
         kryo.writeClassAndObject(output, t._2)
       }
@@ -88,7 +88,7 @@ class ScalaImmutableMapSerializer() extends Serializer[IMap[_, _]] {
     if (len != 0) {
       val it = collection.iterator
       while (it.hasNext) {
-        val t = it.next
+        val t = it.next()
         kryo.writeClassAndObject(output, t._1)
         kryo.writeClassAndObject(output, t._2)
       }
@@ -120,7 +120,7 @@ class ScalaImmutableAbstractMapSerializer() extends Serializer[IMap[_, _]] {
     if (len != 0) {
       val it = collection.iterator
       while (it.hasNext) {
-        val t = it.next
+        val t = it.next()
         kryo.writeClassAndObject(output, t._1)
         kryo.writeClassAndObject(output, t._2)
       }
@@ -165,7 +165,7 @@ class ScalaSortedMapSerializer() extends Serializer[SortedMap[_, _]] {
 
     val it = collection.iterator
     while (it.hasNext) {
-      val t = it.next
+      val t = it.next()
       kryo.writeClassAndObject(output, t._1)
       kryo.writeClassAndObject(output, t._2)
     }
