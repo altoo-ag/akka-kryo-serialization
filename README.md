@@ -42,7 +42,8 @@ We provide several versions of the library:
 
 Version | Akka & Kryo Compatibility | Available Scala Versions  | Tested with                                                                            |
 --------|---------------------------|---------------------------|----------------------------------------------------------------------------------------|
-v1.1.x  | Akka-2.5,2.6 and Kryo-4.0 | 2.12,2.13                 | JDK: OpenJdk8,OpenJdk11,OpenJdk13  Scala: 2.12.11,2.13.2 Akka: 2.5.26,2.6.10            |
+v2.0.x  | Akka-2.5,2.6 and Kryo-5.0 | 2.12,2.13                 | JDK: OpenJdk8,OpenJdk11,OpenJdk13  Scala: 2.12.12,2.13.3 Akka: 2.5.32,2.6.10            |
+v1.1.x  | Akka-2.5,2.6 and Kryo-4.0 | 2.12,2.13                 | JDK: OpenJdk8,OpenJdk11,OpenJdk13  Scala: 2.12.11,2.13.2 Akka: 2.5.26,2.6.4            |
 v1.0.x  | Akka-2.5,2.6 and Kryo-4.0 | 2.11,2.12,2.13            | JDK: OpenJdk8,OpenJdk11            Scala: 2.11.12,2.12.10,2.13.1 Akka: 2.5.25,2.6.0-M7 |
 For past versions see [Legacy.md](Legacy.md).
 
