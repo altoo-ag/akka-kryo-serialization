@@ -1,1 +1,0 @@
-scalacOptions += "-deprecation"
