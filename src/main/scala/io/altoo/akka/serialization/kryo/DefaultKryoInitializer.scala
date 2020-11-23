@@ -17,9 +17,17 @@ class DefaultKryoInitializer {
    * Can be overridden to set a different field serializer before other serializer are initialized.
    * Note: register custom classes/serializer in `postInit`, otherwise default order might break.
    */
-  def preInit(kryo: ScalaKryo): Unit = {
+  def preInit(kryo: ScalaKryo, system: ExtendedActorSystem): Unit = {
     kryo.setDefaultSerializer(classOf[com.esotericsoftware.kryo.serializers.FieldSerializer[_]])
+    preInit(kryo)
   }
+
+  /**
+   * Can be overridden to set a different field serializer before other serializer are initialized.
+   * Note: register custom classes/serializer in `postInit`, otherwise default order might break.
+   */
+  @deprecatedOverriding("Use preInit(kryo,system) instead", since = "2.0.0")
+  def preInit(kryo: ScalaKryo): Unit = ()
 
   /**
    * Registers serializer for standard akka classes - override only if you know what you are doing!
@@ -69,5 +77,13 @@ class DefaultKryoInitializer {
   /**
    * Can be overridden to register additional serializer and classes explicitely or reconfigure kryo.
    */
+  def postInit(kryo: ScalaKryo, system: ExtendedActorSystem): Unit = {
+    postInit(kryo)
+  }
+
+  /**
+   * Can be overridden to register additional serializer and classes explicitely or reconfigure kryo.
+   */
+  @deprecatedOverriding("Use postInit(kryo,system) instead", since = "2.0.0")
   def postInit(kryo: ScalaKryo): Unit = ()
 }
