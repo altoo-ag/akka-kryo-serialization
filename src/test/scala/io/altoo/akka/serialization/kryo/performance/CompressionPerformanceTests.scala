@@ -4,7 +4,6 @@ import akka.actor.ActorSystem
 import akka.serialization._
 import com.typesafe.config.ConfigFactory
 import io.altoo.akka.serialization.kryo.KryoSerializer
-import io.altoo.akka.serialization.kryo.serializer.scala.ScalaVersionRegistry
 import org.scalatest._
 import org.scalatest.flatspec.AnyFlatSpec
 
@@ -70,56 +69,21 @@ object CompressionPerformanceTests {
           }
         }
       }
-      kryo-serialization {
+      akka-kryo-serialization {
         type = "nograph"
         id-strategy = "incremental"
         kryo-reference-map = false
         buffer-size = 65536
         post-serialization-transformations = off
         implicit-registration-logging = true
-        mappings {
-          "akka.actor.ActorRef" = 20
-          "akka.actor.DeadLetterActorRef" = 21
-          """" + ScalaVersionRegistry.immutableHashMapImpl +
-      """" = 32
-          "[Lscala.collection.immutable.HashMap;"             = 33
-          "scala.collection.immutable.TreeMap"                = 34
-          "[Lscala.collection.immutable.TreeMap;"             = 35
-          "scala.collection.mutable.HashMap"                  = 36
-          "[Lscala.collection.mutable.HashMap;"               = 37
-          """" + ScalaVersionRegistry.immutableHashSetImpl +
-      """" = 38
-          "[Lscala.collection.immutable.HashSet;"             = 39
-          "scala.collection.immutable.TreeSet"                = 40
-          "[Lscala.collection.immutable.TreeSet;"             = 41
-          "scala.collection.mutable.HashSet"                  = 42
-          "[Lscala.collection.mutable.HashSet;"               = 43
-          "scala.collection.mutable.TreeSet"                  = 44
-          "[Lscala.collection.mutable.TreeSet;"               = 45
-          "scala.collection.mutable.BitSet"                   = 46
-          "[Lscala.collection.mutable.BitSet;"                = 47
-          "scala.collection.immutable.BitSet"                 = 48
-          "[Lscala.collection.immutable.BitSet;"              = 49
-          "scala.collection.immutable.BitSet$BitSet2"         = 50
-          "scala.collection.immutable.BitSet$BitSetN"         = 51
-          "scala.collection.immutable.BitSet$BitSet1"         = 52
-          "scala.collection.mutable.AnyRefMap"                = 53
-          "[Lscala.collection.mutable.AnyRefMap;"             = 54
-          "scala.collection.mutable.LongMap"                  = 55
-          "[Lscala.collection.mutable.LongMap;"               = 56
-          "scala.collection.immutable.LongMap"                = 57
-          "[Lscala.collection.immutable.LongMap;"             = 58
-          "scala.collection.immutable.Vector"                 = 59
-          "[Lscala.collection.immutable.Vector;"              = 60
-
-          "[J" = 150
-          "[I" = 151
-          "[[I" = 152
-          "[D" = 153
-          "[Z" = 154
-          "[Ljava.lang.Object;" = 155
-          "[Ljava.lang.String;" = 156
-          "scala.math.Ordering$String$" = 157
+        encryption {
+          aes {
+            key-provider = "io.altoo.akka.serialization.kryo.DefaultKeyProvider"
+            mode = "AES/GCM/PKCS5Padding"
+            iv-length = 12
+            password = "j68KkRjq21ykRGAQ"
+            salt = "pepper"
+          }
         }
       }
   """)
@@ -598,23 +562,23 @@ object CompressionPerformanceTests {
 
     }
 
-    testConfig("Zip", "akka.actor.kryo.post-serialization-transformations = deflate")
-    testConfig("LZ4", "akka.actor.kryo.post-serialization-transformations = lz4")
-    testConfig("AES", "akka.actor.kryo.post-serialization-transformations = aes")
+    testConfig("Zip", "akka-kryo-serialization.post-serialization-transformations = deflate")
+    testConfig("LZ4", "akka-kryo-serialization.post-serialization-transformations = lz4")
+    testConfig("AES", "akka-kryo-serialization.post-serialization-transformations = aes")
     testConfig("ZipAES",
       """
-        |akka.actor.kryo.post-serialization-transformations = "deflate,aes"
+        |akka-kryo-serialization.post-serialization-transformations = "deflate,aes"
     """.stripMargin)
     testConfig("LZ4AES",
       """
-        |akka.actor.kryo.post-serialization-transformations = "lz4,aes"
+        |akka-kryo-serialization.post-serialization-transformations = "lz4,aes"
     """.stripMargin)
     testConfig("Off", "")
-    testConfig("Unsafe", "akka.actor.kryo.use-unsafe = true")
+    testConfig("Unsafe", "akka-kryo-serialization.use-unsafe = true")
     testConfig("UnsafeLZ4",
       """
-        |akka.actor.kryo.use-unsafe = true
-        |akka.actor.kryo.post-serialization-transformations = lz4
+        |akka-kryo-serialization.use-unsafe = true
+        |akka-kryo-serialization.post-serialization-transformations = lz4
     """.stripMargin)
     testConfig("Java",
       """akka.actor.serialization-bindings {
