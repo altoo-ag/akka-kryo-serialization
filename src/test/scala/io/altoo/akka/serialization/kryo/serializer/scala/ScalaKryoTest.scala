@@ -1,21 +1,18 @@
 package io.altoo.akka.serialization.kryo.serializer.scala
 
 import com.esotericsoftware.kryo.util.{DefaultClassResolver, ListReferenceResolver}
-import org.scalatest.Outcome
+import io.altoo.akka.serialization.kryo.testkit.KryoSerializationTesting
+import org.scalatest.flatspec.AnyFlatSpec
 
-class ScalaKryoTest extends AbstractScalaSerializerTest {
-  kryo = new ScalaKryo(new DefaultClassResolver(), new ListReferenceResolver())
+class ScalaKryoTest extends AnyFlatSpec with KryoSerializationTesting {
+  val kryo = new ScalaKryo(new DefaultClassResolver(), new ListReferenceResolver())
   kryo.setRegistrationRequired(false)
-
-  override def withFixture(test: NoArgTest): Outcome = {
-    test()
-  }
 
 
   behavior of "ScalaKryo"
 
   it should "preserve Nil equality" in {
-    val deserializedNil = roundTrip(Nil)
+    val deserializedNil = testSerializationOf(Nil)
     assert(deserializedNil eq Nil)
   }
 }

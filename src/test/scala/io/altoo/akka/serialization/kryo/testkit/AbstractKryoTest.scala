@@ -1,18 +1,22 @@
-package io.altoo.akka.serialization.kryo.serializer.scala
+package io.altoo.akka.serialization.kryo.testkit
 
 import java.io.{ByteArrayInputStream, ByteArrayOutputStream}
 
 import com.esotericsoftware.kryo.Kryo
 import com.esotericsoftware.kryo.io.{Input, Output}
 import com.esotericsoftware.kryo.util.MapReferenceResolver
+import io.altoo.akka.serialization.kryo.serializer.scala.SubclassResolver
 import org.objenesis.strategy.StdInstantiatorStrategy
 import org.scalatest.Outcome
 import org.scalatest.flatspec.AnyFlatSpec
 
-abstract class AbstractScalaSerializerTest extends AnyFlatSpec {
-  var kryo: Kryo = _
+/**
+ * Testing directly with a configured Kryo instance.
+ */
+abstract class AbstractKryoTest extends AnyFlatSpec with KryoSerializationTesting {
+  protected var kryo: Kryo = _
 
-  val useSubclassResolver: Boolean = false
+  protected val useSubclassResolver: Boolean = false
 
   override def withFixture(test: NoArgTest): Outcome = {
     val referenceResolver = new MapReferenceResolver()
@@ -26,8 +30,12 @@ abstract class AbstractScalaSerializerTest extends AnyFlatSpec {
     kryo.setInstantiatorStrategy(new StdInstantiatorStrategy())
     super.withFixture(test)
   }
+}
 
-  protected def roundTrip[T](obj: T): T = {
+trait KryoSerializationTesting {
+  protected def kryo: Kryo
+
+  protected final def testSerializationOf[T](obj: T): T = {
     val outStream = new ByteArrayOutputStream()
     val output = new Output(outStream, 4096)
     kryo.writeClassAndObject(output, obj)

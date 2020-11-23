@@ -7,10 +7,11 @@ import java.util.concurrent.ConcurrentHashMap
 import com.esotericsoftware.kryo.io.{Input, Output}
 import com.esotericsoftware.kryo.serializers.MapSerializer
 import com.esotericsoftware.kryo.{Kryo, Serializer}
+import io.altoo.akka.serialization.kryo.testkit.AbstractKryoTest
 
 import scala.collection.immutable.{Map, Set, Vector}
 
-class MapSerializerTest extends AbstractScalaSerializerTest {
+class MapSerializerTest extends AbstractKryoTest {
 
   private val hugeCollectionSize = 100
 
@@ -25,10 +26,10 @@ class MapSerializerTest extends AbstractScalaSerializerTest {
     val map2 = map1 + ("Moscow" -> "Russia")
     val map3 = map2 + ("Berlin" -> "Germany")
     val map4 = map3 ++ Seq("Germany" -> "Berlin", "Russia" -> "Moscow")
-    roundTrip(map1)
-    roundTrip(map2)
-    roundTrip(map3)
-    roundTrip(map4)
+    testSerializationOf(map1)
+    testSerializationOf(map2)
+    testSerializationOf(map3)
+    testSerializationOf(map4)
   }
 
 
@@ -43,10 +44,10 @@ class MapSerializerTest extends AbstractScalaSerializerTest {
     val set2 = set1 ++ Seq("Moscow", "Russia")
     val set3 = set2 ++ Seq("Berlin", "Germany")
     val set4 = set3 ++ Seq("Germany", "Berlin", "Russia", "Moscow")
-    roundTrip(set1)
-    roundTrip(set2)
-    roundTrip(set3)
-    roundTrip(set4)
+    testSerializationOf(set1)
+    testSerializationOf(set2)
+    testSerializationOf(set3)
+    testSerializationOf(set4)
   }
 
 
@@ -62,10 +63,10 @@ class MapSerializerTest extends AbstractScalaSerializerTest {
     val map2 = map1 ++ Seq("Moscow" -> "Russia")
     val map3 = map2 ++ Seq("Berlin" -> "Germany")
     val map4 = map3 ++ Seq("Germany" -> "Berlin", "Russia" -> "Moscow")
-    roundTrip(map1)
-    roundTrip(map2)
-    roundTrip(map3)
-    roundTrip(map4)
+    testSerializationOf(map1)
+    testSerializationOf(map2)
+    testSerializationOf(map3)
+    testSerializationOf(map4)
   }
 
   it should "roundtrip mutable AnyRefMap" in {
@@ -80,11 +81,11 @@ class MapSerializerTest extends AbstractScalaSerializerTest {
     val map2 = map1 ++ Seq("Moscow" -> "Russia")
     val map3 = map2 ++ Seq("Berlin" -> "Germany")
     val map4 = map3 ++ Seq("Germany" -> "Berlin") ++ Seq("Russia" -> "Moscow")
-    roundTrip(map1)
-    roundTrip(map2)
-    roundTrip(map3)
-    roundTrip(map4)
-    roundTrip(List(scala.collection.mutable.AnyRefMap("Leo" -> "Romanoff")))
+    testSerializationOf(map1)
+    testSerializationOf(map2)
+    testSerializationOf(map3)
+    testSerializationOf(map4)
+    testSerializationOf(List(scala.collection.mutable.AnyRefMap("Leo" -> "Romanoff")))
   }
 
   it should "roundtrip muttable LongMap" in {
@@ -99,11 +100,11 @@ class MapSerializerTest extends AbstractScalaSerializerTest {
     val map2 = map1 ++ Seq(110L -> "Russia")
     val map3 = map2 ++ Seq(111L -> "Germany")
     val map4 = map3 ++ Seq(112L -> "Berlin") ++ Seq(113L -> "Moscow")
-    roundTrip(map1)
-    roundTrip(map2)
-    roundTrip(map3)
-    roundTrip(map4)
-    roundTrip(List(map3))
+    testSerializationOf(map1)
+    testSerializationOf(map2)
+    testSerializationOf(map3)
+    testSerializationOf(map4)
+    testSerializationOf(List(map3))
   }
 
 
@@ -121,11 +122,11 @@ class MapSerializerTest extends AbstractScalaSerializerTest {
     val map2 = map1 + (110L -> "Russia")
     val map3 = map2 + (111L -> "Germany")
     val map4 = map3 + (112L -> "Berlin") + (113L -> "Moscow")
-    roundTrip(map1)
-    roundTrip(map2)
-    roundTrip(map3)
-    roundTrip(map4)
-    roundTrip(List(map3))
+    testSerializationOf(map1)
+    testSerializationOf(map2)
+    testSerializationOf(map3)
+    testSerializationOf(map4)
+    testSerializationOf(List(map3))
   }
 
   it should "roundtrip custom classes and maps/vectors/lists of them" in {
@@ -143,13 +144,13 @@ class MapSerializerTest extends AbstractScalaSerializerTest {
     scl1.vector11 = Vector("LL", "ee", "oo")
     scl1.vector11 = null
     scl1.list11 = List("LL", "ee", "oo", "nn", "ii", "dd", "aa", "ss")
-    roundTrip(scl1)
+    testSerializationOf(scl1)
 
     val scl2 = ScalaClass1()
     scl2.map11 = map1
     scl2.vector11 = Vector("LL", "ee", "oo")
     scl2.list11 = List("LL", "ee", "oo", "nn")
-    roundTrip(scl2)
+    testSerializationOf(scl2)
   }
 
   it should "roundtrip big immutable maps" in {
@@ -172,11 +173,11 @@ class MapSerializerTest extends AbstractScalaSerializerTest {
     val map2 = map1 + ("Moscow" -> "Russia")
     val map3 = map2 + ("Berlin" -> "Germany")
     val map4 = map3 + ("Germany" -> "Berlin") + ("Russia" -> "Moscow")
-    roundTrip(map1)
-    roundTrip(map2)
-    roundTrip(map3)
-    roundTrip(map4)
-    roundTrip(List(Map("Leo" -> "Romanoff")))
+    testSerializationOf(map1)
+    testSerializationOf(map2)
+    testSerializationOf(map3)
+    testSerializationOf(map4)
+    testSerializationOf(List(Map("Leo" -> "Romanoff")))
   }
 
   it should "roundtrip big immutable sets" in {
@@ -196,10 +197,10 @@ class MapSerializerTest extends AbstractScalaSerializerTest {
     val map2 = map1 + "Moscow"
     val map3 = map2 + "Berlin"
     val map4 = map3 + "Germany" + "Russia"
-    roundTrip(map1)
-    roundTrip(map2)
-    roundTrip(map3)
-    roundTrip(map4)
+    testSerializationOf(map1)
+    testSerializationOf(map2)
+    testSerializationOf(map3)
+    testSerializationOf(map4)
   }
 
   it should "roundtrip big immutable lists" in {
@@ -216,10 +217,10 @@ class MapSerializerTest extends AbstractScalaSerializerTest {
     val map2 = "Moscow" :: "Russia" :: map1
     val map3 = "Berlin" :: "Germany" :: map2
     val map4 = "Germany" :: "Berlin" :: "Russia" :: "Moscow" :: map3
-    roundTrip(map1)
-    roundTrip(map2)
-    roundTrip(map3)
-    roundTrip(map4)
+    testSerializationOf(map1)
+    testSerializationOf(map2)
+    testSerializationOf(map3)
+    testSerializationOf(map4)
   }
 
   it should "roundtrip big immutable sequences" in {
@@ -232,10 +233,10 @@ class MapSerializerTest extends AbstractScalaSerializerTest {
     val map2 = Seq("Moscow", "Russia") ++ map1
     val map3 = Seq("Berlin", "Germany") ++ map2
     val map4 = Seq("Germany", "Berlin", "Russia", "Moscow") ++ map3
-    roundTrip(map1)
-    roundTrip(map2)
-    roundTrip(map3)
-    roundTrip(map4)
+    testSerializationOf(map1)
+    testSerializationOf(map2)
+    testSerializationOf(map3)
+    testSerializationOf(map4)
   }
 
   it should "roundtrip empty java hash map" in {
@@ -263,7 +264,7 @@ class MapSerializerTest extends AbstractScalaSerializerTest {
     kryo.register(classOf[scala.collection.immutable.HashMap[_, _]])
     var map = new scala.collection.immutable.HashMap[String, Int]()
     map ++= Seq("foo" -> 1, "bar" -> 2)
-    roundTrip(map)
+    testSerializationOf(map)
   }
 
   it should "roundtrip tree map" in {
@@ -272,7 +273,7 @@ class MapSerializerTest extends AbstractScalaSerializerTest {
     val map = new util.TreeMap[Any, Any]()
     map.put("123", "456")
     map.put("789", "abc")
-    roundTrip(map)
+    testSerializationOf(map)
   }
 
 
