@@ -20,7 +20,9 @@ object CompressionPerformanceTests {
       """
       akka {
         actor {
-         serializers {
+          allow-java-serialization = true
+
+          serializers {
             java = "akka.serialization.JavaSerializer"
             kryo = "io.altoo.akka.serialization.kryo.KryoSerializer"
           }
@@ -133,10 +135,10 @@ object CompressionPerformanceTests {
           assert(serialization.findSerializerFor(atm).getClass != classOf[KryoSerializer])
 
         val serialized = serialization.serialize(atm)
-        assert(serialized.isSuccess)
+        assert(serialized.isSuccess, serialized)
 
         val deserialized = serialization.deserialize(serialized.get, classOf[Array[HashMap[String, Any]]])
-        assert(deserialized.isSuccess)
+        assert(deserialized.isSuccess, deserialized)
 
         val bytes = serialized.get
         println(s"Serialized to ${bytes.length} bytes")
