@@ -9,7 +9,7 @@ import org.scalatest.flatspec.AnyFlatSpec
 import scala.collection.immutable.{HashMap, TreeMap}
 import scala.collection.mutable.AnyRefMap
 
-object CompressionSerializationTest {
+object TransformationSerializationTest {
   private val defaultConfig =
     """
       |akka {
@@ -20,7 +20,6 @@ object CompressionSerializationTest {
       |    }
       |    serialization-bindings {
       |      "java.io.Serializable" = none
-      |
       |      "scala.collection.immutable.TreeMap" = kryo
       |      "[Lscala.collection.immutable.TreeMap;" = kryo
       |      "scala.collection.immutable.HashMap" = kryo
@@ -40,42 +39,48 @@ object CompressionSerializationTest {
       |    }
       |  }
       |}
-      |kryo-serialization {
+      |akka-kryo-serialization {
       |  type = "nograph"
       |  id-strategy = "incremental"
       |  kryo-reference-map = false
       |  buffer-size = 65536
       |  post-serialization-transformations = off
       |  implicit-registration-logging = true
+      |  encryption {
+      |    aes {
+      |      key-provider = "io.altoo.akka.serialization.kryo.DefaultKeyProvider"
+      |      mode = "AES/GCM/PKCS5Padding"
+      |      iv-length = 12
+      |      password = "j68KkRjq21ykRGAQ"
+      |      salt = "pepper"
+      |    }
+      |  }
       |}
       |""".stripMargin
 }
 
-class CompressionSerializationTest extends AnyFlatSpec with BeforeAndAfterAllConfigMap {
-
-  testConfig("Zip", "akka.actor.kryo.post-serialization-transformations = deflate")
-  testConfig("LZ4", "akka.actor.kryo.post-serialization-transformations = lz4")
-  testConfig("AES", "akka.actor.kryo.post-serialization-transformations = aes")
-  testConfig("ZipAES",
+class TransformationSerializationTest extends AnyFlatSpec with BeforeAndAfterAllConfigMap {
+  testWith("Zip", "akka-kryo-serialization.post-serialization-transformations = deflate")
+  testWith("LZ4", "akka-kryo-serialization.post-serialization-transformations = lz4")
+  testWith("AES", "akka-kryo-serialization.post-serialization-transformations = aes")
+  testWith("ZipAES", """akka-kryo-serialization.post-serialization-transformations = "deflate,aes"""")
+  testWith("LZ4AES", """akka-kryo-serialization.post-serialization-transformations = "lz4,aes"""")
+  testWith("Off", "")
+  testWith("Unsafe", "akka-kryo-serialization.use-unsafe = true")
+  testWith("UnsafeLZ4",
     """
-       |akka.actor.kryo.post-serialization-transformations = "deflate,aes"
-    """.stripMargin)
-  testConfig("LZ4AES",
-    """
-      |akka.actor.kryo.post-serialization-transformations = "lz4,aes"
-    """.stripMargin)
-  testConfig("Off", "")
-  testConfig("Unsafe", "akka.actor.kryo.use-unsafe = true")
-  testConfig("UnsafeLZ4",
-    """akka.actor.kryo.use-unsafe = true
-      |akka.actor.kryo.post-serialization-transformations = lz4
+      |akka-kryo-serialization.use-unsafe = true
+      |akka-kryo-serialization.post-serialization-transformations = lz4
     """.stripMargin)
 
-  def testConfig(systemName: String, config: String): Unit = {
-    val system = ActorSystem(systemName, ConfigFactory.parseString(config).withFallback(ConfigFactory.parseString(CompressionSerializationTest.defaultConfig)))
+  def testWith(systemName: String, config: String): Unit = {
+    val system = ActorSystem(systemName, ConfigFactory.parseString(config).withFallback(ConfigFactory.parseString(TransformationSerializationTest.defaultConfig)))
     val serialization = SerializationExtension(system)
 
-    s"$systemName KryoSerializer" should "serialize and deserialize immutable TreeMap[String,Any] successfully" in {
+
+    behavior of s"$systemName KryoSerializer"
+
+    it should "serialize and deserialize immutable TreeMap[String,Any] successfully" in {
       val tm = TreeMap[String, Any](
         "foo" -> 123.3,
         "bar" -> "something as a text",
