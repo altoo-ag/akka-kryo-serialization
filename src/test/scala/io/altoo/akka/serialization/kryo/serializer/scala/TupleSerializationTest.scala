@@ -1,9 +1,11 @@
 
 package io.altoo.akka.serialization.kryo.serializer.scala
 
+import io.altoo.akka.serialization.kryo.testkit.AbstractKryoTest
+
 /** @author romix */
 // @Ignore
-class TupleSerializationTest extends AbstractScalaSerializerTest {
+class TupleSerializationTest extends AbstractKryoTest {
 
   type IntTuple6 = (Int, Int, Int, Int, Int, Int)
 
@@ -16,12 +18,12 @@ class TupleSerializationTest extends AbstractScalaSerializerTest {
     kryo.register(classOf[scala.Tuple5[Any, Any, Any, Any, Any]], 49)
     kryo.register(classOf[scala.Tuple6[Any, Any, Any, Any, Any, Any]], 50)
 
-    roundTrip((1, '2', "Three"))
-    roundTrip((1, '2', "Three"))
-    roundTrip((1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17))
-    roundTrip((1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17))
-    roundTrip((1, 2, 3, 4, 5, 6))
+    testSerializationOf((1, '2', "Three"))
+    testSerializationOf((1, '2', "Three"))
+    testSerializationOf((1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17))
+    testSerializationOf((1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17))
+    testSerializationOf((1, 2, 3, 4, 5, 6))
     val intTuple6: IntTuple6 = (11, 22, 33, 44, 55, 66)
-    roundTrip(intTuple6)
+    testSerializationOf(intTuple6)
   }
 }

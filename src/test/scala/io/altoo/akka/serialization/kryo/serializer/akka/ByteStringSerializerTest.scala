@@ -1,16 +1,15 @@
 package io.altoo.akka.serialization.kryo.serializer.akka
 
-import akka.actor.ActorSystem
 import akka.serialization.SerializationExtension
-import akka.testkit.TestKit
 import akka.util.{ByteString, CompactByteString}
 import com.typesafe.config.ConfigFactory
 import io.altoo.akka.serialization.kryo.KryoSerializer
+import io.altoo.akka.serialization.kryo.testkit.AbstractAkkaTest
 import org.scalatest.flatspec.AnyFlatSpecLike
 import org.scalatest.matchers.should.Matchers
 
 object ByteStringSerializerTest {
-  private val testConfig =
+  private val config =
     """
       |akka {
       |  actor {
@@ -32,7 +31,7 @@ object ByteStringSerializerTest {
       |""".stripMargin
 }
 
-class ByteStringSerializerTest extends TestKit(ActorSystem("testSystem", ConfigFactory.parseString(ByteStringSerializerTest.testConfig))) with AnyFlatSpecLike with Matchers {
+class ByteStringSerializerTest extends AbstractAkkaTest(ConfigFactory.parseString(ByteStringSerializerTest.config)) with AnyFlatSpecLike with Matchers {
   private val serialization = SerializationExtension(system)
 
 

@@ -1,12 +1,8 @@
 package io.altoo.akka.serialization.kryo
 
-import akka.actor.ActorSystem
 import akka.serialization.SerializationExtension
-import akka.testkit.TestKit
 import com.typesafe.config.ConfigFactory
-import org.scalatest.Inside
-import org.scalatest.flatspec.AnyFlatSpecLike
-import org.scalatest.matchers.should.Matchers
+import io.altoo.akka.serialization.kryo.testkit.AbstractAkkaTest
 
 object BasicSerializationTest {
 
@@ -36,7 +32,7 @@ object BasicSerializationTest {
        |""".stripMargin
 }
 
-class BasicSerializationTest extends TestKit(ActorSystem("example", ConfigFactory.parseString(BasicSerializationTest.config))) with AnyFlatSpecLike with Matchers with Inside {
+class BasicSerializationTest extends AbstractAkkaTest(ConfigFactory.parseString(BasicSerializationTest.config)) {
   private val serialization = SerializationExtension(system)
 
   private val testList = List(1 to 40: _*)

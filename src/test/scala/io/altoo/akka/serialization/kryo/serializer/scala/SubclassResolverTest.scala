@@ -1,6 +1,8 @@
 package io.altoo.akka.serialization.kryo.serializer.scala
 
-class SubclassResolverTest extends AbstractScalaSerializerTest {
+import io.altoo.akka.serialization.kryo.testkit.AbstractKryoTest
+
+class SubclassResolverTest extends AbstractKryoTest {
 
   override val useSubclassResolver:Boolean = true
 
@@ -18,10 +20,10 @@ class SubclassResolverTest extends AbstractScalaSerializerTest {
     val map2 = map1 + ("Moscow" -> "Russia")
     val map3 = map2 + ("Berlin" -> "Germany")
     val map4 = map3 + ("Germany" -> "Berlin") + ("Russia" -> "Moscow")
-    roundTrip(map1)
-    roundTrip(map2)
-    roundTrip(map3)
-    roundTrip(map4)
+    testSerializationOf(map1)
+    testSerializationOf(map2)
+    testSerializationOf(map3)
+    testSerializationOf(map4)
   }
 
   it should "work with empty HashMap" in {
@@ -32,7 +34,7 @@ class SubclassResolverTest extends AbstractScalaSerializerTest {
       case resolver:SubclassResolver => resolver.enable()
     }
     val map1 = Map()
-    roundTrip(map1)
+    testSerializationOf(map1)
   }
 
   it should "permit more-specific types to work when specified" in {
@@ -49,8 +51,8 @@ class SubclassResolverTest extends AbstractScalaSerializerTest {
     }
     val map1 = Map("Rome" -> "Italy", "London" -> "England", "Paris" -> "France", "New York" -> "USA", "Tokio" -> "Japan", "Peking" -> "China", "Brussels" -> "Belgium")
     val map2 = ListMap("Rome" -> "Italy", "London" -> "England", "Paris" -> "France", "New York" -> "USA", "Tokio" -> "Japan", "Peking" -> "China", "Brussels" -> "Belgium")
-    val map1Copy = roundTrip(map1)
-    val map2Copy = roundTrip(map2)
+    val map1Copy = testSerializationOf(map1)
+    val map2Copy = testSerializationOf(map2)
     assert(map1Copy.isInstanceOf[HashMap[_, _]])
     assert(map2Copy.isInstanceOf[ListMap[_,_]])
   }
@@ -64,6 +66,6 @@ class SubclassResolverTest extends AbstractScalaSerializerTest {
     }
 
     val set1 = Set(83, 84, 959)
-    roundTrip(set1)
+    testSerializationOf(set1)
   }
 }

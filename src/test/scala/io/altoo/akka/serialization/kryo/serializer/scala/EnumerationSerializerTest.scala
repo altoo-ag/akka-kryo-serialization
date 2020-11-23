@@ -16,7 +16,7 @@ class EnumerationSerializerTest extends AnyFlatSpec {
 
   behavior of "EnumerationSerializer"
 
-  it should "serialize and deseialize" in {
+  it should "serialize and deserialize" in {
     var kryo: Kryo = new Kryo()
     kryo.setRegistrationRequired(false)
     kryo.addDefaultSerializer(classOf[scala.Enumeration#Value], classOf[EnumerationSerializer])

@@ -1,7 +1,9 @@
 package io.altoo.akka.serialization.kryo.serializer.scala
 
+import io.altoo.akka.serialization.kryo.testkit.AbstractKryoTest
 
-class ScalaUnitSerializerTest extends AbstractScalaSerializerTest {
+
+class ScalaUnitSerializerTest extends AbstractKryoTest {
 
   behavior of "ScalaUnitSerializer"
 
@@ -9,14 +11,14 @@ class ScalaUnitSerializerTest extends AbstractScalaSerializerTest {
     kryo.setRegistrationRequired(true)
     kryo.addDefaultSerializer(classOf[scala.runtime.BoxedUnit], classOf[ScalaUnitSerializer])
     kryo.register(classOf[scala.runtime.BoxedUnit], 50)
-    roundTrip(())
+    testSerializationOf(())
   }
 
   it should "roundtrip boxedUnit " in {
     kryo.setRegistrationRequired(true)
     kryo.addDefaultSerializer(classOf[scala.runtime.BoxedUnit], classOf[ScalaUnitSerializer])
     kryo.register(classOf[scala.runtime.BoxedUnit], 50)
-    roundTrip(scala.runtime.BoxedUnit.UNIT)
+    testSerializationOf(scala.runtime.BoxedUnit.UNIT)
   }
 
 }

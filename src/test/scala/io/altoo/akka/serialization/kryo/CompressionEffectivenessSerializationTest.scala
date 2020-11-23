@@ -21,7 +21,7 @@ import akka.serialization.{Serialization, _}
 import com.esotericsoftware.minlog.Log
 import com.typesafe.config.ConfigFactory
 import io.altoo.akka.serialization.kryo.serializer.scala.ScalaVersionRegistry
-import org.scalatest.Inside
+import org.scalatest.{BeforeAndAfterAll, Inside}
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
@@ -68,21 +68,8 @@ object CompressionEffectivenessSerializationTest {
        |""".stripMargin
 }
 
-class CompressionEffectivenessSerializationTest extends AnyFlatSpec with Matchers with ScalaFutures with Inside {
-
+class CompressionEffectivenessSerializationTest extends AnyFlatSpec with Matchers with ScalaFutures with Inside with BeforeAndAfterAll {
   Log.ERROR()
-
-  private val system = ActorSystem("example",
-    ConfigFactory.parseString(CompressionEffectivenessSerializationTest.config))
-
-  private val systemWithCompression = ActorSystem("exampleWithCompression",
-    ConfigFactory.parseString(CompressionEffectivenessSerializationTest.compressionConfig)
-        .withFallback(ConfigFactory.parseString(CompressionEffectivenessSerializationTest.config))
-  )
-
-  // Get the Serialization Extension
-  private val serialization = SerializationExtension(system)
-  private val serializationWithCompression = SerializationExtension(systemWithCompression)
 
   private val hugeCollectionSize = 500
 
@@ -98,6 +85,25 @@ class CompressionEffectivenessSerializationTest extends AnyFlatSpec with Matcher
     "Rome", "Italy", "London", "England", "Paris", "France", "New York", "USA", "Tokio", "Japan", "Peking", "China", "Brussels", "Belgium",
     "Rome", "Italy", "London", "England", "Paris", "France", "New York", "USA", "Tokio", "Japan", "Peking", "China", "Brussels", "Belgium",
     "Rome", "Italy", "London", "England", "Paris", "France", "New York", "USA", "Tokio", "Japan", "Peking", "China", "Brussels", "Belgium")
+
+  // test systems
+  private val system = ActorSystem("example",
+    ConfigFactory.parseString(CompressionEffectivenessSerializationTest.config))
+
+  private val systemWithCompression = ActorSystem("exampleWithCompression",
+    ConfigFactory.parseString(CompressionEffectivenessSerializationTest.compressionConfig)
+        .withFallback(ConfigFactory.parseString(CompressionEffectivenessSerializationTest.config))
+  )
+
+  // Get the Serialization Extension
+  private val serialization = SerializationExtension(system)
+  private val serializationWithCompression = SerializationExtension(systemWithCompression)
+
+  override protected def afterAll(): Unit = {
+    system.terminate()
+    systemWithCompression.terminate()
+  }
+
 
   behavior of "KryoSerializer compression"
 
