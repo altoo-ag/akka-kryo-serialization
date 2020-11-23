@@ -1,37 +1,35 @@
 package io.altoo.akka.serialization.kryo
 
-import akka.actor.ActorSystem
 import akka.serialization.SerializationExtension
-import akka.testkit.TestKit
 import com.typesafe.config.ConfigFactory
 import io.altoo.akka.serialization.kryo.performance.Time
 import io.altoo.akka.serialization.kryo.performance.Time.Time
-import org.scalatest.BeforeAndAfterAllConfigMap
-import org.scalatest.flatspec.AnyFlatSpecLike
+import io.altoo.akka.serialization.kryo.testkit.AbstractAkkaTest
 
 import scala.concurrent.duration.Duration
 import scala.concurrent.{Await, Future}
 
 object EnumSerializationTest {
-  private val defaultConfig =
+  private val config = {
     """
-      akka {
-        actor {
-          serializers {
-            kryo = "io.altoo.akka.serialization.kryo.KryoSerializer"
-          }
-          serialization-bindings {
-            "java.io.Serializable" = kryo
-          }
-        }
-      }
-      akka-kryo-serialization {
-        id-strategy = "default"
-      }
-  """
+      |akka {
+      |  actor {
+      |    serializers {
+      |      kryo = "io.altoo.akka.serialization.kryo.KryoSerializer"
+      |    }
+      |    serialization-bindings {
+      |      "java.io.Serializable" = kryo
+      |    }
+      |  }
+      |}
+      |akka-kryo-serialization {
+      |  id-strategy = "default"
+      |}
+      |""".stripMargin
+  }
 }
 
-class EnumSerializationTest extends TestKit(ActorSystem("testSystem", ConfigFactory.parseString(EnumSerializationTest.defaultConfig))) with AnyFlatSpecLike with BeforeAndAfterAllConfigMap {
+class EnumSerializationTest extends AbstractAkkaTest(ConfigFactory.parseString(EnumSerializationTest.config)) {
   private val serialization = SerializationExtension(system)
 
 

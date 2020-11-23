@@ -37,16 +37,37 @@ trait KryoSerializationTesting {
   protected def kryo: Kryo
 
   protected final def testSerializationOf[T](obj: T): T = {
+    // todo: use Using once support for Scala 2.12 is dropped
     val outStream = new ByteArrayOutputStream()
     val output = new Output(outStream, 4096)
     kryo.writeClassAndObject(output, obj)
     output.flush()
+    val serialized = outStream.toByteArray
+    output.close()
 
-    val input = new Input(new ByteArrayInputStream(outStream.toByteArray), 4096)
+    val input = new Input(new ByteArrayInputStream(serialized), 4096)
     val obj1 = kryo.readClassAndObject(input)
+    input.close()
 
     assert(obj == obj1)
 
+    obj1.asInstanceOf[T]
+  }
+
+  protected final def serialize[T](obj: T): Array[Byte] = {
+    // todo: use Using once support for Scala 2.12 is dropped
+    val output = new Output(4096)
+    kryo.writeClassAndObject(output, obj)
+    val serialized = output.toBytes
+    output.close()
+    serialized
+  }
+
+  protected final def deserialize[T](serialized: Array[Byte]): T = {
+    // todo: use Using once support for Scala 2.12 is dropped
+    val input = new Input(serialized)
+    val obj1 = kryo.readClassAndObject(input)
+    input.close()
     obj1.asInstanceOf[T]
   }
 }
