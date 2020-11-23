@@ -9,11 +9,12 @@ import io.altoo.akka.serialization.kryo.serializer.scala.SubclassResolver
 import org.objenesis.strategy.StdInstantiatorStrategy
 import org.scalatest.Outcome
 import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers.should.Matchers
 
 /**
  * Testing directly with a configured Kryo instance.
  */
-abstract class AbstractKryoTest extends AnyFlatSpec with KryoSerializationTesting {
+abstract class AbstractKryoTest extends AnyFlatSpec with KryoSerializationTesting with Matchers {
   protected var kryo: Kryo = _
 
   protected val useSubclassResolver: Boolean = false

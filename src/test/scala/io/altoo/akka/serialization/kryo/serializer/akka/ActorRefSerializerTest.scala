@@ -1,12 +1,10 @@
 package io.altoo.akka.serialization.kryo.serializer.akka
 
-import akka.actor.{Actor, ActorRef, ActorSystem, Props}
+import akka.actor.{Actor, ActorRef, Props}
 import akka.serialization.SerializationExtension
-import akka.testkit.TestKit
 import com.typesafe.config.ConfigFactory
 import io.altoo.akka.serialization.kryo.KryoSerializer
-import org.scalatest.flatspec.AnyFlatSpecLike
-import org.scalatest.matchers.should.Matchers
+import io.altoo.akka.serialization.kryo.testkit.AbstractAkkaTest
 
 object ActorRefSerializerTest {
   private val testConfig =
@@ -30,7 +28,7 @@ object ActorRefSerializerTest {
       |""".stripMargin
 }
 
-class ActorRefSerializerTest extends TestKit(ActorSystem("testSystem", ConfigFactory.parseString(ActorRefSerializerTest.testConfig))) with AnyFlatSpecLike with Matchers {
+class ActorRefSerializerTest extends AbstractAkkaTest(ConfigFactory.parseString(ActorRefSerializerTest.testConfig)) {
   private val serialization = SerializationExtension(system)
 
 
@@ -44,11 +42,10 @@ class ActorRefSerializerTest extends TestKit(ActorSystem("testSystem", ConfigFac
     serializer shouldBe a[KryoSerializer]
 
     val serialized = serialization.serialize(value)
-    serialized.isSuccess shouldBe true
+    serialized shouldBe a[util.Success[_]]
 
     // deserialize
     val deserialized = serialization.deserialize(serialized.get, classOf[ActorRef])
-    deserialized.isSuccess shouldBe true
-    deserialized.get shouldBe value
+    deserialized shouldBe util.Success(value)
   }
 }
