@@ -14,7 +14,7 @@ private[kryo] class KryoSerializerBackend(val kryo: Kryo, val bufferSize: Int, v
 
   // "toBinary" serializes the given object to an Array of Bytes
   override def toBinary(obj: AnyRef): Array[Byte] = {
-    val buffer = getOutput
+    val buffer = output
     try {
       if (includeManifest)
         kryo.writeObject(buffer, obj)
@@ -26,7 +26,7 @@ private[kryo] class KryoSerializerBackend(val kryo: Kryo, val bufferSize: Int, v
         log.error(e, "Could not serialize class with potentially circular references: {}", obj)
         throw new RuntimeException("Could not serialize class with potential circular references: " + obj)
     } finally {
-      releaseBuffer(buffer)
+      buffer.reset()
     }
   }
 
@@ -34,16 +34,21 @@ private[kryo] class KryoSerializerBackend(val kryo: Kryo, val bufferSize: Int, v
   // using the type hint (if any, see "includeManifest" above)
   // into the optionally provided classLoader.
   override def fromBinary(bytes: Array[Byte], clazz: Option[Class[_]]): AnyRef = {
-    if (includeManifest)
-      clazz match {
-        case Some(c) => kryo.readObject(getInput(bytes), c).asInstanceOf[AnyRef]
-        case _ => throw new RuntimeException("Object of unknown class cannot be deserialized")
-      }
-    else
-      kryo.readClassAndObject(getInput(bytes))
+    val buffer = getInput(bytes)
+    try {
+      if (includeManifest)
+        clazz match {
+          case Some(c) => kryo.readObject(buffer, c).asInstanceOf[AnyRef]
+          case _ => throw new RuntimeException("Object of unknown class cannot be deserialized")
+        }
+      else
+        kryo.readClassAndObject(buffer)
+    } finally {
+      buffer.close()
+    }
   }
 
-  private[this] val getOutput =
+  private val output =
     if (useUnsafe)
       new UnsafeOutput(bufferSize, maxBufferSize)
     else
@@ -55,7 +60,4 @@ private[kryo] class KryoSerializerBackend(val kryo: Kryo, val bufferSize: Int, v
     else
       new Input(bytes)
 
-  private def releaseBuffer(buffer: Output): Unit = {
-    buffer.reset()
-  }
 }
