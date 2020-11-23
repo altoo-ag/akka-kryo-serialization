@@ -199,7 +199,7 @@ class KryoSerializer(val system: ExtendedActorSystem) extends Serializer {
     val initializer = kryoInitializerClass.getDeclaredConstructor().newInstance()
 
     // setting default serializer
-    initializer.preInit(kryo)
+    initializer.preInit(kryo, system)
     // akka byte string serializer must be registered before generic scala collection serializer
     initializer.initAkkaSerializer(kryo, system)
     initializer.initScalaSerializer(kryo, system)
@@ -229,7 +229,7 @@ class KryoSerializer(val system: ExtendedActorSystem) extends Serializer {
       }
     }
 
-    initializer.postInit(kryo)
+    initializer.postInit(kryo, system)
 
     classResolver match {
       // Now that we're done with registration, turn on the SubclassResolver:
