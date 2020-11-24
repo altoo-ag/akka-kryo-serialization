@@ -1,4 +1,4 @@
-package io.altoo.akka.serialization.kryo.testkit
+package io.altoo.akka.serialization.kryo.typed.testkit
 
 import akka.actor.testkit.typed.scaladsl.ActorTestKit
 import com.typesafe.config.Config
