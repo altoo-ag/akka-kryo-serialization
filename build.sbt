@@ -4,7 +4,7 @@ val typesafeSnapshot = "Typesafe Snapshots Repository" at "https://repo.typesafe
 val sonatypeSnapshot = "Sonatype Snapshots Repository" at "https://oss.sonatype.org/content/repositories/snapshots/"
 
 
-val kryoVersion = "5.0.0"
+val kryoVersion = "5.0.1"
 val defaultAkkaVersion = "2.6.10"
 val akkaVersion =
   System.getProperty("akka.build.version", defaultAkkaVersion) match {
