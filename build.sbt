@@ -25,7 +25,6 @@ scalaVersion := "2.13.3"
 crossScalaVersions := Seq(scalaVersion.value, "2.12.12")
 
 libraryDependencies += "com.typesafe.akka" %% "akka-actor" % akkaVersion
-libraryDependencies += "com.typesafe.akka" %% "akka-actor-typed" % akkaVersion
 libraryDependencies += "com.esotericsoftware" % "kryo" % kryoVersion
 libraryDependencies += "org.lz4" % "lz4-java" % "1.7.1"
 libraryDependencies += "org.agrona" % "agrona" % "1.7.2" // should match akka-remote/aeron inherited version
