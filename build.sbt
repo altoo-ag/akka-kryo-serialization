@@ -156,12 +156,15 @@ releaseProcess := Seq[ReleaseStep](
   setReleaseVersion,
   commitReleaseVersion,
   tagRelease,
-  ReleaseStep(action = Command.process("publishSigned", _), enableCrossBuild = true),
+  //do this manually on checked out tag:
+  //  releaseStepCommandAndRemaining("+publishSigned"),
+  //  releaseStepCommand("sonatypeBundleRelease"),
   setNextVersion,
   commitNextVersion,
-  ReleaseStep(action = Command.process("sonatypeReleaseAll", _), enableCrossBuild = true),
   pushChanges
 )
+
+releaseCrossBuild := true
 
 pomExtra := <url>https://github.com/altoo-ag/akka-kryo-serialization</url>
     <licenses>
