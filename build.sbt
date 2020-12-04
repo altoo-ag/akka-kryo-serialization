@@ -163,7 +163,6 @@ releaseProcess := Seq[ReleaseStep](
   commitNextVersion,
   pushChanges
 )
-
 releaseCrossBuild := true
 
 pomExtra := <url>https://github.com/altoo-ag/akka-kryo-serialization</url>
