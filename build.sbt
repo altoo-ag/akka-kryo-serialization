@@ -132,13 +132,7 @@ OsgiKeys.exportPackage := Seq("io.altoo.*")
 
 addCommandAlias("validatePullRequest", ";+test")
 
-publishTo := {
-  val nexus = "https://oss.sonatype.org/"
-  if (version.value.trim.endsWith("SNAPSHOT"))
-    Some("snapshots" at nexus + "content/repositories/snapshots")
-  else
-    Some("releases" at nexus + "service/local/staging/deploy/maven2")
-}
+publishTo := sonatypePublishToBundle.value
 
 publishMavenStyle := true
 
@@ -156,12 +150,14 @@ releaseProcess := Seq[ReleaseStep](
   setReleaseVersion,
   commitReleaseVersion,
   tagRelease,
-  ReleaseStep(action = Command.process("publishSigned", _), enableCrossBuild = true),
+  //do these manually on checked out tag... verify on https://oss.sonatype.org/#stagingRepositories
+  //  releaseStepCommandAndRemaining("+publishSigned"),
+  //  releaseStepCommand("sonatypeBundleRelease"),
   setNextVersion,
   commitNextVersion,
-  ReleaseStep(action = Command.process("sonatypeReleaseAll", _), enableCrossBuild = true),
   pushChanges
 )
+releaseCrossBuild := true
 
 pomExtra := <url>https://github.com/altoo-ag/akka-kryo-serialization</url>
     <licenses>
