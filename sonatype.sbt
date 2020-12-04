@@ -1,1 +1,1 @@
-sonatypeProfileName := "dschroeter"
+sonatypeProfileName := "io.altoo"
