@@ -189,6 +189,7 @@ class KryoSerializer(val system: ExtendedActorSystem) extends Serializer {
     val instStrategy = kryo.getInstantiatorStrategy.asInstanceOf[DefaultInstantiatorStrategy]
     instStrategy.setFallbackInstantiatorStrategy(new StdInstantiatorStrategy())
     kryo.setInstantiatorStrategy(instStrategy)
+    kryo.setOptimizedGenerics(false) // causes issue serializing classes extending generic base classes
 
     serializerType match {
       case "graph" => kryo.setReferences(true)
