@@ -1,10 +1,14 @@
+import sbtrelease.ReleasePlugin.autoImport.ReleaseTransformations._
 
+// Basics
 val typesafe = "Typesafe Repository" at "https://repo.typesafe.com/typesafe/releases/"
 val typesafeSnapshot = "Typesafe Snapshots Repository" at "https://repo.typesafe.com/typesafe/snapshots/"
 val sonatypeSnapshot = "Sonatype Snapshots Repository" at "https://oss.sonatype.org/content/repositories/snapshots/"
 
+val mainScalaVersion = "2.13.4"
+val secondayScalaVersions = Seq("2.12.12")
 
-val kryoVersion = "5.0.1"
+val kryoVersion = "5.0.3"
 val defaultAkkaVersion = "2.6.10"
 val akkaVersion =
   System.getProperty("akka.build.version", defaultAkkaVersion) match {
@@ -14,135 +18,173 @@ val akkaVersion =
 
 
 enablePlugins(SbtOsgi, ReleasePlugin)
-
-name := "akka-kryo-serialization"
-organization := "io.altoo"
-resolvers += typesafe
-resolvers += typesafeSnapshot
-resolvers += sonatypeSnapshot
-// publishArtifact in packageDoc := false,
-scalaVersion := "2.13.3"
-crossScalaVersions := Seq(scalaVersion.value, "2.12.12")
-
-libraryDependencies += "com.typesafe.akka" %% "akka-actor" % akkaVersion
-libraryDependencies += "com.esotericsoftware" % "kryo" % kryoVersion
-libraryDependencies += "org.lz4" % "lz4-java" % "1.7.1"
-libraryDependencies += "org.agrona" % "agrona" % "1.7.2" // should match akka-remote/aeron inherited version
-libraryDependencies += "org.scala-lang.modules" %% "scala-collection-compat" % "2.2.0"
-libraryDependencies += "commons-io" % "commons-io" % "2.6" % "test"
-libraryDependencies += "org.scalatest" %% "scalatest" % "3.2.2" % "test"
-libraryDependencies += "com.typesafe.akka" %% "akka-persistence" % akkaVersion % "test"
-libraryDependencies += "com.typesafe.akka" %% "akka-testkit" % akkaVersion % "test"
-libraryDependencies += "com.typesafe.akka" %% "akka-actor-testkit-typed" % akkaVersion % "test"
-
-unmanagedSourceDirectories in Compile += {
-  scalaBinaryVersion.value match {
-    case "2.12" => baseDirectory.value / "src" / "main" / "scala-2.12"
-    case _ => baseDirectory.value / "src" / "main" / "scala-2.13"
-  }
-}
-
-unmanagedSourceDirectories in Test += {
-  scalaBinaryVersion.value match {
-    case "2.12" => baseDirectory.value / "src" / "test" / "scala-2.12"
-    case _ => baseDirectory.value / "src" / "test" / "scala-2.13"
-  }
-}
-
-parallelExecution in Test := false
-
-scalacOptions := Seq(
-  "-encoding", "utf8",
-  "-feature",
-  "-unchecked",
-  "-deprecation",
-  "-language:existentials",
-  "-Xlog-reflective-calls"
-)
-
-scalacOptions ++= Seq("-opt:l:inline", "-opt-inline-from:io.altoo.akka.serialization.kryo.*")
-
-// strict options
-scalacOptions ++= {
-  scalaBinaryVersion.value match {
-    case "2.12" =>
-      Seq(
-        "-Xfatal-warnings",
-        "-Yno-adapted-args",
-        "-Ywarn-adapted-args",
-        "-Ywarn-dead-code",
-        "-Ywarn-extra-implicit",
-        "-Ywarn-inaccessible",
-        "-Ywarn-nullary-override",
-        "-Ywarn-nullary-unit",
-        "-Ywarn-unused:-explicits,-implicits,_"
-      )
-    case "2.13" =>
-      Seq(
-        "-Werror",
-        "-Wdead-code",
-        "-Wextra-implicit",
-        "-Wunused:imports",
-        "-Wunused:patvars",
-        "-Wunused:privates",
-        "-Wunused:locals",
-        //"-Wunused:params", enable once 2.12 support is dropped
-        "-Wunused:nowarn",
-      )
-  }
-}
-
-// lint options
-scalacOptions ++= {
-  scalaBinaryVersion.value match {
-    case "2.12" =>
-      Seq(
-        "-Xlint:private-shadow",
-        "-Xlint:type-parameter-shadow",
-        "-Xlint:adapted-args",
-        "-Xlint:unsound-match",
-        "-Xlint:option-implicit"
-      )
-    case "2.13" =>
-      Seq(
-        "-Xlint:inaccessible",
-        "-Xlint:nullary-unit",
-        "-Xlint:private-shadow",
-        "-Xlint:type-parameter-shadow",
-        "-Xlint:adapted-args",
-        "-Xlint:option-implicit",
-        "-Xlint:missing-interpolator",
-        "-Xlint:poly-implicit-overload",
-        "-Xlint:option-implicit",
-        "-Xlint:package-object-classes",
-        "-Xlint:constant",
-        "-Xlint:nonlocal-return",
-        "-Xlint:valpattern",
-        "-Xlint:eta-zero",
-        "-Xlint:deprecation"
-      )
-  }
-}
-
-//Enabling hardware AES support if available
-javaOptions in run += "-XX:+UseAES -XX:+UseAESIntrinsics"
-
-OsgiKeys.privatePackage := Nil
-OsgiKeys.exportPackage := Seq("io.altoo.*")
-
 addCommandAlias("validatePullRequest", ";+test")
 
-publishTo := sonatypePublishToBundle.value
 
-publishMavenStyle := true
+// Projects
+lazy val root: Project = Project("root", file("."))
+    .settings(parallelExecution in Test := false)
+    .settings(Seq(
+      name := "akka-kryo-serialization",
+      organization := "io.altoo",
+      resolvers += typesafe,
+      resolvers += typesafeSnapshot,
+      resolvers += sonatypeSnapshot,
+      // publishArtifact in packageDoc := false,
+      scalaVersion := mainScalaVersion,
+      crossScalaVersions := (scalaVersion.value +: secondayScalaVersions)
+    ))
+    .settings(projectSettings)
+    .aggregate(core, typed)
 
-publishArtifact in Test := false
+lazy val core: Project = Project("akka-kryo-serialization", file("akka-kryo-serialization"))
+    .settings(moduleSettings)
+    .settings(libraryDependencies ++= coreDeps ++ testingDeps)
+    .settings(unmanagedSourceDirectories in Compile += {
+      scalaBinaryVersion.value match {
+        case "2.12" => baseDirectory.value / "src" / "main" / "scala-2.12"
+        case _ => baseDirectory.value / "src" / "main" / "scala-2.13"
+      }
+    })
+    .settings(unmanagedSourceDirectories in Test += {
+      scalaBinaryVersion.value match {
+        case "2.12" => baseDirectory.value / "src" / "test" / "scala-2.12"
+        case _ => baseDirectory.value / "src" / "test" / "scala-2.13"
+      }
+    })
 
-pomIncludeRepository := { _ => false }
+lazy val typed: Project = Project("akka-kryo-serialization-typed", file("akka-kryo-serialization-typed"))
+    .settings(moduleSettings)
+    .settings(libraryDependencies ++= typedDeps ++ testingDeps)
+    .dependsOn(core)
 
-import sbtrelease.ReleasePlugin.autoImport.ReleaseTransformations._
+
+// Dependencies
+lazy val coreDeps = Seq(
+  "com.esotericsoftware" % "kryo" % kryoVersion,
+  "com.typesafe.akka" %% "akka-actor" % akkaVersion,
+  "org.agrona" % "agrona" % "1.7.2", // should match akka-remote/aeron inherited version
+  "org.lz4" % "lz4-java" % "1.7.1",
+  "commons-io" % "commons-io" % "2.6" % "test",
+  "org.scala-lang.modules" %% "scala-collection-compat" % "2.2.0"
+)
+lazy val typedDeps = Seq(
+  "com.typesafe.akka" %% "akka-actor-typed" % akkaVersion,
+  "com.typesafe.akka" %% "akka-actor-testkit-typed" % akkaVersion % "test"
+)
+
+lazy val testingDeps = Seq(
+  "org.scalatest" %% "scalatest" % "3.2.2" % "test",
+  "com.typesafe.akka" %% "akka-testkit" % akkaVersion % "test",
+  "com.typesafe.akka" %% "akka-persistence" % akkaVersion % "test"
+)
+
+
+// Settings
+lazy val projectSettings: Seq[Setting[_]] = Seq(
+  releaseProcess := releaseSettings,
+  OsgiKeys.privatePackage := Nil,
+  OsgiKeys.exportPackage := Seq("io.altoo.*"),
+)
+
+lazy val moduleSettings: Seq[Setting[_]] = Seq(
+  testForkedParallel := false,
+  javaOptions in run += "-XX:+UseAES -XX:+UseAESIntrinsics", //Enabling hardware AES support if available
+  pomExtra := pomExtras,
+  publishTo := sonatypePublishToBundle.value,
+  publishMavenStyle := true,
+  publishArtifact in Test := false,
+  pomIncludeRepository := { _ => false }
+) ++ noReleaseInSubmoduleSettings ++ scalacBasicOptions ++ scalacStrictOptions ++ scalacLintOptions
+
+
+lazy val scalacBasicOptions = Seq(
+  scalacOptions ++= Seq(
+    "-encoding", "utf8",
+    "-feature",
+    "-unchecked",
+    "-deprecation",
+    "-language:existentials",
+    "-Xlog-reflective-calls",
+    "-opt:l:inline",
+    "-opt-inline-from:io.altoo.akka.serialization.kryo.*"
+  )
+)
+
+
+// strict options
+lazy val scalacStrictOptions = Seq(
+  scalacOptions ++= {
+    scalaBinaryVersion.value match {
+      case "2.12" =>
+        Seq(
+          "-Xfatal-warnings",
+          "-Yno-adapted-args",
+          "-Ywarn-adapted-args",
+          "-Ywarn-dead-code",
+          "-Ywarn-extra-implicit",
+          "-Ywarn-inaccessible",
+          "-Ywarn-nullary-override",
+          "-Ywarn-nullary-unit",
+          "-Ywarn-unused:-explicits,-implicits,_"
+        )
+      case "2.13" =>
+        Seq(
+          "-Werror",
+          "-Wdead-code",
+          "-Wextra-implicit",
+          "-Wunused:imports",
+          "-Wunused:patvars",
+          "-Wunused:privates",
+          "-Wunused:locals",
+          //"-Wunused:params", enable once 2.12 support is dropped
+          "-Wunused:nowarn",
+        )
+    }
+  }
+)
+
+// lint options
+lazy val scalacLintOptions = Seq(
+  scalacOptions ++= {
+    scalaBinaryVersion.value match {
+      case "2.12" =>
+        Seq(
+          "-Xlint:private-shadow",
+          "-Xlint:type-parameter-shadow",
+          "-Xlint:adapted-args",
+          "-Xlint:unsound-match",
+          "-Xlint:option-implicit"
+        )
+      case "2.13" =>
+        Seq(
+          "-Xlint:inaccessible",
+          "-Xlint:nullary-unit",
+          "-Xlint:private-shadow",
+          "-Xlint:type-parameter-shadow",
+          "-Xlint:adapted-args",
+          "-Xlint:option-implicit",
+          "-Xlint:missing-interpolator",
+          "-Xlint:poly-implicit-overload",
+          "-Xlint:option-implicit",
+          "-Xlint:package-object-classes",
+          "-Xlint:constant",
+          "-Xlint:nonlocal-return",
+          "-Xlint:valpattern",
+          "-Xlint:eta-zero",
+          "-Xlint:deprecation"
+        )
+    }
+  }
+)
+
+lazy val noReleaseInSubmoduleSettings: Seq[Setting[_]] = Seq(
+  releaseProcess := Seq[ReleaseStep](ReleaseStep(_ => sys.error("cannot release a submodule!")))
+)
+
+
 // Configure cross builds.
-releaseProcess := Seq[ReleaseStep](
+lazy val releaseSettings = Seq[ReleaseStep](
   checkSnapshotDependencies,
   inquireVersions,
   runClean,
@@ -159,7 +201,7 @@ releaseProcess := Seq[ReleaseStep](
 )
 releaseCrossBuild := true
 
-pomExtra := <url>https://github.com/altoo-ag/akka-kryo-serialization</url>
+lazy val pomExtras = <url>https://github.com/altoo-ag/akka-kryo-serialization</url>
     <licenses>
       <license>
         <name>The Apache Software License, Version 2.0</name>

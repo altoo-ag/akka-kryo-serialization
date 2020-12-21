@@ -1,6 +1,10 @@
 akka-kryo-serialization - migration guide
 =========================================
 
+Migration from 2.0.x to 2.1.x
+-----------------------------
+<i>No manual steps required</i>
+
 Migration from 1.1.x to 2.0.x
 -----------------------------
 
