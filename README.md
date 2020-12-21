@@ -11,8 +11,8 @@ used for more efficient akka actor's remoting.
 It can also be used for a general purpose and very efficient Kryo-based serialization
 of such Scala types like Option, Tuple, Enumeration and most of Scala's collection types.
 
-For upgrading to version 2.0.1 from previous versions see [migration-guide](migration-guide.md). 
-Note that due to the upgrade to Kryo 5, data written with older versions is most likely not readable anymore.
+For upgrading from previous versions see [migration-guide](migration-guide.md). 
+Note that due to the upgrade to Kryo 5 with version 2.0.0, data written with older versions based on Kryo 4 is most likely not readable anymore.
 
 
 Features
