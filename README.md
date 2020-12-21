@@ -11,7 +11,7 @@ used for more efficient akka actor's remoting.
 It can also be used for a general purpose and very efficient Kryo-based serialization
 of such Scala types like Option, Tuple, Enumeration and most of Scala's collection types.
 
-For upgrading to version 2.0.0 from previous versions see [migration-guide](migration-guide.md). 
+For upgrading to version 2.0.1 from previous versions see [migration-guide](migration-guide.md). 
 Note that due to the upgrade to Kryo 5, data written with older versions is most likely not readable anymore.
 
 
@@ -37,7 +37,7 @@ To use this serializer, you need to do two things:
 
 * Include a dependency on this library into your project:
 
-    `libraryDependencies += "io.altoo" %% "akka-kryo-serialization" % "2.0.0"`
+    `libraryDependencies += "io.altoo" %% "akka-kryo-serialization" % "2.0.1"`
 
 * Register and configure the serializer in your Akka configuration file, e.g. `application.conf`.
 
@@ -45,7 +45,8 @@ We provide several versions of the library:
 
 Version | Akka & Kryo Compatibility | Available Scala Versions  | Tested with                                                                            |
 --------|---------------------------|---------------------------|----------------------------------------------------------------------------------------|
-v2.0.x  | Akka-2.5,2.6 and Kryo-5.0 | 2.12,2.13                 | JDK: OpenJdk8,OpenJdk11,OpenJdk13  Scala: 2.12.12,2.13.3 Akka: 2.5.32,2.6.10            |
+v2.1.x  | Akka-2.5,2.6 and Kryo-5.0 | 2.12,2.13                 | JDK: OpenJdk8,OpenJdk11,OpenJdk13  Scala: 2.12.12,2.13.4 Akka: 2.5.32,2.6.10           |
+v2.0.x  | Akka-2.5,2.6 and Kryo-5.0 | 2.12,2.13                 | JDK: OpenJdk8,OpenJdk11,OpenJdk13  Scala: 2.12.12,2.13.3 Akka: 2.5.32,2.6.10           |
 v1.1.x  | Akka-2.5,2.6 and Kryo-4.0 | 2.12,2.13                 | JDK: OpenJdk8,OpenJdk11,OpenJdk13  Scala: 2.12.11,2.13.2 Akka: 2.5.26,2.6.4            |
 v1.0.x  | Akka-2.5,2.6 and Kryo-4.0 | 2.11,2.12,2.13            | JDK: OpenJdk8,OpenJdk11            Scala: 2.11.12,2.12.10,2.13.1 Akka: 2.5.25,2.6.0-M7 |
 For past versions see [Legacy.md](Legacy.md).
@@ -63,7 +64,7 @@ You can find the JARs on [Sonatype's Maven repository](https://repo1.maven.org/m
 To use the latest stable release of akka-kryo-serialization in sbt projects you just need to add
 this dependency:
 
-`libraryDependencies += "io.altoo" %% "akka-kryo-serialization" % "2.0.0"`
+`libraryDependencies += "io.altoo" %% "akka-kryo-serialization" % "2.0.1"`
 
 #### maven projects
 
@@ -82,7 +83,7 @@ To use the official release of akka-kryo-serialization in Maven projects, please
     <dependency>
         <groupId>io.altoo</groupId>
         <artifactId>akka-kryo-serialization_2.13</artifactId>
-        <version>2.0.0</version>
+        <version>2.0.1</version>
     </dependency>
 ```
 
