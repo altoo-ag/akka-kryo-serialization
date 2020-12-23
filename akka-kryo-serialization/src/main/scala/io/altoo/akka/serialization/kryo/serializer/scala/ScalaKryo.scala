@@ -43,6 +43,7 @@ class ScalaKryo(classResolver: ClassResolver, referenceResolver: ReferenceResolv
           //We also enable it by default in java since not wanting these fields
           //serialized looks like the exception rather than the rule.
           fs.getFieldSerializerConfig.setIgnoreSyntheticFields(false)
+          fs.updateFields()
           fs
         case x: Serializer[_] => x
       }
