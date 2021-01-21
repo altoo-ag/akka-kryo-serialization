@@ -6,10 +6,10 @@ val typesafeSnapshot = "Typesafe Snapshots Repository" at "https://repo.typesafe
 val sonatypeSnapshot = "Sonatype Snapshots Repository" at "https://oss.sonatype.org/content/repositories/snapshots/"
 
 val mainScalaVersion = "2.13.4"
-val secondayScalaVersions = Seq("2.12.12")
+val secondayScalaVersions = Seq("2.12.13")
 
 val kryoVersion = "5.0.3"
-val defaultAkkaVersion = "2.6.10"
+val defaultAkkaVersion = "2.6.11"
 val akkaVersion =
   System.getProperty("akka.build.version", defaultAkkaVersion) match {
     case "default" => defaultAkkaVersion
@@ -22,7 +22,7 @@ addCommandAlias("validatePullRequest", ";+test")
 
 
 // Projects
-lazy val root: Project = Project("root", file("."))
+lazy val root: Project = project.in(file("."))
     .settings(parallelExecution in Test := false)
     .settings(Seq(
       name := "akka-kryo-serialization",
@@ -63,10 +63,10 @@ lazy val typed: Project = Project("akka-kryo-serialization-typed", file("akka-kr
 lazy val coreDeps = Seq(
   "com.esotericsoftware" % "kryo" % kryoVersion,
   "com.typesafe.akka" %% "akka-actor" % akkaVersion,
-  "org.agrona" % "agrona" % "1.7.2", // should match akka-remote/aeron inherited version
+  "org.agrona" % "agrona" % "1.8.0", // should match akka-remote/aeron inherited version
   "org.lz4" % "lz4-java" % "1.7.1",
-  "commons-io" % "commons-io" % "2.6" % "test",
-  "org.scala-lang.modules" %% "scala-collection-compat" % "2.2.0"
+  "commons-io" % "commons-io" % "2.8.0" % "test",
+  "org.scala-lang.modules" %% "scala-collection-compat" % "2.3.2"
 )
 lazy val typedDeps = Seq(
   "com.typesafe.akka" %% "akka-actor-typed" % akkaVersion,
@@ -74,7 +74,7 @@ lazy val typedDeps = Seq(
 )
 
 lazy val testingDeps = Seq(
-  "org.scalatest" %% "scalatest" % "3.2.2" % "test",
+  "org.scalatest" %% "scalatest" % "3.2.3" % "test",
   "com.typesafe.akka" %% "akka-testkit" % akkaVersion % "test",
   "com.typesafe.akka" %% "akka-persistence" % akkaVersion % "test"
 )
