@@ -30,7 +30,7 @@ object CryptoSerializationTest {
       |  encryption {
       |    aes {
       |      key-provider = "io.altoo.akka.serialization.kryo.DefaultKeyProvider"
-      |      mode = "AES/GCM/PKCS5Padding"
+      |      mode = "AES/GCM/NoPadding"
       |      iv-length = 12
       |      password = "j68KkRjq21ykRGAQ"
       |      salt = "pepper"
