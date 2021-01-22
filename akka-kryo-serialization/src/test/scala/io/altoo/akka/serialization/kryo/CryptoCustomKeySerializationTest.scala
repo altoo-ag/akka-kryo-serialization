@@ -38,7 +38,7 @@ object CryptoCustomKeySerializationTest {
        |  encryption {
        |    aes {
        |      key-provider = "io.altoo.akka.serialization.kryo.KryoCryptoTestKey"
-       |      mode = "AES/GCM/PKCS5Padding"
+       |      mode = "AES/GCM/NoPadding"
        |      iv-length = 12
        |    }
        |  }
@@ -72,7 +72,7 @@ class CryptoCustomKeySerializationTest extends AbstractAkkaTest(ConfigFactory.pa
     }.toArray
 
     val serialized = encryptedSerialization.findSerializerFor(atm).toBinary(atm)
-    val decrypted = new KryoCryptographer("TheTestSecretKey".getBytes("UTF-8"), "AES/GCM/PKCS5Padding", 12).fromBinary(serialized)
+    val decrypted = new KryoCryptographer("TheTestSecretKey".getBytes("UTF-8"), "AES/GCM/NoPadding", 12).fromBinary(serialized)
 
     val deserialized = deserialize[Array[HashMap[String, Any]]](decrypted)
     atm shouldBe deserialized
@@ -87,7 +87,7 @@ class CryptoCustomKeySerializationTest extends AbstractAkkaTest(ConfigFactory.pa
     }.toArray
 
     val serialized = serialize[Array[HashMap[String, Any]]](atm)
-    val encrypted = new KryoCryptographer("TheTestSecretKey".getBytes("UTF-8"), "AES/GCM/PKCS5Padding", 12).toBinary(serialized)
+    val encrypted = new KryoCryptographer("TheTestSecretKey".getBytes("UTF-8"), "AES/GCM/NoPadding", 12).toBinary(serialized)
 
     val deserialized = encryptedSerialization.findSerializerFor(atm).fromBinary(encrypted)
     atm shouldBe deserialized

@@ -259,7 +259,7 @@ class CustomKeyProvider extends DefaultKeyProvider {
 ```
 
 The encryption transformer (selected for `aes` in post serialization transformations) only 
-supports GCM modes (currently recommended default mode is `AES/GCM/PKCS5Padding`). 
+supports GCM modes (currently recommended default mode is `AES/GCM/NoPadding`). 
 
 Important: The old encryption transformer only supported CBC modes without manual authentication which is 
 deemed problematic. It is currently available for backwards compatibility by specifying `aesLegacy` in 
