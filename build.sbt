@@ -24,21 +24,17 @@ addCommandAlias("validatePullRequest", ";+test")
 // Projects
 lazy val root: Project = project.in(file("."))
     .settings(parallelExecution in Test := false)
-    .settings(Seq(
-      name := "akka-kryo-serialization",
-      organization := "io.altoo",
-      resolvers += typesafe,
-      resolvers += typesafeSnapshot,
-      resolvers += sonatypeSnapshot,
-      // publishArtifact in packageDoc := false,
-      scalaVersion := mainScalaVersion,
-      crossScalaVersions := (scalaVersion.value +: secondayScalaVersions)
-    ))
-    .settings(projectSettings)
+    .settings(commonSettings)
+    .settings(name := "akka-kryo-serialization")
+    .settings(releaseProcess := releaseSettings)
+    .settings(skip in publish := true)
+    .settings(OsgiKeys.privatePackage := Nil)
+    .settings(OsgiKeys.exportPackage := Seq("io.altoo.*"))
     .aggregate(core, typed)
 
 lazy val core: Project = Project("akka-kryo-serialization", file("akka-kryo-serialization"))
     .settings(moduleSettings)
+    .settings(description := "akka-serialization implementation using kryo - core implementation")
     .settings(libraryDependencies ++= coreDeps ++ testingDeps)
     .settings(unmanagedSourceDirectories in Compile += {
       scalaBinaryVersion.value match {
@@ -55,6 +51,7 @@ lazy val core: Project = Project("akka-kryo-serialization", file("akka-kryo-seri
 
 lazy val typed: Project = Project("akka-kryo-serialization-typed", file("akka-kryo-serialization-typed"))
     .settings(moduleSettings)
+    .settings(description := "akka-serialization implementation using kryo - extension including serialization for akka-typed")
     .settings(libraryDependencies ++= typedDeps ++ testingDeps)
     .dependsOn(core)
 
@@ -81,13 +78,16 @@ lazy val testingDeps = Seq(
 
 
 // Settings
-lazy val projectSettings: Seq[Setting[_]] = Seq(
-  releaseProcess := releaseSettings,
-  OsgiKeys.privatePackage := Nil,
-  OsgiKeys.exportPackage := Seq("io.altoo.*"),
-)
+lazy val commonSettings: Seq[Setting[_]] = Seq(
+    organization := "io.altoo",
+    resolvers += typesafe,
+    resolvers += typesafeSnapshot,
+    resolvers += sonatypeSnapshot
+  )
 
-lazy val moduleSettings: Seq[Setting[_]] = Seq(
+lazy val moduleSettings: Seq[Setting[_]] = commonSettings ++ noReleaseInSubmoduleSettings ++ scalacBasicOptions ++ scalacStrictOptions ++ scalacLintOptions ++ Seq(
+  scalaVersion := mainScalaVersion,
+  crossScalaVersions := (scalaVersion.value +: secondayScalaVersions),
   testForkedParallel := false,
   javaOptions in run += "-XX:+UseAES -XX:+UseAESIntrinsics", //Enabling hardware AES support if available
   pomExtra := pomExtras,
@@ -95,8 +95,7 @@ lazy val moduleSettings: Seq[Setting[_]] = Seq(
   publishMavenStyle := true,
   publishArtifact in Test := false,
   pomIncludeRepository := { _ => false }
-) ++ noReleaseInSubmoduleSettings ++ scalacBasicOptions ++ scalacStrictOptions ++ scalacLintOptions
-
+)
 
 lazy val scalacBasicOptions = Seq(
   scalacOptions ++= Seq(
