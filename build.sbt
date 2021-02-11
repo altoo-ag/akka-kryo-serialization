@@ -9,7 +9,7 @@ val mainScalaVersion = "2.13.4"
 val secondayScalaVersions = Seq("2.12.13")
 
 val kryoVersion = "5.0.3"
-val defaultAkkaVersion = "2.6.11"
+val defaultAkkaVersion = "2.6.12"
 val akkaVersion =
   System.getProperty("akka.build.version", defaultAkkaVersion) match {
     case "default" => defaultAkkaVersion
@@ -63,7 +63,7 @@ lazy val coreDeps = Seq(
   "org.agrona" % "agrona" % "1.8.0", // should match akka-remote/aeron inherited version
   "org.lz4" % "lz4-java" % "1.7.1",
   "commons-io" % "commons-io" % "2.8.0" % "test",
-  "org.scala-lang.modules" %% "scala-collection-compat" % "2.3.2"
+  "org.scala-lang.modules" %% "scala-collection-compat" % "2.4.1"
 )
 lazy val typedDeps = Seq(
   "com.typesafe.akka" %% "akka-actor-typed" % akkaVersion,
