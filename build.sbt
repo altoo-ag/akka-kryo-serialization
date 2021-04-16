@@ -8,7 +8,7 @@ val sonatypeSnapshot = "Sonatype Snapshots Repository" at "https://oss.sonatype.
 val mainScalaVersion = "2.13.5"
 val secondayScalaVersions = Seq("2.12.13")
 
-val kryoVersion = "5.0.4"
+val kryoVersion = "5.1.0"
 val defaultAkkaVersion = "2.6.14"
 val akkaVersion =
   System.getProperty("akka.build.version", defaultAkkaVersion) match {
