@@ -5,11 +5,11 @@ val typesafe = "Typesafe Repository" at "https://repo.typesafe.com/typesafe/rele
 val typesafeSnapshot = "Typesafe Snapshots Repository" at "https://repo.typesafe.com/typesafe/snapshots/"
 val sonatypeSnapshot = "Sonatype Snapshots Repository" at "https://oss.sonatype.org/content/repositories/snapshots/"
 
-val mainScalaVersion = "2.13.4"
+val mainScalaVersion = "2.13.5"
 val secondayScalaVersions = Seq("2.12.13")
 
-val kryoVersion = "5.0.3"
-val defaultAkkaVersion = "2.6.12"
+val kryoVersion = "5.0.4"
+val defaultAkkaVersion = "2.6.14"
 val akkaVersion =
   System.getProperty("akka.build.version", defaultAkkaVersion) match {
     case "default" => defaultAkkaVersion
@@ -23,11 +23,11 @@ addCommandAlias("validatePullRequest", ";+test")
 
 // Projects
 lazy val root: Project = project.in(file("."))
-    .settings(parallelExecution in Test := false)
+    .settings(Test / parallelExecution := false)
     .settings(commonSettings)
     .settings(name := "akka-kryo-serialization")
     .settings(releaseProcess := releaseSettings)
-    .settings(skip in publish := true)
+    .settings(publish / skip := true)
     .settings(OsgiKeys.privatePackage := Nil)
     .settings(OsgiKeys.exportPackage := Seq("io.altoo.*"))
     .aggregate(core, typed)
@@ -36,13 +36,13 @@ lazy val core: Project = Project("akka-kryo-serialization", file("akka-kryo-seri
     .settings(moduleSettings)
     .settings(description := "akka-serialization implementation using kryo - core implementation")
     .settings(libraryDependencies ++= coreDeps ++ testingDeps)
-    .settings(unmanagedSourceDirectories in Compile += {
+    .settings(Compile / unmanagedSourceDirectories += {
       scalaBinaryVersion.value match {
         case "2.12" => baseDirectory.value / "src" / "main" / "scala-2.12"
         case _ => baseDirectory.value / "src" / "main" / "scala-2.13"
       }
     })
-    .settings(unmanagedSourceDirectories in Test += {
+    .settings(Test / unmanagedSourceDirectories += {
       scalaBinaryVersion.value match {
         case "2.12" => baseDirectory.value / "src" / "test" / "scala-2.12"
         case _ => baseDirectory.value / "src" / "test" / "scala-2.13"
@@ -89,11 +89,11 @@ lazy val moduleSettings: Seq[Setting[_]] = commonSettings ++ noReleaseInSubmodul
   scalaVersion := mainScalaVersion,
   crossScalaVersions := (scalaVersion.value +: secondayScalaVersions),
   testForkedParallel := false,
-  javaOptions in run += "-XX:+UseAES -XX:+UseAESIntrinsics", //Enabling hardware AES support if available
+  run / javaOptions += "-XX:+UseAES -XX:+UseAESIntrinsics", //Enabling hardware AES support if available
   pomExtra := pomExtras,
   publishTo := sonatypePublishToBundle.value,
   publishMavenStyle := true,
-  publishArtifact in Test := false,
+  Test / publishArtifact := false,
   pomIncludeRepository := { _ => false }
 )
 
