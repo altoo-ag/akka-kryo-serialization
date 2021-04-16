@@ -1,8 +1,11 @@
 package io.altoo.akka.serialization.kryo
 
-import akka.serialization.SerializationExtension
+import akka.serialization.{ByteBufferSerializer, SerializationExtension}
 import com.typesafe.config.ConfigFactory
 import io.altoo.akka.serialization.kryo.testkit.AbstractAkkaTest
+
+import java.nio.ByteBuffer
+import scala.util.Try
 
 object BasicSerializationTest {
 
@@ -52,5 +55,20 @@ class BasicSerializationTest extends AbstractAkkaTest(ConfigFactory.parseString(
     inside(deserialized) {
       case util.Success(v) => v shouldBe testList
     }
+
+    // Check buffer serialization/deserialization
+    serializer shouldBe a[ByteBufferSerializer]
+    val bufferSerializer = serializer.asInstanceOf[ByteBufferSerializer]
+
+    val bb = ByteBuffer.allocate(testList.length * 8)
+
+    val bufferSerialized = Try(bufferSerializer.toBinary(testList, bb))
+    bufferSerialized shouldBe a[util.Success[_]]
+    bb.flip()
+    val bufferDeserialized = Try(bufferSerializer.fromBinary(bb, testList.getClass.getName))
+    inside(bufferDeserialized) {
+      case util.Success(v) => v shouldBe testList
+    }
+
   }
 }

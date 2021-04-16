@@ -156,7 +156,7 @@ lazy val scalacStrictOptions = Seq(
         )
       case "3.0.0-RC2" =>
         Seq(
-          "-Xfatal-warnings",
+          //"-Xfatal-warnings", enable once dotty supports @nowarn
           "-Ycheck-all-patmat"
         )
     }

@@ -1,13 +1,14 @@
 package io.altoo.akka.serialization.kryo
 
 import akka.actor.ExtendedActorSystem
-import akka.serialization.SerializationExtension
+import akka.serialization.{ByteBufferSerializer, SerializationExtension}
 import com.esotericsoftware.kryo.util._
 import com.typesafe.config.{Config, ConfigFactory}
 import io.altoo.akka.serialization.kryo.serializer.scala._
 import io.altoo.akka.serialization.kryo.testkit.{AbstractAkkaTest, KryoSerializationTesting}
 import org.objenesis.strategy.StdInstantiatorStrategy
 
+import java.nio.ByteBuffer
 import scala.collection.immutable.HashMap
 
 class KryoCryptoTestKey extends DefaultKeyProvider {
@@ -76,6 +77,11 @@ class CryptoCustomKeySerializationTest extends AbstractAkkaTest(ConfigFactory.pa
 
     val deserialized = deserialize[Array[HashMap[String, Any]]](decrypted)
     atm shouldBe deserialized
+
+    val bb = ByteBuffer.allocate(serialized.length)
+    encryptedSerialization.findSerializerFor(atm).asInstanceOf[ByteBufferSerializer].toBinary(atm, bb)
+    val bufferDeserialized = deserialize[Array[HashMap[String, Any]]](decrypted)
+    atm shouldBe bufferDeserialized
   }
 
   it should "decrypt with custom aes key" in {
@@ -91,5 +97,8 @@ class CryptoCustomKeySerializationTest extends AbstractAkkaTest(ConfigFactory.pa
 
     val deserialized = encryptedSerialization.findSerializerFor(atm).fromBinary(encrypted)
     atm shouldBe deserialized
+
+    val bufferDeserialized = encryptedSerialization.findSerializerFor(atm).asInstanceOf[ByteBufferSerializer].fromBinary(ByteBuffer.wrap(encrypted), atm.getClass.getName)
+    atm shouldBe bufferDeserialized
   }
 }

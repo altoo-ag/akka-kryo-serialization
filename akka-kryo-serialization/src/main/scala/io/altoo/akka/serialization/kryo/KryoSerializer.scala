@@ -28,6 +28,7 @@ import com.typesafe.config.Config
 import io.altoo.akka.serialization.kryo.serializer.scala.{ScalaKryo, _}
 import org.objenesis.strategy.StdInstantiatorStrategy
 
+import java.nio.ByteBuffer
 import scala.jdk.CollectionConverters._
 import scala.util._
 
@@ -69,7 +70,7 @@ private[kryo] class KryoSerializationSettings(val config: Config) {
     cfg.root.unwrapped.asScala.toMap.map { case (k, v) => (k, v.toString) }
 }
 
-class KryoSerializer(val system: ExtendedActorSystem) extends Serializer {
+class KryoSerializer(val system: ExtendedActorSystem) extends Serializer with ByteBufferSerializer {
 
   protected def configKey: String = "akka-kryo-serialization"
 
@@ -121,13 +122,13 @@ class KryoSerializer(val system: ExtendedActorSystem) extends Serializer {
       }
     )
 
-  protected val transform: String => Transformer = {
-    case "off" => new NoKryoTransformer
-    case "lz4" => new LZ4KryoCompressor
-    case "deflate" => new ZipKryoCompressor
+  protected val transform: String => Option[Transformer] = {
+    case "off" => None
+    case "lz4" => Some(new LZ4KryoCompressor)
+    case "deflate" => Some(new ZipKryoCompressor)
     case "aes" => settings.encryptionSettings match {
       case Some(es) if es.aesMode.contains("GCM") =>
-        new KryoCryptographer(aesKeyProviderClass.get.getDeclaredConstructor().newInstance().aesKey(config), es.aesMode, es.aesIvLength)
+        Some(new KryoCryptographer(aesKeyProviderClass.get.getDeclaredConstructor().newInstance().aesKey(config), es.aesMode, es.aesIvLength))
       case Some(es) =>
         throw new Exception(s"Mode ${es.aesMode} is not supported for 'aes'")
       case None =>
@@ -136,7 +137,7 @@ class KryoSerializer(val system: ExtendedActorSystem) extends Serializer {
     case x => throw new Exception(s"Could not recognise the transformer: [$x]")
   }
 
-  private val kryoTransformer = new KryoTransformer(settings.postSerTransformations.split(",").toList.map(transform))
+  private val kryoTransformer = new KryoTransformer(settings.postSerTransformations.split(",").toList.flatMap(transform(_).toList))
 
   private val queueBuilderClass: Class[_ <: DefaultQueueBuilder] =
     system.dynamicAccess.getClassFor[AnyRef](settings.queueBuilder) match {
@@ -150,7 +151,7 @@ class KryoSerializer(val system: ExtendedActorSystem) extends Serializer {
     }
 
   // serializer pool to delegate actual serialization
-  private val serializerPool = new SerializerPool(queueBuilderClass.getDeclaredConstructor().newInstance(), () => new KryoSerializerBackend(getKryo(settings.idStrategy, settings.serializerType), settings.bufferSize, settings.maxBufferSize, settings.useManifests, settings.useUnsafe)(log))
+  private val serializerPool = new SerializerPool(queueBuilderClass.getDeclaredConstructor().newInstance(), () => new KryoSerializerBackend(getKryo(settings.idStrategy, settings.serializerType), settings.bufferSize, settings.maxBufferSize, settings.useManifests, settings.useUnsafe)(system, log))
 
   // this is whether "fromBinary" requires a "clazz" or not
   override def includeManifest: Boolean = settings.useManifests
@@ -159,6 +160,7 @@ class KryoSerializer(val system: ExtendedActorSystem) extends Serializer {
   override def identifier = 123454323
 
   // Delegate to a serializer backend
+  // Implements Serializer
   override def toBinary(obj: AnyRef): Array[Byte] = {
     val ser = serializerPool.fetch()
     try
@@ -167,7 +169,20 @@ class KryoSerializer(val system: ExtendedActorSystem) extends Serializer {
       serializerPool.release(ser)
   }
 
+  // Implements ByteBufferSerializer
+  override def toBinary(obj: AnyRef, buf: ByteBuffer): Unit = {
+    val ser = serializerPool.fetch()
+    try {
+      if (kryoTransformer.isIdentity)
+        ser.toBinary(obj, buf)
+      else
+        kryoTransformer.toBinary(ser.toBinary(obj), buf)
+    } finally
+      serializerPool.release(ser)
+  }
+
   // delegate to a serializer backend
+  // Implements Serializer
   override def fromBinary(bytes: Array[Byte], clazz: Option[Class[_]]): AnyRef = {
     val ser = serializerPool.fetch()
     try
@@ -176,6 +191,17 @@ class KryoSerializer(val system: ExtendedActorSystem) extends Serializer {
       serializerPool.release(ser)
   }
 
+  // Implements ByteBufferSerializer
+  override def fromBinary(buf: ByteBuffer, manifest: String): AnyRef = {
+    val ser = serializerPool.fetch()
+    try {
+      if (kryoTransformer.isIdentity)
+        ser.fromBinary(buf, manifest)
+      else
+        ser.fromBinary(kryoTransformer.fromBinary(buf), system.dynamicAccess.getClassFor[AnyRef](manifest).toOption)
+    } finally
+      serializerPool.release(ser)
+  }
 
   private def getKryo(strategy: String, serializerType: String): Kryo = {
     val referenceResolver = if (settings.kryoReferenceMap) new MapReferenceResolver() else new ListReferenceResolver()

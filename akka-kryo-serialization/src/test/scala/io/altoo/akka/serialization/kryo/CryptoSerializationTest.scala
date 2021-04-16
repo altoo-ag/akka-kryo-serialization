@@ -1,12 +1,13 @@
 package io.altoo.akka.serialization.kryo
 
 import akka.actor.ActorSystem
-import akka.serialization.SerializationExtension
+import akka.serialization.{ByteBufferSerializer, SerializationExtension}
 import com.typesafe.config.ConfigFactory
 import org.scalatest.BeforeAndAfterAll
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
 
+import java.nio.ByteBuffer
 import scala.collection.immutable.HashMap
 
 object CryptoSerializationTest {
@@ -68,5 +69,14 @@ class CryptoSerializationTest extends AnyFlatSpec with Matchers with BeforeAndAf
     val serialized = serializer.toBinary(atm)
     val deserialized = deserializer.fromBinary(serialized)
     atm shouldBe deserialized
+
+    val bufferSerializer = sourceSerialization.findSerializerFor(atm).asInstanceOf[ByteBufferSerializer]
+    val bufferDeserializer = targetSerialization.findSerializerFor(atm).asInstanceOf[ByteBufferSerializer]
+
+    val bb = ByteBuffer.allocate(serialized.length * 2)
+    bufferSerializer.toBinary(atm, bb)
+    bb.flip()
+    val bufferDeserialized = bufferDeserializer.fromBinary(bb, atm.getClass.toString)
+    atm shouldBe bufferDeserialized
   }
 }
