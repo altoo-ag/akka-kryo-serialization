@@ -16,8 +16,8 @@ private[kryo] class SerializerPool(queueBuilder: DefaultQueueBuilder, newInstanc
 
   def fetch(): Serializer = {
     pool.poll() match {
-      case o if o != null => o
       case null => newInstance()
+      case o => o
     }
   }
 

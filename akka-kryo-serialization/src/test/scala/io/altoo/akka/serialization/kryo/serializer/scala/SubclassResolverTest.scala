@@ -15,6 +15,7 @@ class SubclassResolverTest extends AbstractKryoTest {
     kryo.register(classOf[scala.collection.immutable.Map[_,_]], 40)
     kryo.getClassResolver match {
       case resolver:SubclassResolver => resolver.enable()
+      case _ => // nothing to do
     }
     val map1 = Map("Rome" -> "Italy", "London" -> "England", "Paris" -> "France", "New York" -> "USA", "Tokio" -> "Japan", "Peking" -> "China", "Brussels" -> "Belgium")
     val map2 = map1 + ("Moscow" -> "Russia")
@@ -32,6 +33,7 @@ class SubclassResolverTest extends AbstractKryoTest {
     kryo.register(classOf[scala.collection.immutable.Map[_,_]], 40)
     kryo.getClassResolver match {
       case resolver:SubclassResolver => resolver.enable()
+      case _ => // nothing to do
     }
     val map1 = Map()
     testSerializationOf(map1)
@@ -48,6 +50,7 @@ class SubclassResolverTest extends AbstractKryoTest {
     kryo.register(classOf[scala.collection.immutable.ListMap[_,_]], new ScalaImmutableMapSerializer, 41)
     kryo.getClassResolver match {
       case resolver:SubclassResolver => resolver.enable()
+      case _ => // nothing to do
     }
     val map1 = Map("Rome" -> "Italy", "London" -> "England", "Paris" -> "France", "New York" -> "USA", "Tokio" -> "Japan", "Peking" -> "China", "Brussels" -> "Belgium")
     val map2 = ListMap("Rome" -> "Italy", "London" -> "England", "Paris" -> "France", "New York" -> "USA", "Tokio" -> "Japan", "Peking" -> "China", "Brussels" -> "Belgium")
@@ -63,6 +66,7 @@ class SubclassResolverTest extends AbstractKryoTest {
     kryo.register(classOf[scala.collection.immutable.Set[_]], 40)
     kryo.getClassResolver match {
       case resolver:SubclassResolver => resolver.enable()
+      case _ => // nothing to do
     }
 
     val set1 = Set(83, 84, 959)

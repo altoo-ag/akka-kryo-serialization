@@ -1,4 +1,6 @@
+import sbt.{CrossVersion, _}
 import sbtrelease.ReleasePlugin.autoImport.ReleaseTransformations._
+
 
 // Basics
 val typesafe = "Typesafe Repository" at "https://repo.typesafe.com/typesafe/releases/"
@@ -6,7 +8,7 @@ val typesafeSnapshot = "Typesafe Snapshots Repository" at "https://repo.typesafe
 val sonatypeSnapshot = "Sonatype Snapshots Repository" at "https://oss.sonatype.org/content/repositories/snapshots/"
 
 val mainScalaVersion = "2.13.5"
-val secondayScalaVersions = Seq("2.12.13")
+val secondayScalaVersions = Seq("2.12.13", "3.0.0-RC2")
 
 val kryoVersion = "5.1.0"
 val defaultAkkaVersion = "2.6.14"
@@ -59,31 +61,31 @@ lazy val typed: Project = Project("akka-kryo-serialization-typed", file("akka-kr
 // Dependencies
 lazy val coreDeps = Seq(
   "com.esotericsoftware" % "kryo" % kryoVersion,
-  "com.typesafe.akka" %% "akka-actor" % akkaVersion,
-  "org.agrona" % "agrona" % "1.8.0", // should match akka-remote/aeron inherited version
+  ("com.typesafe.akka" %% "akka-actor" % akkaVersion).cross(CrossVersion.for3Use2_13),
+  "org.agrona" % "agrona" % "1.9.0", // should match akka-remote/aeron inherited version
   "org.lz4" % "lz4-java" % "1.7.1",
   "commons-io" % "commons-io" % "2.8.0" % "test",
-  "org.scala-lang.modules" %% "scala-collection-compat" % "2.4.1"
+  ("org.scala-lang.modules" %% "scala-collection-compat" % "2.4.1").cross(CrossVersion.for3Use2_13)
 )
 lazy val typedDeps = Seq(
   "com.typesafe.akka" %% "akka-actor-typed" % akkaVersion,
   "com.typesafe.akka" %% "akka-actor-testkit-typed" % akkaVersion % "test"
-)
+).map(_.cross(CrossVersion.for3Use2_13))
 
 lazy val testingDeps = Seq(
-  "org.scalatest" %% "scalatest" % "3.2.3" % "test",
-  "com.typesafe.akka" %% "akka-testkit" % akkaVersion % "test",
-  "com.typesafe.akka" %% "akka-persistence" % akkaVersion % "test"
+  "org.scalatest" %% "scalatest" % "3.2.7" % "test",
+  ("com.typesafe.akka" %% "akka-testkit" % akkaVersion % "test").cross(CrossVersion.for3Use2_13),
+  ("com.typesafe.akka" %% "akka-persistence" % akkaVersion % "test").cross(CrossVersion.for3Use2_13)
 )
 
 
 // Settings
 lazy val commonSettings: Seq[Setting[_]] = Seq(
-    organization := "io.altoo",
-    resolvers += typesafe,
-    resolvers += typesafeSnapshot,
-    resolvers += sonatypeSnapshot
-  )
+  organization := "io.altoo",
+  resolvers += typesafe,
+  resolvers += typesafeSnapshot,
+  resolvers += sonatypeSnapshot
+)
 
 lazy val moduleSettings: Seq[Setting[_]] = commonSettings ++ noReleaseInSubmoduleSettings ++ scalacBasicOptions ++ scalacStrictOptions ++ scalacLintOptions ++ Seq(
   scalaVersion := mainScalaVersion,
@@ -98,16 +100,29 @@ lazy val moduleSettings: Seq[Setting[_]] = commonSettings ++ noReleaseInSubmodul
 )
 
 lazy val scalacBasicOptions = Seq(
-  scalacOptions ++= Seq(
-    "-encoding", "utf8",
-    "-feature",
-    "-unchecked",
-    "-deprecation",
-    "-language:existentials",
-    "-Xlog-reflective-calls",
-    "-opt:l:inline",
-    "-opt-inline-from:io.altoo.akka.serialization.kryo.*"
-  )
+  scalacOptions ++= {
+    scalaBinaryVersion.value match {
+      case "2.12" | "2.13" =>
+        Seq(
+          "-encoding", "utf8",
+          "-feature",
+          "-unchecked",
+          "-deprecation",
+          "-language:existentials",
+          "-Xlog-reflective-calls",
+          "-opt:l:inline",
+          "-opt-inline-from:io.altoo.akka.serialization.kryo.*"
+        )
+      case "3.0.0-RC2" =>
+        Seq(
+          "-encoding", "utf8",
+          "-feature",
+          "-unchecked",
+          "-deprecation",
+          "-language:existentials",
+        )
+    }
+  }
 )
 
 
@@ -138,6 +153,11 @@ lazy val scalacStrictOptions = Seq(
           "-Wunused:locals",
           //"-Wunused:params", enable once 2.12 support is dropped
           "-Wunused:nowarn",
+        )
+      case "3.0.0-RC2" =>
+        Seq(
+          "-Xfatal-warnings",
+          "-Ycheck-all-patmat"
         )
     }
   }
@@ -173,6 +193,8 @@ lazy val scalacLintOptions = Seq(
           "-Xlint:eta-zero",
           "-Xlint:deprecation"
         )
+      case "3.0.0-RC2" =>
+        Seq()
     }
   }
 )
