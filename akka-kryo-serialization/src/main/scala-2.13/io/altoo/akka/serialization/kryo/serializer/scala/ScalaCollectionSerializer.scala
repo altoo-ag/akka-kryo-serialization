@@ -45,7 +45,7 @@ class ScalaCollectionSerializer() extends Serializer[Iterable[_]] {
     val collection: Iterable[_] = obj
     val len = collection.size
     output.writeInt(len, true)
-    collection.foreach { e: Any => kryo.writeClassAndObject(output, e) }
+    collection.foreach { (e: Any) => kryo.writeClassAndObject(output, e) }
   }
 }
 

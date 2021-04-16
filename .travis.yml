@@ -3,7 +3,7 @@ script:
   - sbt +test
   - sbt -Dakka.build.version=2.5.32 clean test
 scala:
-  - 2.13.4
+  - 2.13.5
 jdk:
   - openjdk8
   - openjdk11

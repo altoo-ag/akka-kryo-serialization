@@ -50,7 +50,7 @@ object CryptoCustomKeySerializationTest {
 class CryptoCustomKeySerializationTest extends AbstractAkkaTest(ConfigFactory.parseString(CryptoCustomKeySerializationTest.config)) with KryoSerializationTesting {
   private val encryptedSerialization = SerializationExtension(system)
 
-  protected val kryo = new ScalaKryo(new DefaultClassResolver(), new MapReferenceResolver())
+  protected val kryo: ScalaKryo = new ScalaKryo(new DefaultClassResolver(), new MapReferenceResolver())
   kryo.setRegistrationRequired(false)
   private val kryoInit = new DefaultKryoInitializer()
   kryoInit.preInit(kryo, system.asInstanceOf[ExtendedActorSystem])
