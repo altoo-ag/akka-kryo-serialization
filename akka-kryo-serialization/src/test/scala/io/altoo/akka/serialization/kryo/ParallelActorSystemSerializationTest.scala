@@ -1,14 +1,15 @@
 package io.altoo.akka.serialization.kryo
 
 import akka.actor.ActorSystem
-import akka.serialization.SerializationExtension
+import akka.serialization.{ByteBufferSerializer, SerializationExtension}
 import com.typesafe.config.ConfigFactory
 import org.scalatest.Inside
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
 
+import java.nio.ByteBuffer
 import scala.concurrent.{Await, Future}
-import scala.util.Success
+import scala.util.{Success, Try}
 
 object ParallelActorSystemSerializationTest {
   private val config =
@@ -87,6 +88,17 @@ class ParallelActorSystemSerializationTest extends AnyFlatSpec with Matchers wit
     // check serialization/deserialization
     val deserialized = SerializationExtension(sys).deserialize(serialized.get, testClass.getClass)
     inside(deserialized) {
+      case util.Success(v) => v shouldBe testClass
+    }
+
+    // check buffer serialization/deserialization
+    serializer shouldBe a[ByteBufferSerializer]
+    val bufferSerializer = serializer.asInstanceOf[ByteBufferSerializer]
+    val bb = ByteBuffer.allocate(serialized.get.length * 2)
+    bufferSerializer.toBinary(testClass, bb)
+    bb.flip()
+    val bufferDeserialized = Try(bufferSerializer.fromBinary(bb, testClass.getClass.getName))
+    inside(bufferDeserialized) {
       case util.Success(v) => v shouldBe testClass
     }
   }

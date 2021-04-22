@@ -26,6 +26,9 @@ import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
 
+import java.nio.ByteBuffer
+import scala.util.Try
+
 object CompressionEffectivenessSerializationTest {
 
   private val config =
@@ -175,6 +178,24 @@ class CompressionEffectivenessSerializationTest extends AnyFlatSpec with Matcher
     deserialized.isSuccess shouldBe true
 
     deserialized.get.equals(obj) shouldBe true
+
+    // Check buffer serialization/deserialization
+    serializer shouldBe a[ByteBufferSerializer]
+
+    val bufferSerializer = serializer.asInstanceOf[ByteBufferSerializer]
+
+    val bb = ByteBuffer.allocate(2 * serialized.get.length)
+    val bufferSerialized = Try(bufferSerializer.toBinary(obj, bb))
+    bufferSerialized shouldBe a[util.Success[_]]
+    bb.position() shouldBe serialized.get.length
+
+    bb.flip()
+
+    val bufferDeserialized = Try(bufferSerializer.fromBinary(bb, obj.getClass.getName))
+    inside(bufferDeserialized) {
+      case util.Success(v) => v shouldBe obj
+    }
+
     serialized.get.length
   }
 }

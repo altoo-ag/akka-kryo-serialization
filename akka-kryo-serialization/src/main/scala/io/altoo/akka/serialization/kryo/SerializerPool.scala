@@ -1,7 +1,6 @@
 package io.altoo.akka.serialization.kryo
 
 import akka.annotation.InternalApi
-import akka.serialization.Serializer
 
 /**
  * Returns a SerializerPool, useful to reduce GC overhead.
@@ -10,22 +9,22 @@ import akka.serialization.Serializer
  * @param newInstance  Serializer instance builder.
  */
 @InternalApi
-private[kryo] class SerializerPool(queueBuilder: DefaultQueueBuilder, newInstance: () => Serializer) {
+private[kryo] class SerializerPool(queueBuilder: DefaultQueueBuilder, newInstance: () => KryoSerializerBackend) {
 
-  private val pool = queueBuilder.build
+  private val pool = queueBuilder.build[KryoSerializerBackend]
 
-  def fetch(): Serializer = {
+  def fetch(): KryoSerializerBackend = {
     pool.poll() match {
       case null => newInstance()
       case o => o
     }
   }
 
-  def release(o: Serializer): Unit = {
+  def release(o: KryoSerializerBackend): Unit = {
     pool.offer(o)
   }
 
-  def add(o: Serializer): Unit = {
+  def add(o: KryoSerializerBackend): Unit = {
     pool.add(o)
   }
 }
