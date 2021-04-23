@@ -110,6 +110,7 @@ lazy val scalacBasicOptions = Seq(
           "-deprecation",
           "-language:existentials",
           "-Xlog-reflective-calls",
+          "-Ywarn-unused:-nowarn",
           "-opt:l:inline",
           "-opt-inline-from:io.altoo.akka.serialization.kryo.*"
         )
