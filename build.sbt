@@ -89,6 +89,7 @@ lazy val commonSettings: Seq[Setting[_]] = Seq(
 
 lazy val moduleSettings: Seq[Setting[_]] = commonSettings ++ noReleaseInSubmoduleSettings ++ scalacBasicOptions ++ scalacStrictOptions ++ scalacLintOptions ++ Seq(
   scalaVersion := mainScalaVersion,
+  versionScheme := Some("early-semver"),
   crossScalaVersions := (scalaVersion.value +: secondayScalaVersions),
   testForkedParallel := false,
   run / javaOptions += "-XX:+UseAES -XX:+UseAESIntrinsics", //Enabling hardware AES support if available
