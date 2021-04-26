@@ -36,7 +36,7 @@ How to use this library in your project
 To use this serializer, you need to do two things:
 
 * Include a dependency on this library into your project:
-    `libraryDependencies += "io.altoo" %% "akka-kryo-serialization" % "2.1.0"`
+    `libraryDependencies += "io.altoo" %% "akka-kryo-serialization" % "2.2.0"`
 
 * Register and configure the serializer in your Akka configuration file, e.g. `application.conf`.
 
@@ -53,7 +53,7 @@ For past versions see [Legacy.md](Legacy.md).
 
 From 2.1.0 onward we also provide support for akka-typed. This is done as a separate artifact so that the standard does not pull all the typed akka dependencies.
 * Include:
-  `libraryDependencies += "io.altoo" %% "akka-kryo-serialization-typed" % "2.1.0"`
+  `libraryDependencies += "io.altoo" %% "akka-kryo-serialization-typed" % "2.2.0"`
 
 Note that we use semantic versioning - see [semver.org](https://semver.org/).
 
@@ -68,7 +68,11 @@ You can find the JARs on [Sonatype's Maven repository](https://repo1.maven.org/m
 To use the latest stable release of akka-kryo-serialization in sbt projects you just need to add
 this dependency:
 
-`libraryDependencies += "io.altoo" %% "akka-kryo-serialization" % "2.1.0"`
+`libraryDependencies += "io.altoo" %% "akka-kryo-serialization" % "2.2.0"`
+
+To use with Akka 2.5 (or older versions of Akka 2.6) you need to exclude transitive dependencies to preven unintended inclusion of Akka 2.6:
+
+`libraryDependencies += "io.altoo" %% "akka-kryo-serialization" % "2.2.0" excludeAll (ExclusionRule("com.typesafe.akka", "akka-actor_2.13"), ExclusionRule("org.agrona", "agrona"))`
 
 #### maven projects
 
@@ -87,7 +91,7 @@ To use the official release of akka-kryo-serialization in Maven projects, please
     <dependency>
         <groupId>io.altoo</groupId>
         <artifactId>akka-kryo-serialization_2.13</artifactId>
-        <version>2.1.0</version>
+        <version>2.2.0</version>
     </dependency>
 ```
 
