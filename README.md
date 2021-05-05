@@ -104,7 +104,7 @@ Configuration of akka-kryo-serialization
 The following options are available for configuring this serializer:
 
 * You can add a new `akka-kryo-serialization` section to the configuration to customize the serializer.
-    Consult the supplied [reference.conf](https://github.com/altoo-ag/akka-kryo-serialization/blob/master/src/main/resources/reference.conf) for a detailed explanation of all the options available.
+    Consult the supplied [reference.conf](https://github.com/altoo-ag/akka-kryo-serialization/blob/master/akka-kryo-serialization/src/main/resources/reference.conf) for a detailed explanation of all the options available.
 
 * You should declare in the `akka.actor.serializers` section a new kind of serializer:
     
@@ -241,7 +241,7 @@ How to configure and customize encryption
 -----------------------------------------
 
 Using the `DefaultKeyProvider` an encryption key can statically be set by defining `encryption.aes.password` and `encryption.aes.salt`.
-Refere to the [reference.conf](https://github.com/altoo-ag/akka-kryo-serialization/blob/master/src/main/resources/reference.conf) for an example configuration.
+Refere to the [reference.conf](https://github.com/altoo-ag/akka-kryo-serialization/blob/master/akka-kryo-serialization/src/main/resources/reference.conf) for an example configuration.
 
 Sometimes you need to pass a custom aes key, depending on the context you are in,
 instead of having a static key. For example, you might have the key in a data
