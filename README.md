@@ -149,15 +149,15 @@ below) and inside it you registerclasses of a few objects that are typically
 used by your application, for example:
 
 ```scala
-    kryo.register(myObj1.getClass);
-    kryo.register(myObj2.getClass);
+    kryo.register(myObj1.getClass)
+    kryo.register(myObj2.getClass)
 ```
 
 Obviously, you can also explicitly assign IDs to your classes in the initializer,
 if you wish:
 
 ```scala
-    kryo.register(myObj3.getClass, 123);
+    kryo.register(myObj3.getClass, 123)
 ```
 
 If you use this library as an alternative serialization method when sending messages
@@ -353,7 +353,7 @@ And finally declare the custom serializer in the `akka.actor.serializers` sectio
 ```
 
 
-Kryo shaded and ASM
+Kryo shaded and ASM (pre 2.x)
 -----------------------------
 Kryo depends on [ASM](https://asm.ow2.io), which is used by many different projects in different versions.
 This can lead to unintended version conflicts. To avoid this, Kryo provides a [shaded](https://maven.apache.org/plugins/maven-shade-plugin/) 
@@ -364,7 +364,7 @@ If you prefer to re-use Kryo you can override the dependency (but be sure to pic
     
 ```scala
 lazy val kryoSerializationDeps = Seq(
-  "io.altoo" %% "akka-kryo-serialization" % "1.0.0" excludeAll(ExclusionRule("com.esotericsoftware", "kryo-shaded")),
+  "io.altoo" %% "akka-kryo-serialization" % "1.0.0" excludeAll ExclusionRule("com.esotericsoftware", "kryo-shaded"),
   "com.esotericsoftware" % "kryo" % "4.0.2"
 )
 ```
