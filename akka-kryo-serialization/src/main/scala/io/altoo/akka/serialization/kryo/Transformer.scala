@@ -1,15 +1,16 @@
 package io.altoo.akka.serialization.kryo
 
-import java.nio.{ByteBuffer, ByteOrder}
-import java.security.SecureRandom
-import java.util.zip.{Deflater, Inflater}
 import akka.annotation.InternalApi
-
-import javax.crypto.Cipher
-import javax.crypto.spec.{GCMParameterSpec, SecretKeySpec}
 import net.jpountz.lz4.LZ4Factory
 
+import java.lang.reflect.Method
+import java.nio.{ByteBuffer, ByteOrder}
+import java.security.SecureRandom
+import java.util.zip.Deflater
+import javax.crypto.Cipher
+import javax.crypto.spec.{GCMParameterSpec, SecretKeySpec}
 import scala.collection.mutable
+import scala.util.Try
 
 @InternalApi
 private[kryo] class KryoTransformer(transformations: List[Transformer]) {
@@ -58,7 +59,7 @@ trait Transformer {
   def toBinary(inputBuff: Array[Byte]): Array[Byte]
 
   def toBinary(inputBuff: Array[Byte], outputBuff: ByteBuffer): Unit
-    = outputBuff.put(toBinary(inputBuff))
+  = outputBuff.put(toBinary(inputBuff))
 
   def fromBinary(inputBuff: Array[Byte]): Array[Byte]
 
@@ -110,114 +111,146 @@ class LZ4KryoCompressor extends Transformer {
   }
 }
 
-class ZipKryoCompressor extends Transformer {
+object ZipKryoCompressor {
+  import java.security.{AccessController, PrivilegedAction}
+  import java.util.zip.Inflater
 
-  override def toBinary(inputBuff: Array[Byte]): Array[Byte] = {
-    val deflater = new Deflater(Deflater.BEST_SPEED)
-    val inputSize = inputBuff.length
-    val outputBuff = new mutable.ArrayBuilder.ofByte
-    outputBuff += (inputSize & 0xff).toByte
-    outputBuff += (inputSize >> 8 & 0xff).toByte
-    outputBuff += (inputSize >> 16 & 0xff).toByte
-    outputBuff += (inputSize >> 24 & 0xff).toByte
+  private val javaMajorVersion: Int = {
+    // FIXME replace with Runtime.version() when we no longer support Java 8
+    // See Oracle section 1.5.3 at:
+    // https://docs.oracle.com/javase/8/docs/technotes/guides/versioning/spec/versioning2.html
+    val version = System.getProperty("java.specification.version").split('.')
+    val majorString =
+      if (version(0) == "1") version(1) // Java 8 will be 1.8
+      else version(0) // later will be 9, 10, 11 etc
+    majorString.toInt
+  }
 
-    deflater.setInput(inputBuff)
-    deflater.finish()
-    val buff = new Array[Byte](4096)
-
-    while (!deflater.finished) {
-      val n = deflater.deflate(buff)
-      outputBuff ++= buff.take(n)
+  //jdk dependent method since java8 only has byte[] whereas java>11 has bytebuffer
+  private val deflatorDeflate: Option[Method] = {
+    if (javaMajorVersion >= 11) {
+      AccessController.doPrivileged(new PrivilegedAction[Option[Method]]() {
+        override def run(): Option[Method] = Try {
+          classOf[Inflater].getDeclaredMethod("deflate", classOf[ByteBuffer])
+        }.toOption
+      });
     }
-    deflater.end()
-    outputBuff.result()
   }
 
-  override def toBinary(inputBuff: Array[Byte], outputBuff: ByteBuffer): Unit = {
-    val deflater = new Deflater(Deflater.BEST_SPEED)
-    val inputSize = inputBuff.length
-    outputBuff.order(ByteOrder.LITTLE_ENDIAN).putInt(inputSize)
+  class ZipKryoCompressor extends Transformer {
 
-    deflater.setInput(inputBuff)
-    deflater.finish()
-    deflater.deflate(outputBuff)
-    deflater.end()
+    override def toBinary(inputBuff: Array[Byte]): Array[Byte] = {
+      val deflater = new Deflater(Deflater.BEST_SPEED)
+      val inputSize = inputBuff.length
+      val outputBuff = new mutable.ArrayBuilder.ofByte
+      outputBuff += (inputSize & 0xff).toByte
+      outputBuff += (inputSize >> 8 & 0xff).toByte
+      outputBuff += (inputSize >> 16 & 0xff).toByte
+      outputBuff += (inputSize >> 24 & 0xff).toByte
+
+      deflater.setInput(inputBuff)
+      deflater.finish()
+      val buff = new Array[Byte](4096)
+
+      while (!deflater.finished) {
+        val n = deflater.deflate(buff)
+        outputBuff ++= buff.take(n)
+      }
+      deflater.end()
+      outputBuff.result()
+    }
+
+    override def toBinary(inputBuff: Array[Byte], outputBuff: ByteBuffer): Unit = {
+      val deflater = new Deflater(Deflater.BEST_SPEED)
+      val inputSize = inputBuff.length
+      outputBuff.order(ByteOrder.LITTLE_ENDIAN).putInt(inputSize)
+
+      deflater.setInput(inputBuff)
+      deflater.finish()
+      if (deflatorDeflate.isDefined) {
+        //use via reflection
+        deflater.deflate(outputBuff)
+      }
+      else {
+        //must use byte[] instead...
+      }
+      deflater.end()
+    }
+
+    override def fromBinary(inputBuff: Array[Byte]): Array[Byte] = {
+      fromBinary(ByteBuffer.wrap(inputBuff))
+    }
+
+    override def fromBinary(inputBuff: ByteBuffer): Array[Byte] = {
+      val inflater = new Inflater()
+      val size = inputBuff.order(ByteOrder.LITTLE_ENDIAN).getInt()
+      val outputBuff = new Array[Byte](size)
+      inflater.setInput(inputBuff)
+      inflater.inflate(ByteBuffer.wrap(outputBuff))
+      inflater.end()
+      outputBuff
+    }
   }
 
-  override def fromBinary(inputBuff: Array[Byte]): Array[Byte] = {
-    fromBinary(ByteBuffer.wrap(inputBuff))
-  }
+  class KryoCryptographer(key: Array[Byte], mode: String, ivLength: Int) extends Transformer {
+    private final val AuthTagLength = 128
 
-  override def fromBinary(inputBuff: ByteBuffer): Array[Byte] = {
-    val inflater = new Inflater()
-    val size = inputBuff.order(ByteOrder.LITTLE_ENDIAN).getInt()
-    val outputBuff = new Array[Byte](size)
-    inflater.setInput(inputBuff)
-    inflater.inflate(ByteBuffer.wrap(outputBuff))
-    inflater.end()
-    outputBuff
-  }
-}
-
-class KryoCryptographer(key: Array[Byte], mode: String, ivLength: Int) extends Transformer {
-  private final val AuthTagLength = 128
-
-  if (ivLength < 12 || ivLength >= 16) {
-    throw new IllegalStateException("invalid iv length")
-  }
-
-  private[this] val keySpec = new SecretKeySpec(key, "AES")
-  private lazy val random = new SecureRandom()
-
-  override def toBinary(plaintext: Array[Byte]): Array[Byte] = {
-    val cipher = Cipher.getInstance(mode)
-    // fill randomized IV
-    val iv = new Array[Byte](ivLength)
-    random.nextBytes(iv)
-    // set up encryption
-    val parameterSpec = new GCMParameterSpec(AuthTagLength, iv)
-    cipher.init(Cipher.ENCRYPT_MODE, keySpec, parameterSpec)
-    val ciphertext = cipher.doFinal(plaintext)
-    // concat IV length, IV and ciphertext
-    val byteBuffer = ByteBuffer.allocate(4 + iv.length + ciphertext.length)
-    byteBuffer.putInt(iv.length)
-    byteBuffer.put(iv)
-    byteBuffer.put(ciphertext)
-    byteBuffer.array // output
-  }
-
-  override def toBinary(inputBuff: Array[Byte], outputBuff: ByteBuffer): Unit = {
-    val cipher = Cipher.getInstance(mode)
-    // fill randomized IV
-    val iv = new Array[Byte](ivLength)
-    random.nextBytes(iv)
-    // set up encryption
-    val parameterSpec = new GCMParameterSpec(AuthTagLength, iv)
-    cipher.init(Cipher.ENCRYPT_MODE, keySpec, parameterSpec)
-    // concat IV length, IV and ciphertext
-    outputBuff.putInt(iv.length)
-    outputBuff.put(iv)
-    cipher.doFinal(ByteBuffer.wrap(inputBuff), outputBuff)
-  }
-
-  override def fromBinary(input: Array[Byte]): Array[Byte] = {
-    fromBinary(ByteBuffer.wrap(input))
-  }
-
-  override def fromBinary(inputBuff: ByteBuffer): Array[Byte] = {
-    val cipher = Cipher.getInstance(mode)
-    // extract IV length, IV and ciphertext
-    val ivLength = inputBuff.getInt()
-    if (ivLength < 12 || ivLength >= 16) { // check input parameter to protect against attacks
+    if (ivLength < 12 || ivLength >= 16) {
       throw new IllegalStateException("invalid iv length")
     }
-    val iv = new Array[Byte](ivLength)
-    inputBuff.get(iv)
-    val ciphertext = new Array[Byte](inputBuff.remaining())
-    inputBuff.get(ciphertext)
-    // set up decryption
-    val parameterSpec = new GCMParameterSpec(AuthTagLength, iv)
-    cipher.init(Cipher.DECRYPT_MODE, keySpec, parameterSpec)
-    cipher.doFinal(ciphertext) // plaintext
+
+    private[this] val keySpec = new SecretKeySpec(key, "AES")
+    private lazy val random = new SecureRandom()
+
+    override def toBinary(plaintext: Array[Byte]): Array[Byte] = {
+      val cipher = Cipher.getInstance(mode)
+      // fill randomized IV
+      val iv = new Array[Byte](ivLength)
+      random.nextBytes(iv)
+      // set up encryption
+      val parameterSpec = new GCMParameterSpec(AuthTagLength, iv)
+      cipher.init(Cipher.ENCRYPT_MODE, keySpec, parameterSpec)
+      val ciphertext = cipher.doFinal(plaintext)
+      // concat IV length, IV and ciphertext
+      val byteBuffer = ByteBuffer.allocate(4 + iv.length + ciphertext.length)
+      byteBuffer.putInt(iv.length)
+      byteBuffer.put(iv)
+      byteBuffer.put(ciphertext)
+      byteBuffer.array // output
+    }
+
+    override def toBinary(inputBuff: Array[Byte], outputBuff: ByteBuffer): Unit = {
+      val cipher = Cipher.getInstance(mode)
+      // fill randomized IV
+      val iv = new Array[Byte](ivLength)
+      random.nextBytes(iv)
+      // set up encryption
+      val parameterSpec = new GCMParameterSpec(AuthTagLength, iv)
+      cipher.init(Cipher.ENCRYPT_MODE, keySpec, parameterSpec)
+      // concat IV length, IV and ciphertext
+      outputBuff.putInt(iv.length)
+      outputBuff.put(iv)
+      cipher.doFinal(ByteBuffer.wrap(inputBuff), outputBuff)
+    }
+
+    override def fromBinary(input: Array[Byte]): Array[Byte] = {
+      fromBinary(ByteBuffer.wrap(input))
+    }
+
+    override def fromBinary(inputBuff: ByteBuffer): Array[Byte] = {
+      val cipher = Cipher.getInstance(mode)
+      // extract IV length, IV and ciphertext
+      val ivLength = inputBuff.getInt()
+      if (ivLength < 12 || ivLength >= 16) { // check input parameter to protect against attacks
+        throw new IllegalStateException("invalid iv length")
+      }
+      val iv = new Array[Byte](ivLength)
+      inputBuff.get(iv)
+      val ciphertext = new Array[Byte](inputBuff.remaining())
+      inputBuff.get(ciphertext)
+      // set up decryption
+      val parameterSpec = new GCMParameterSpec(AuthTagLength, iv)
+      cipher.init(Cipher.DECRYPT_MODE, keySpec, parameterSpec)
+      cipher.doFinal(ciphertext) // plaintext
+    }
   }
-}
