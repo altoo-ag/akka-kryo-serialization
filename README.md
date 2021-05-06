@@ -55,7 +55,7 @@ From 2.1.0 onward we also provide support for akka-typed. This is done as a sepa
 * Include:
   `libraryDependencies += "io.altoo" %% "akka-kryo-serialization-typed" % "2.2.0"`
 
-Version 2.2.0 drops java 8 support in favor of optimizations using ByteBuffer. 
+Version 2.2.0 requires JDK 11 or higher in favor of optimizations using ByteBuffer. 
 
 Note that we use semantic versioning - see [semver.org](https://semver.org/).
 
