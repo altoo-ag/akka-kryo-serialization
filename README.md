@@ -1,6 +1,6 @@
 akka-kryo-serialization - kryo-based serializers for Scala and Akka
 =====================================================================
-[![Build Status](https://travis-ci.org/altoo-ag/akka-kryo-serialization.svg?branch=master)](https://travis-ci.org/altoo-ag/akka-kryo-serialization)
+[![Full test prior to release](https://github.com/altoo-ag/akka-kryo-serialization/actions/workflows/fullTest.yml/badge.svg)](https://github.com/altoo-ag/akka-kryo-serialization/actions/workflows/fullTest.yml)
 [![Latest version](https://index.scala-lang.org/altoo-ag/akka-kryo-serialization/akka-kryo-serialization/latest.svg)](https://index.scala-lang.org/altoo-ag/akka-kryo-serialization/akka-kryo-serialization)
 
 :warning: **We found issues when concurrently serializing Scala Options (see issue #237). If you use 2.0.0 you should upgrade to 2.0.1 asap.**
