@@ -1,0 +1,22 @@
+name: Full test prior to release
+
+on:
+  workflow_dispatch
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        java: [ 8, 11, 15 ]
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up JDK ${{ matrix.java }}
+        uses: actions/setup-java@v2
+        with:
+          java-version: '${{ matrix.java }}'
+          distribution: 'adopt'
+      - name: Run tests with akka 2.6 and scala 2.12,2.13,3.0
+        run: sbt +test
+      - name: Run tests with akka 2.5
+        run: sbt -Dakka.build.version=2.5.32 clean test

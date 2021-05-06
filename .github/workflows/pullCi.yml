@@ -1,0 +1,22 @@
+name: Scala CI
+
+on:
+  pull_request:
+    branches: [ master ]
+    paths-ignore:
+      - '**.md'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up JDK 15
+        uses: actions/setup-java@v2
+        with:
+          java-version: '15'
+          distribution: 'adopt'
+      - name: Run tests with akka 2.6 and scala 2.12,2.13,3.0
+        run: sbt +test
+      - name: Run tests with akka 2.5
+        run: sbt -Dakka.build.version=2.5.32 clean test
