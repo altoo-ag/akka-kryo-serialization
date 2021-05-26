@@ -4,7 +4,6 @@ import java.util
 import akka.serialization.Serializer
 import org.agrona.concurrent.ManyToManyConcurrentArrayQueue
 
-import scala.annotation.nowarn
 import scala.reflect.ClassTag
 
 /**
@@ -17,10 +16,10 @@ class DefaultQueueBuilder {
    * Override to use a different queue.
    */
   @deprecated("Deprecated in favor of build[T]", since = "2.2.0")
-  def build: util.Queue[Serializer] = new ManyToManyConcurrentArrayQueue[Serializer](Runtime.getRuntime.availableProcessors * 4)
+  def build: util.Queue[Serializer] = build[Serializer]
 
   /**
    * Override to use a different queue.
    */
-  def build[T: ClassTag]: util.Queue[T] = build.asInstanceOf[util.Queue[T]]: @nowarn("msg=deprecated") // Type-erasure hack
+  def build[T: ClassTag]: util.Queue[T] = new ManyToManyConcurrentArrayQueue[T](Runtime.getRuntime.availableProcessors * 4)
 }
