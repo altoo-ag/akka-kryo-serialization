@@ -7,11 +7,11 @@ val typesafe = "Typesafe Repository" at "https://repo.typesafe.com/typesafe/rele
 val typesafeSnapshot = "Typesafe Snapshots Repository" at "https://repo.typesafe.com/typesafe/snapshots/"
 val sonatypeSnapshot = "Sonatype Snapshots Repository" at "https://oss.sonatype.org/content/repositories/snapshots/"
 
-val mainScalaVersion = "2.13.5"
-val secondayScalaVersions = Seq("2.12.13", "3.0.0")
+val mainScalaVersion = "2.13.6"
+val secondayScalaVersions = Seq("2.12.14", "3.0.0")
 
-val kryoVersion = "5.1.0"
-val defaultAkkaVersion = "2.6.14"
+val kryoVersion = "5.1.1"
+val defaultAkkaVersion = "2.6.15"
 val akkaVersion =
   System.getProperty("akka.build.version", defaultAkkaVersion) match {
     case "default" => defaultAkkaVersion
