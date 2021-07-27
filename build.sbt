@@ -74,6 +74,7 @@ lazy val typedDeps = Seq(
 
 lazy val testingDeps = Seq(
   "org.scalatest" %% "scalatest" % "3.2.9" % "test",
+  "org.scala-lang.modules" %% "scala-parallel-collections" % "1.0.3" % "test", //fixme will not work for 2.12!
   ("com.typesafe.akka" %% "akka-testkit" % akkaVersion % "test").cross(CrossVersion.for3Use2_13),
   ("com.typesafe.akka" %% "akka-persistence" % akkaVersion % "test").cross(CrossVersion.for3Use2_13)
 )

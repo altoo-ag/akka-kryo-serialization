@@ -8,6 +8,8 @@ import io.altoo.akka.serialization.kryo.testkit.AbstractAkkaTest
 import org.scalatest.flatspec.AnyFlatSpecLike
 import org.scalatest.matchers.should.Matchers
 
+import scala.util.Random
+
 object ByteStringSerializerTest {
   private val config =
     """
@@ -19,6 +21,7 @@ object ByteStringSerializerTest {
       |    serialization-bindings {
       |      "akka.util.ByteString$ByteString1C" = kryo
       |      "akka.util.ByteString" = kryo
+      |      "java.lang.String" = kryo
       |    }
       |  }
       |}
@@ -68,4 +71,37 @@ class ByteStringSerializerTest extends AbstractAkkaTest(ConfigFactory.parseStrin
     deserialized.isSuccess shouldBe true
     deserialized.get shouldBe value
   }
+
+  it should "handle huge ByteStrings" in {
+    val value = ByteString(Random.nextBytes(400000000))
+
+    // serialize
+    val serializer = serialization.findSerializerFor(value)
+    serializer shouldBe a[KryoSerializer]
+
+    val serialized = serialization.serialize(value)
+    serialized.isSuccess shouldBe true
+
+    // deserialize
+    val deserialized = serialization.deserialize(serialized.get, classOf[ByteString])
+    deserialized.isSuccess shouldBe true
+    deserialized.get shouldBe value
+  }
+
+  it should "handle huge Strings" in {
+    val value = new String(Random.nextBytes(400000000))
+
+    // serialize
+    val serializer = serialization.findSerializerFor(value)
+    serializer shouldBe a[KryoSerializer]
+
+    val serialized = serialization.serialize(value)
+    serialized.isSuccess shouldBe true
+
+    // deserialize
+    val deserialized = serialization.deserialize(serialized.get, classOf[ByteString])
+    deserialized.isSuccess shouldBe true
+    deserialized.get shouldBe value
+  }
+
 }

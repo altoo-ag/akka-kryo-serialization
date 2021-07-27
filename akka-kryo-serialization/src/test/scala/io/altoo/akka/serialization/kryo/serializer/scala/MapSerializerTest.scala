@@ -13,7 +13,7 @@ import scala.collection.immutable.{Map, Set, Vector}
 
 class MapSerializerTest extends AbstractKryoTest {
 
-  private val hugeCollectionSize = 100
+  private val hugeCollectionSize = 1000000
 
 
   behavior of "ScalaImmutableMapSerializer"
