@@ -64,18 +64,19 @@ lazy val coreDeps = Seq(
   ("com.typesafe.akka" %% "akka-actor" % akkaVersion).cross(CrossVersion.for3Use2_13),
   "org.agrona" % "agrona" % "1.9.0", // should match akka-remote/aeron inherited version
   "org.lz4" % "lz4-java" % "1.8.0",
-  "commons-io" % "commons-io" % "2.11.0" % "test",
+  "commons-io" % "commons-io" % "2.11.0" % Test,
   ("org.scala-lang.modules" %% "scala-collection-compat" % "2.5.0").cross(CrossVersion.for3Use2_13)
 )
 lazy val typedDeps = Seq(
   "com.typesafe.akka" %% "akka-actor-typed" % akkaVersion,
-  "com.typesafe.akka" %% "akka-actor-testkit-typed" % akkaVersion % "test"
+  "com.typesafe.akka" %% "akka-actor-testkit-typed" % akkaVersion % Test
 ).map(_.cross(CrossVersion.for3Use2_13))
 
 lazy val testingDeps = Seq(
-  "org.scalatest" %% "scalatest" % "3.2.10" % "test",
-  ("com.typesafe.akka" %% "akka-testkit" % akkaVersion % "test").cross(CrossVersion.for3Use2_13),
-  ("com.typesafe.akka" %% "akka-persistence" % akkaVersion % "test").cross(CrossVersion.for3Use2_13)
+  "org.scalatest" %% "scalatest" % "3.2.10" % Test,
+  "ch.qos.logback" % "logback-classic" % "1.2.6" % Test,
+  ("com.typesafe.akka" %% "akka-testkit" % akkaVersion % Test).cross(CrossVersion.for3Use2_13),
+  ("com.typesafe.akka" %% "akka-persistence" % akkaVersion % Test).cross(CrossVersion.for3Use2_13)
 )
 
 
