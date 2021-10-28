@@ -8,10 +8,10 @@ val typesafeSnapshot = "Typesafe Snapshots Repository" at "https://repo.typesafe
 val sonatypeSnapshot = "Sonatype Snapshots Repository" at "https://oss.sonatype.org/content/repositories/snapshots/"
 
 val mainScalaVersion = "2.13.6"
-val secondayScalaVersions = Seq("2.12.14", "3.0.0")
+val secondayScalaVersions = Seq("2.12.15", "3.0.2") // note: Scala 3.1 is not forward compatible - publishing with 3.1 would force users to Scala 3.1
 
-val kryoVersion = "5.1.1"
-val defaultAkkaVersion = "2.6.15"
+val kryoVersion = "5.2.0"
+val defaultAkkaVersion = "2.6.17"
 val akkaVersion =
   System.getProperty("akka.build.version", defaultAkkaVersion) match {
     case "default" => defaultAkkaVersion
@@ -63,9 +63,9 @@ lazy val coreDeps = Seq(
   "com.esotericsoftware" % "kryo" % kryoVersion,
   ("com.typesafe.akka" %% "akka-actor" % akkaVersion).cross(CrossVersion.for3Use2_13),
   "org.agrona" % "agrona" % "1.9.0", // should match akka-remote/aeron inherited version
-  "org.lz4" % "lz4-java" % "1.7.1",
-  "commons-io" % "commons-io" % "2.8.0" % "test",
-  ("org.scala-lang.modules" %% "scala-collection-compat" % "2.4.1").cross(CrossVersion.for3Use2_13)
+  "org.lz4" % "lz4-java" % "1.8.0",
+  "commons-io" % "commons-io" % "2.11.0" % "test",
+  ("org.scala-lang.modules" %% "scala-collection-compat" % "2.5.0").cross(CrossVersion.for3Use2_13)
 )
 lazy val typedDeps = Seq(
   "com.typesafe.akka" %% "akka-actor-typed" % akkaVersion,
@@ -73,7 +73,7 @@ lazy val typedDeps = Seq(
 ).map(_.cross(CrossVersion.for3Use2_13))
 
 lazy val testingDeps = Seq(
-  "org.scalatest" %% "scalatest" % "3.2.9" % "test",
+  "org.scalatest" %% "scalatest" % "3.2.10" % "test",
   ("com.typesafe.akka" %% "akka-testkit" % akkaVersion % "test").cross(CrossVersion.for3Use2_13),
   ("com.typesafe.akka" %% "akka-persistence" % akkaVersion % "test").cross(CrossVersion.for3Use2_13)
 )

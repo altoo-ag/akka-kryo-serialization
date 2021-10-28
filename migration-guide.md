@@ -1,6 +1,10 @@
 akka-kryo-serialization - migration guide
 =========================================
 
+Migration from 2.1.x to 2.2.x
+-----------------------------
+* `java.util.Record` serialization compatibility has been broken by Kryo 5.2. If serialized records must be read, backwards compatibility can be enabled, see [kryo-5.2.0](https://github.com/EsotericSoftware/kryo/releases/tag/kryo-parent-5.2.0) release notes for more details.
+
 Migration from 2.0.x to 2.1.x
 -----------------------------
 <i>No manual steps required</i>
