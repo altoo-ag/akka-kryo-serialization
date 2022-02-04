@@ -9,6 +9,10 @@ import scala.util.Try
 
 object BasicSerializationTest {
 
+  case class LazyClass(a: Byte) {
+    private lazy val encoded = a.toString
+  }
+
   private val config =
     s"""
        |akka {
@@ -34,7 +38,6 @@ object BasicSerializationTest {
        |}
        |""".stripMargin
 }
-
 class BasicSerializationTest extends AbstractAkkaTest(ConfigFactory.parseString(BasicSerializationTest.config)) {
   private val serialization = SerializationExtension(system)
 
@@ -70,5 +73,12 @@ class BasicSerializationTest extends AbstractAkkaTest(ConfigFactory.parseString(
       case util.Success(v) => v shouldBe testList
     }
 
+  }
+
+  it should "serialize lazy val" in {
+    val test = BasicSerializationTest.LazyClass(1)
+
+    val serializer = serialization.findSerializerFor(test)
+    serializer.toBinary(test)
   }
 }
