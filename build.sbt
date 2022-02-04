@@ -1,4 +1,4 @@
-import sbt.{CrossVersion, _}
+import sbt._
 import sbtrelease.ReleasePlugin.autoImport.ReleaseTransformations._
 
 
@@ -7,11 +7,11 @@ val typesafe = "Typesafe Repository" at "https://repo.typesafe.com/typesafe/rele
 val typesafeSnapshot = "Typesafe Snapshots Repository" at "https://repo.typesafe.com/typesafe/snapshots/"
 val sonatypeSnapshot = "Sonatype Snapshots Repository" at "https://oss.sonatype.org/content/repositories/snapshots/"
 
-val mainScalaVersion = "2.13.6"
+val mainScalaVersion = "2.13.8"
 val secondayScalaVersions = Seq("2.12.15", "3.0.2") // note: Scala 3.1 is not forward compatible - publishing with 3.1 would force users to Scala 3.1
 
-val kryoVersion = "5.2.0"
-val defaultAkkaVersion = "2.6.17"
+val kryoVersion = "5.2.1"
+val defaultAkkaVersion = "2.6.18"
 val akkaVersion =
   System.getProperty("akka.build.version", defaultAkkaVersion) match {
     case "default" => defaultAkkaVersion
@@ -93,6 +93,9 @@ lazy val moduleSettings: Seq[Setting[_]] = commonSettings ++ noReleaseInSubmodul
   versionScheme := Some("early-semver"),
   crossScalaVersions := (scalaVersion.value +: secondayScalaVersions),
   testForkedParallel := false,
+  classLoaderLayeringStrategy := ClassLoaderLayeringStrategy.ScalaLibrary,
+  // required to run serialization with JDK 17
+  javaOptions ++= Seq("--add-opens", "java.base/java.util=ALL-UNNAMED", "--add-opens", "java.base/java.util.concurrent=ALL-UNNAMED", "--add-opens", "java.base/java.lang=ALL-UNNAMED", "--add-opens", "java.base/java.lang.invoke=ALL-UNNAMED", "--add-opens", "java.base/java.math=ALL-UNNAMED"),
   run / javaOptions += "-XX:+UseAES -XX:+UseAESIntrinsics", //Enabling hardware AES support if available
   pomExtra := pomExtras,
   publishTo := sonatypePublishToBundle.value,
@@ -122,7 +125,7 @@ lazy val scalacBasicOptions = Seq(
           "-feature",
           "-unchecked",
           "-deprecation",
-          "-language:existentials",
+          "-language:existentials"
         )
     }
   }
