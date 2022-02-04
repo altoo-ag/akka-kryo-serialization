@@ -92,11 +92,14 @@ lazy val moduleSettings: Seq[Setting[_]] = commonSettings ++ noReleaseInSubmodul
   scalaVersion := mainScalaVersion,
   versionScheme := Some("early-semver"),
   crossScalaVersions := (scalaVersion.value +: secondayScalaVersions),
+  fork := true,
   testForkedParallel := false,
   classLoaderLayeringStrategy := ClassLoaderLayeringStrategy.ScalaLibrary,
-  // required to run serialization with JDK 17
-  javaOptions ++= Seq("--add-opens", "java.base/java.util=ALL-UNNAMED", "--add-opens", "java.base/java.util.concurrent=ALL-UNNAMED", "--add-opens", "java.base/java.lang=ALL-UNNAMED", "--add-opens", "java.base/java.lang.invoke=ALL-UNNAMED", "--add-opens", "java.base/java.math=ALL-UNNAMED"),
   run / javaOptions += "-XX:+UseAES -XX:+UseAESIntrinsics", //Enabling hardware AES support if available
+  // required to run serialization with JDK 17
+  Test / javaOptions ++= Seq("--add-opens", "java.base/java.util=ALL-UNNAMED", "--add-opens", "java.base/java.util.concurrent=ALL-UNNAMED", "--add-opens", "java.base/java.lang=ALL-UNNAMED", "--add-opens", "java.base/java.lang.invoke=ALL-UNNAMED", "--add-opens", "java.base/java.math=ALL-UNNAMED"),
+  // required to run unsafe with JDK 17
+  Test / javaOptions ++= Seq("--add-opens", "java.base/java.nio=ALL-UNNAMED", "--add-opens", "java.base/sun.nio.ch=ALL-UNNAMED"),
   pomExtra := pomExtras,
   publishTo := sonatypePublishToBundle.value,
   publishMavenStyle := true,

@@ -40,14 +40,14 @@ To use this serializer, you need to do two things:
 
 We provide several versions of the library:
 
-Version | Akka & Kryo Compatibility | Available Scala Versions  | Tested with                                                                            |
---------|---------------------------|---------------------------|----------------------------------------------------------------------------------------|
-v2.3.x  | Akka-2.5,2.6 and Kryo-5.2 | 2.12,2.13,3.0             | JDK: OpenJdk11,OpenJdk15           Scala: 2.12.15,2.13.6,3.0.2 Akka: 2.5.32,2.6.17     |
-v2.2.x  | Akka-2.5,2.6 and Kryo-5.1 | 2.12,2.13,3.0             | JDK: OpenJdk11,OpenJdk15           Scala: 2.12.14,2.13.6,3.0.0 Akka: 2.5.32,2.6.15     |
-v2.1.x  | Akka-2.5,2.6 and Kryo-5.0 | 2.12,2.13                 | JDK: OpenJdk8,OpenJdk11,OpenJdk15  Scala: 2.12.13,2.13.4 Akka: 2.5.32,2.6.12           |
-v2.0.x  | Akka-2.5,2.6 and Kryo-5.0 | 2.12,2.13                 | JDK: OpenJdk8,OpenJdk11,OpenJdk13  Scala: 2.12.12,2.13.3 Akka: 2.5.32,2.6.10           |
-v1.1.x  | Akka-2.5,2.6 and Kryo-4.0 | 2.12,2.13                 | JDK: OpenJdk8,OpenJdk11,OpenJdk13  Scala: 2.12.11,2.13.2 Akka: 2.5.26,2.6.4            |
-v1.0.x  | Akka-2.5,2.6 and Kryo-4.0 | 2.11,2.12,2.13            | JDK: OpenJdk8,OpenJdk11            Scala: 2.11.12,2.12.10,2.13.1 Akka: 2.5.25,2.6.0-M7 |
+Version | Akka & Kryo Compatibility | Available Scala Versions  | Tested with                                                                                  |
+--------|---------------------------|---------------------------|----------------------------------------------------------------------------------------------|
+v2.3.x  | Akka-2.5,2.6 and Kryo-5.2 | 2.12,2.13,3.0             | JDK: OpenJdk11,OpenJdk15,OpenJdk17 Scala: 2.12.15,2.13.6,3.0.2 Akka: 2.5.32,2.6.17 |
+v2.2.x  | Akka-2.5,2.6 and Kryo-5.1 | 2.12,2.13,3.0             | JDK: OpenJdk11,OpenJdk15           Scala: 2.12.14,2.13.6,3.0.0 Akka: 2.5.32,2.6.15           |
+v2.1.x  | Akka-2.5,2.6 and Kryo-5.0 | 2.12,2.13                 | JDK: OpenJdk8,OpenJdk11,OpenJdk15  Scala: 2.12.13,2.13.4 Akka: 2.5.32,2.6.12                 |
+v2.0.x  | Akka-2.5,2.6 and Kryo-5.0 | 2.12,2.13                 | JDK: OpenJdk8,OpenJdk11,OpenJdk13  Scala: 2.12.12,2.13.3 Akka: 2.5.32,2.6.10                 |
+v1.1.x  | Akka-2.5,2.6 and Kryo-4.0 | 2.12,2.13                 | JDK: OpenJdk8,OpenJdk11,OpenJdk13  Scala: 2.12.11,2.13.2 Akka: 2.5.26,2.6.4                  |
+v1.0.x  | Akka-2.5,2.6 and Kryo-4.0 | 2.11,2.12,2.13            | JDK: OpenJdk8,OpenJdk11            Scala: 2.11.12,2.12.10,2.13.1 Akka: 2.5.25,2.6.0-M7       |
 For past versions see [Legacy.md](Legacy.md).
 
 From 2.1.0 onward we also provide support for akka-typed. This is done as a separate artifact so that the standard does not pull all the typed akka dependencies.
@@ -349,6 +349,20 @@ And finally declare the custom serializer in the `akka.actor.serializers` sectio
         # define additional kryo serializer
         kryo-xyz = "xyz.XyzKryoSerializer"
     }
+```
+
+Using Kryo on JDK 17
+--------------------
+
+Kryo needs modules to be opened for reflection when serializing basic JDK classes.
+Those options have to be passed to the JVM, for example in sbt:
+```sbt
+javaOptions ++= Seq("--add-opens", "java.base/java.util=ALL-UNNAMED", "--add-opens", "java.base/java.util.concurrent=ALL-UNNAMED", "--add-opens", "java.base/java.lang=ALL-UNNAMED", "--add-opens", "java.base/java.lang.invoke=ALL-UNNAMED", "--add-opens", "java.base/java.math=ALL-UNNAMED"),
+```
+
+To use unsafe transformations, the following access must be granted:
+```sbt
+javaOptions ++= Seq("--add-opens", "java.base/java.nio=ALL-UNNAMED", "--add-opens", "java.base/sun.nio.ch=ALL-UNNAMED"),
 ```
 
 
