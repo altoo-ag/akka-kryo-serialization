@@ -34,25 +34,26 @@ How to use this library in your project
 To use this serializer, you need to do two things:
 
 * Include a dependency on this library into your project:
-    `libraryDependencies += "io.altoo" %% "akka-kryo-serialization" % "2.3.0"`
+    `libraryDependencies += "io.altoo" %% "akka-kryo-serialization" % "2.4.0"`
 
 * Register and configure the serializer in your Akka configuration file, e.g. `application.conf`.
 
 We provide several versions of the library:
 
-Version | Akka & Kryo Compatibility | Available Scala Versions  | Tested with                                                                          |
---------|---------------------------|---------------------------|--------------------------------------------------------------------------------------|
-v2.3.x  | Akka-2.5,2.6 and Kryo-5.2 | 2.12,2.13,3.0             | JDK: OpenJdk11,OpenJdk17           Scala: 2.12.15,2.13.6,3.0.2 Akka: 2.5.32,2.6.17   |
-v2.2.x  | Akka-2.5,2.6 and Kryo-5.1 | 2.12,2.13,3.0             | JDK: OpenJdk11,OpenJdk15           Scala: 2.12.14,2.13.6,3.0.0 Akka: 2.5.32,2.6.15   |
-v2.1.x  | Akka-2.5,2.6 and Kryo-5.0 | 2.12,2.13                 | JDK: OpenJdk8,OpenJdk11,OpenJdk15  Scala: 2.12.13,2.13.4 Akka: 2.5.32,2.6.12         |
-v2.0.x  | Akka-2.5,2.6 and Kryo-5.0 | 2.12,2.13                 | JDK: OpenJdk8,OpenJdk11,OpenJdk13  Scala: 2.12.12,2.13.3 Akka: 2.5.32,2.6.10         |
-v1.1.x  | Akka-2.5,2.6 and Kryo-4.0 | 2.12,2.13                 | JDK: OpenJdk8,OpenJdk11,OpenJdk13  Scala: 2.12.11,2.13.2 Akka: 2.5.26,2.6.4          |
+Version | Akka & Kryo Compatibility | Available Scala Versions  | Tested with                                                                            |
+--------|---------------------------|---------------------------|----------------------------------------------------------------------------------------|
+v2.4.x  | Akka-2.5,2.6 and Kryo-5.3 | 2.12,2.13,3.0             | JDK: OpenJdk11,OpenJdk17           Scala: 2.12.15,2.13.8,3.0.2 Akka: 2.5.32,2.6.18     |
+v2.3.x  | Akka-2.5,2.6 and Kryo-5.2 | 2.12,2.13,3.0             | JDK: OpenJdk11,OpenJdk15           Scala: 2.12.15,2.13.6,3.0.2 Akka: 2.5.32,2.6.17     |
+v2.2.x  | Akka-2.5,2.6 and Kryo-5.1 | 2.12,2.13,3.0             | JDK: OpenJdk11,OpenJdk15           Scala: 2.12.14,2.13.6,3.0.0 Akka: 2.5.32,2.6.15     |
+v2.1.x  | Akka-2.5,2.6 and Kryo-5.0 | 2.12,2.13                 | JDK: OpenJdk8,OpenJdk11,OpenJdk15  Scala: 2.12.13,2.13.4 Akka: 2.5.32,2.6.12           |
+v2.0.x  | Akka-2.5,2.6 and Kryo-5.0 | 2.12,2.13                 | JDK: OpenJdk8,OpenJdk11,OpenJdk13  Scala: 2.12.12,2.13.3 Akka: 2.5.32,2.6.10           |
+v1.1.x  | Akka-2.5,2.6 and Kryo-4.0 | 2.12,2.13                 | JDK: OpenJdk8,OpenJdk11,OpenJdk13  Scala: 2.12.11,2.13.2 Akka: 2.5.26,2.6.4            |
 v1.0.x  | Akka-2.5,2.6 and Kryo-4.0 | 2.11,2.12,2.13            | JDK: OpenJdk8,OpenJdk11            Scala: 2.11.12,2.12.10,2.13.1 Akka: 2.5.25,2.6.0-M7 |
 For past versions see [Legacy.md](Legacy.md).
 
 From 2.1.0 onward we also provide support for akka-typed. This is done as a separate artifact so that the standard does not pull all the typed akka dependencies.
 * Include:
-  `libraryDependencies += "io.altoo" %% "akka-kryo-serialization-typed" % "2.3.0"`
+  `libraryDependencies += "io.altoo" %% "akka-kryo-serialization-typed" % "2.4.0"`
 
 Version 2.2.0 requires JDK 11 or higher in favor of optimizations using ByteBuffer. 
 
@@ -69,11 +70,11 @@ You can find the JARs on [Sonatype's Maven repository](https://repo1.maven.org/m
 To use the latest stable release of akka-kryo-serialization in sbt projects you just need to add
 this dependency:
 
-`libraryDependencies += "io.altoo" %% "akka-kryo-serialization" % "2.3.0"`
+`libraryDependencies += "io.altoo" %% "akka-kryo-serialization" % "2.4.0"`
 
 To use with Akka 2.5 (or older versions of Akka 2.6) you need to exclude transitive dependencies to preven unintended inclusion of Akka 2.6:
 
-`libraryDependencies += "io.altoo" %% "akka-kryo-serialization" % "2.3.0" excludeAll (ExclusionRule("com.typesafe.akka", "akka-actor_2.13"), ExclusionRule("org.agrona", "agrona"))`
+`libraryDependencies += "io.altoo" %% "akka-kryo-serialization" % "2.4.0" excludeAll (ExclusionRule("com.typesafe.akka", "akka-actor_2.13"), ExclusionRule("org.agrona", "agrona"))`
 
 #### maven projects
 
@@ -92,7 +93,7 @@ To use the official release of akka-kryo-serialization in Maven projects, please
     <dependency>
         <groupId>io.altoo</groupId>
         <artifactId>akka-kryo-serialization_2.13</artifactId>
-        <version>2.3.0</version>
+        <version>2.4.0</version>
     </dependency>
 ```
 
