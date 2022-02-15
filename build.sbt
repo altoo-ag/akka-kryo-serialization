@@ -10,7 +10,7 @@ val sonatypeSnapshot = "Sonatype Snapshots Repository" at "https://oss.sonatype.
 val mainScalaVersion = "2.13.8"
 val secondayScalaVersions = Seq("2.12.15", "3.0.2") // note: Scala 3.1 is not forward compatible - publishing with 3.1 would force users to Scala 3.1
 
-val kryoVersion = "5.2.1"
+val kryoVersion = "5.3.0"
 val defaultAkkaVersion = "2.6.18"
 val akkaVersion =
   System.getProperty("akka.build.version", defaultAkkaVersion) match {
