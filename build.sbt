@@ -41,13 +41,15 @@ lazy val core: Project = Project("akka-kryo-serialization", file("akka-kryo-seri
     .settings(Compile / unmanagedSourceDirectories += {
       scalaBinaryVersion.value match {
         case "2.12" => baseDirectory.value / "src" / "main" / "scala-2.12"
-        case _ => baseDirectory.value / "src" / "main" / "scala-2.13"
+        case "2.13" => baseDirectory.value / "src" / "main" / "scala-2.13"
+        case _ => baseDirectory.value / "src" / "main" / "scala-3"
       }
     })
     .settings(Test / unmanagedSourceDirectories += {
       scalaBinaryVersion.value match {
         case "2.12" => baseDirectory.value / "src" / "test" / "scala-2.12"
-        case _ => baseDirectory.value / "src" / "test" / "scala-2.13"
+        case "2.13" => baseDirectory.value / "src" / "test" / "scala-2.13"
+        case _ => baseDirectory.value / "src" / "test" / "scala-3"
       }
     })
 
