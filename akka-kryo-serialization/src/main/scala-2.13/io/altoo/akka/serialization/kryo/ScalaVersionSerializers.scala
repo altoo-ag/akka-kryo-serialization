@@ -11,4 +11,6 @@ private[kryo] object ScalaVersionSerializers {
   def iterable(kryo: Kryo): Unit = {
     kryo.addDefaultSerializer(classOf[scala.collection.Iterable[_]], classOf[ScalaCollectionSerializer])
   }
+
+  def enums(kryo: Kryo): Unit = () // Scala 3 only
 }
