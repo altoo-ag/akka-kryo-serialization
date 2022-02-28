@@ -9,7 +9,9 @@ class TupleSerializationTest extends AbstractKryoTest {
 
   type IntTuple6 = (Int, Int, Int, Int, Int, Int)
 
-  "Kryo" should "roundtrip tuples" in {
+  behavior of "Kryo serialization"
+
+  it should "roundtrip tuples" in {
     kryo.setRegistrationRequired(false)
     kryo.register(classOf[scala.Tuple1[Any]], 45)
     kryo.register(classOf[scala.Tuple2[Any, Any]], 46)
