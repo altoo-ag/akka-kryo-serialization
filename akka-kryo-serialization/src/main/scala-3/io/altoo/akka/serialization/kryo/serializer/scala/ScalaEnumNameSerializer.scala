@@ -17,7 +17,9 @@ class ScalaEnumNameSerializer[T <: EnumValue] extends Serializer[T]  {
 
   def write(kryo: Kryo, output: Output, obj: T): Unit = {
     val enumClass = obj.getClass.getSuperclass
-    val name = obj.getClass.getDeclaredMethod("productPrefix").invoke(obj).asInstanceOf[String]
+    val productPrefixMethod = obj.getClass.getDeclaredMethod("productPrefix")
+    if (!productPrefixMethod.canAccess(obj)) productPrefixMethod.setAccessible(true)
+    val name = productPrefixMethod.invoke(obj).asInstanceOf[String]
     kryo.writeClass(output, enumClass)
     output.writeString(name)
   }

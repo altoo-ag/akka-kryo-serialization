@@ -34,6 +34,12 @@ class ScalaEnumSerializationTest  extends AnyFlatSpec with Matchers with KryoSer
     testSerializationOf(Sample.B)
   }
 
+  it should "reoundtrip external enum" in {
+    kryo.setRegistrationRequired(false)
+
+    testSerializationOf(io.altoo.external.ExternalEnum.A)
+  }
+
   it should "reoundtrip embedded enum" in {
     kryo.setRegistrationRequired(false)
     kryo.register(classOf[EmbeddedEnum], 46)
