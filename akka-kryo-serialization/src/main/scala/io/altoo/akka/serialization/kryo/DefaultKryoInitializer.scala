@@ -70,6 +70,7 @@ class DefaultKryoInitializer {
     // Map/Set Factories
     ScalaVersionSerializers.mapAndSet(kryo)
     ScalaVersionSerializers.iterable(kryo)
+    ScalaVersionSerializers.enums(kryo)
   }
 
   /**

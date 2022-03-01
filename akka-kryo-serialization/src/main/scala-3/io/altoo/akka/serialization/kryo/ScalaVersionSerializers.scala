@@ -1,7 +1,7 @@
 package io.altoo.akka.serialization.kryo
 
 import com.esotericsoftware.kryo.Kryo
-import io.altoo.akka.serialization.kryo.serializer.scala.{ScalaCollectionSerializer, ScalaImmutableMapSerializer}
+import io.altoo.akka.serialization.kryo.serializer.scala.{ScalaCollectionSerializer, ScalaEnumNameSerializer, ScalaImmutableMapSerializer}
 
 private[kryo] object ScalaVersionSerializers {
   def mapAndSet(kryo: Kryo): Unit = {
@@ -12,5 +12,7 @@ private[kryo] object ScalaVersionSerializers {
     kryo.addDefaultSerializer(classOf[scala.collection.Iterable[_]], classOf[ScalaCollectionSerializer])
   }
 
-  def enums(kryo: Kryo): Unit = () // Scala 3 only
+  def enums(kryo: Kryo): Unit = {
+    kryo.addDefaultSerializer(classOf[scala.runtime.EnumValue], classOf[ScalaEnumNameSerializer[scala.runtime.EnumValue]])
+  }
 }

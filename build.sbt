@@ -7,8 +7,8 @@ val typesafe = "Typesafe Repository" at "https://repo.typesafe.com/typesafe/rele
 val typesafeSnapshot = "Typesafe Snapshots Repository" at "https://repo.typesafe.com/typesafe/snapshots/"
 val sonatypeSnapshot = "Sonatype Snapshots Repository" at "https://oss.sonatype.org/content/repositories/snapshots/"
 
-val mainScalaVersion = "2.13.8"
-val secondayScalaVersions = Seq("2.12.15", "3.0.2") // note: Scala 3.1 is not forward compatible - publishing with 3.1 would force users to Scala 3.1
+val mainScalaVersion = "3.0.2" // note: Scala 3.1 is not forward compatible - publishing with 3.1 would force users to Scala 3.1
+val secondayScalaVersions = Seq("2.12.15", "2.13.8")
 
 val kryoVersion = "5.3.0"
 val defaultAkkaVersion = "2.6.18"
@@ -41,13 +41,15 @@ lazy val core: Project = Project("akka-kryo-serialization", file("akka-kryo-seri
     .settings(Compile / unmanagedSourceDirectories += {
       scalaBinaryVersion.value match {
         case "2.12" => baseDirectory.value / "src" / "main" / "scala-2.12"
-        case _ => baseDirectory.value / "src" / "main" / "scala-2.13"
+        case "2.13" => baseDirectory.value / "src" / "main" / "scala-2.13"
+        case _ => baseDirectory.value / "src" / "main" / "scala-3"
       }
     })
     .settings(Test / unmanagedSourceDirectories += {
       scalaBinaryVersion.value match {
         case "2.12" => baseDirectory.value / "src" / "test" / "scala-2.12"
-        case _ => baseDirectory.value / "src" / "test" / "scala-2.13"
+        case "2.13" => baseDirectory.value / "src" / "test" / "scala-2.13"
+        case _ => baseDirectory.value / "src" / "test" / "scala-3"
       }
     })
 

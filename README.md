@@ -3,6 +3,8 @@ akka-kryo-serialization - kryo-based serializers for Scala and Akka
 [![Full test prior to release](https://github.com/altoo-ag/akka-kryo-serialization/actions/workflows/fullTest.yml/badge.svg)](https://github.com/altoo-ag/akka-kryo-serialization/actions/workflows/fullTest.yml)
 [![Latest version](https://index.scala-lang.org/altoo-ag/akka-kryo-serialization/akka-kryo-serialization/latest.svg)](https://index.scala-lang.org/altoo-ag/akka-kryo-serialization/akka-kryo-serialization)
 
+:warning: **We found issues serializing Scala 3 Enums. If you use akka-kryo-serialization with Scala 3 you should upgrade to 2.4.1 asap.**
+
 This library provides custom Kryo-based serializers for Scala and Akka. It can be
 used for more efficient akka actor's remoting.
 

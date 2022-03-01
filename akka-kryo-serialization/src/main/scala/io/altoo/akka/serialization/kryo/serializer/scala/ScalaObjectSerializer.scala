@@ -27,7 +27,7 @@ import scala.collection.mutable.{Map => MMap}
 import scala.util.control.Exception.allCatch
 
 // Stolen with pride from Chill ;-)
-class ObjectSerializer[T] extends Serializer[T] {
+class ScalaObjectSerializer[T] extends Serializer[T] {
   private val cachedObj = MMap[Class[_], Option[T]]()
 
   // Does nothing
