@@ -5,7 +5,8 @@ import com.esotericsoftware.kryo.io.{Input, Output}
 
 import scala.runtime.EnumValue
 
-class ScalaEnumSerializer[T <: EnumValue] extends Serializer[T]  {
+/** Serializes enums using the enum's name. This prevents invalidating previously serialized bytes when the enum order changes */
+class ScalaEnumNameSerializer[T <: EnumValue] extends Serializer[T]  {
 
   def read(kryo: Kryo, input: Input, typ: Class[_ <: T]): T = {
     val clazz = kryo.readClass(input).getType

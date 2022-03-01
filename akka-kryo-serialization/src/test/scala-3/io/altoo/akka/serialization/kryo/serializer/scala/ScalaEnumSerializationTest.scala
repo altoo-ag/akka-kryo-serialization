@@ -6,7 +6,7 @@ import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
 import io.altoo.akka.serialization.kryo.ScalaVersionSerializers
 
-object EnumSerializationTest {
+object ScalaEnumSerializationTest {
   enum Sample(val name: String, val value: Int) {
     case A extends Sample("a", 1)
     case B extends Sample("b", 2)
@@ -18,12 +18,12 @@ object EnumSerializationTest {
   }
 }
 
-class EnumSerializationTest  extends AnyFlatSpec with Matchers with KryoSerializationTesting {
-  import EnumSerializationTest._
+class ScalaEnumSerializationTest  extends AnyFlatSpec with Matchers with KryoSerializationTesting {
+  import ScalaEnumSerializationTest._
 
   val kryo = new ScalaKryo(new DefaultClassResolver(), new ListReferenceResolver())
   kryo.setRegistrationRequired(false)
-  kryo.addDefaultSerializer(classOf[scala.runtime.EnumValue], new ScalaEnumSerializer[scala.runtime.EnumValue])
+  kryo.addDefaultSerializer(classOf[scala.runtime.EnumValue], new ScalaEnumNameSerializer[scala.runtime.EnumValue])
 
 
   behavior of "Kryo serialization"
