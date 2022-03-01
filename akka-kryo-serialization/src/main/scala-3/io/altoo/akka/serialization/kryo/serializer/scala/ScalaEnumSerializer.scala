@@ -9,14 +9,15 @@ class ScalaEnumSerializer[T <: EnumValue] extends Serializer[T]  {
 
   def read(kryo: Kryo, input: Input, typ: Class[_ <: T]): T = {
     val clazz = kryo.readClass(input).getType
-    val ordinal = input.readInt()
-    clazz.getDeclaredMethod("fromOrdinal", Integer.TYPE).invoke(null, ordinal).asInstanceOf[T]
+    val name = input.readString()
+    // using value instead of ordinal to make serialization more stable, e.g. allowing reordering without breaking compatibility
+    clazz.getDeclaredMethod("valueOf", classOf[String]).invoke(null, name).asInstanceOf[T]
   }
 
   def write(kryo: Kryo, output: Output, obj: T): Unit = {
     val enumClass = obj.getClass.getSuperclass
-    val ordinal = obj.getClass.getDeclaredMethod("ordinal").invoke(obj).asInstanceOf[Int]
+    val name = obj.getClass.getDeclaredMethod("productPrefix").invoke(obj).asInstanceOf[String]
     kryo.writeClass(output, enumClass)
-    output.writeInt(ordinal)
+    output.writeString(name)
   }
 }
