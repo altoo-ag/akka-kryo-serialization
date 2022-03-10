@@ -71,6 +71,72 @@ class EnumerationSerializerTest extends AnyFlatSpec {
     assert(Tue == enumObjWeekday3)
     assert(Second == enumObjTime3)
     assert(Earth == enumObjPlanet3)
+
+
+    assert(WeekDay.withName(WeekDay.Fri.toString) == WeekDay.Fri)
+  }
+
+
+  behavior of "EnumerationNameSerializer"
+
+  it should "serialize and deserialize" in {
+    var kryo: Kryo = new Kryo()
+    kryo.setRegistrationRequired(false)
+    kryo.addDefaultSerializer(classOf[scala.Enumeration#Value], classOf[EnumerationNameSerializer])
+    kryo.register(Class.forName("scala.Enumeration$Val"))
+    kryo.register(classOf[scala.Enumeration#Value])
+    kryo.register(WeekDay.getClass, 40)
+    kryo.register(Time.getClass, 41)
+    kryo.register(Planet.getClass, 42)
+
+    val obuf1 = new Output(1024, 1024 * 1024)
+    // Serialize
+    kryo.writeClassAndObject(obuf1, Tue)
+    kryo.writeClassAndObject(obuf1, Second)
+    kryo.writeClassAndObject(obuf1, Earth)
+    // Deserialize
+    val bytes = obuf1.toBytes
+    val ibuf1 = new Input(bytes)
+    val enumObjWeekday1 = kryo.readClassAndObject(ibuf1)
+    val enumObjTime1 = kryo.readClassAndObject(ibuf1)
+    val enumObjPlanet1 = kryo.readClassAndObject(ibuf1)
+    // Compare
+    assert(Tue == enumObjWeekday1)
+    assert(Second == enumObjTime1)
+    assert(Earth == enumObjPlanet1)
+
+    kryo = new Kryo()
+    kryo.setRegistrationRequired(false)
+    kryo.addDefaultSerializer(classOf[scala.Enumeration#Value], classOf[EnumerationNameSerializer])
+    kryo.register(Class.forName("scala.Enumeration$Val"))
+    kryo.register(classOf[scala.Enumeration#Value])
+    kryo.register(WeekDay.getClass, 40)
+    kryo.register(Time.getClass, 41)
+    kryo.register(Planet.getClass, 42)
+    val obuf2 = new Output(1024, 1024 * 1024)
+    // Deserialize
+    val ibuf2 = new Input(bytes)
+    val enumObjWeekday2 = kryo.readClassAndObject(ibuf2)
+    val enumObjTime2 = kryo.readClassAndObject(ibuf2)
+    val enumObjPlanet2 = kryo.readClassAndObject(ibuf2)
+    assert(Tue == enumObjWeekday2)
+    assert(Second == enumObjTime2)
+    assert(Earth == enumObjPlanet2)
+    // Serialize
+    kryo.writeClassAndObject(obuf2, Tue)
+    kryo.writeClassAndObject(obuf2, Second)
+    kryo.writeClassAndObject(obuf2, Earth)
+    // Compare
+    val ibuf3 = new Input(bytes)
+    val enumObjWeekday3 = kryo.readClassAndObject(ibuf3)
+    val enumObjTime3 = kryo.readClassAndObject(ibuf3)
+    val enumObjPlanet3 = kryo.readClassAndObject(ibuf3)
+    assert(Tue == enumObjWeekday3)
+    assert(Second == enumObjTime3)
+    assert(Earth == enumObjPlanet3)
+
+
+    assert(WeekDay.withName(WeekDay.Fri.toString) == WeekDay.Fri)
   }
 }
 

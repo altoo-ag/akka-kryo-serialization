@@ -24,11 +24,12 @@ import com.esotericsoftware.kryo.io.{Input, Output}
 import com.esotericsoftware.kryo.{Kryo, Serializer}
 
 /**
-  * Enumeration serializer
+  * Enumeration serializer using ordinal value.
   *
   * @author luben
+ *  @deprecated For consistency use EnumerationNameSerializer instead.
   */
-
+@Deprecated
 class EnumerationSerializer extends Serializer[Enumeration#Value] {
 
   def read(kryo: Kryo, input: Input, typ: Class[_ <: Enumeration#Value]): Enumeration#Value = {

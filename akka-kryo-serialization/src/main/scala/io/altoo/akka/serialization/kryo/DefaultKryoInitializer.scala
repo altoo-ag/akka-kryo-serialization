@@ -1,6 +1,7 @@
 package io.altoo.akka.serialization.kryo
 
 import akka.actor.{ActorRef, ExtendedActorSystem}
+import com.esotericsoftware.kryo.Serializer
 import com.esotericsoftware.kryo.serializers.FieldSerializer
 import io.altoo.akka.serialization.kryo.serializer.akka.{ActorRefSerializer, ByteStringSerializer}
 import io.altoo.akka.serialization.kryo.serializer.scala._
@@ -36,12 +37,19 @@ class DefaultKryoInitializer {
     kryo.addDefaultSerializer(classOf[ActorRef], new ActorRefSerializer(system))
   }
 
+
+  /**
+   * Overwrite to change default enumeration serializer to [[EnumerationNameSerializer]] instead of [[EnumerationSerializer]].
+   * Release 2.5.0 will change default.
+   */
+  protected def defaultEnumerationSerializer: Class[_ <: Serializer[Enumeration#Value]] = classOf[EnumerationSerializer]
+
   /**
    * Registers serializer for standard/often used scala classes - override only if you know what you are doing!
    */
   def initScalaSerializer(kryo: ScalaKryo, system: ExtendedActorSystem): Unit = {
     // Support serialization of some standard or often used Scala classes
-    kryo.addDefaultSerializer(classOf[scala.Enumeration#Value], classOf[EnumerationSerializer])
+    kryo.addDefaultSerializer(classOf[scala.Enumeration#Value], defaultEnumerationSerializer)
     system.dynamicAccess.getClassFor[AnyRef]("scala.Enumeration$Val") match {
       case Success(clazz) => kryo.register(clazz)
       case Failure(e) => throw e
