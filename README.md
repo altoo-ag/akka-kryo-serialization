@@ -358,8 +358,8 @@ And finally declare the custom serializer in the `akka.actor.serializers` sectio
 Enum Serialization
 ------------------
 
-Serialization of Java and Scala 3 enums is done by name to avoid having reordering of enum values breaking serialization.
-As of 2.4, the default serializer for `scala.Enumeration` is based on index, 
+Serialization of Java and Scala 3 enums is done by name (and not by index) to avoid having reordering of enum values breaking serialization.
+As of 2.4, the default serializer for `scala.Enumeration` is based on index (order of definition), 
 which is now deprecated and will be replaced by a name base serializer for consistency with the upcoming 2.5 release.
 
 To actively change current default to the new by name serializer, a custom Kryo initializer must be defined and the following override has to be done:
