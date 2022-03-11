@@ -39,7 +39,7 @@ class DefaultKryoInitializer {
 
 
   /**
-   * Overwrite to change default enumeration serializer to [[EnumerationNameSerializer]] instead of [[EnumerationSerializer]].
+   * Overwrite to change default enumeration serializer to [[io.altoo.akka.serialization.kryo.serializer.scala.EnumerationNameSerializer]] instead of [[io.altoo.akka.serialization.kryo.serializer.scala.EnumerationSerializer]].
    * Release 2.5.0 will change default.
    */
   protected def defaultEnumerationSerializer: Class[_ <: Serializer[Enumeration#Value]] = classOf[EnumerationSerializer]
