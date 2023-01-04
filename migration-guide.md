@@ -1,6 +1,10 @@
 akka-kryo-serialization - migration guide
 =========================================
 
+Migration from 2.4.x to 2.5.x
+-----------------------------
+* `EnumerationSerializer` has been deprecated with 2.4.2, with 2.5.0 default serializer for `scala.Enumeration` has been switched to `EnumerationNameSerializer`, which is not backwards compatible.  
+
 Migration from 2.3.x to 2.4.x
 -----------------------------
 <i>No manual steps required</i>

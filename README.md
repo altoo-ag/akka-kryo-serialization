@@ -360,14 +360,15 @@ Enum Serialization
 ------------------
 
 Serialization of Java and Scala 3 enums is done by name (and not by index) to avoid having reordering of enum values breaking serialization.
-As of 2.4, the default serializer for `scala.Enumeration` is based on index (order of definition), 
-which is now deprecated and will be replaced by a name base serializer for consistency with the upcoming 2.5 release.
+As of 2.5.0, the default serializer for `scala.Enumeration` has been switched to a name base serializer for consistency.
 
-To actively change current default to the new by name serializer, a custom Kryo initializer must be defined and the following override has to be done:
+To change current default back to old index based (order of definition) serialization, a custom Kryo initializer must be defined and the following override has to be done:
 
 ```scala
-protected override def defaultEnumerationSerializer: Class[_ <: Serializer[Enumeration#Value]] = classOf[EnumerationNameSerializer]
+protected override def defaultEnumerationSerializer: Class[_ <: Serializer[Enumeration#Value]] = classOf[EnumerationSerializer]
 ```
+
+Note: this serializer will be removed in the future. If needed, you can reimplement it in your own project.
 
 Using Kryo on JDK 17
 --------------------

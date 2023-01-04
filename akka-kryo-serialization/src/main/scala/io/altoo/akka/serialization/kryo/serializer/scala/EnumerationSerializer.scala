@@ -27,7 +27,7 @@ import com.esotericsoftware.kryo.{Kryo, Serializer}
   * Enumeration serializer using ordinal value.
   *
   * @author luben
- *  @deprecated For consistency use EnumerationNameSerializer instead.
+ *  @deprecated For consistency use EnumerationNameSerializer instead - will be removed in the future.
   */
 @Deprecated
 class EnumerationSerializer extends Serializer[Enumeration#Value] {
