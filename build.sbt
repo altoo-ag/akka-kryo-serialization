@@ -7,11 +7,11 @@ val typesafe = "Typesafe Repository" at "https://repo.typesafe.com/typesafe/rele
 val typesafeSnapshot = "Typesafe Snapshots Repository" at "https://repo.typesafe.com/typesafe/snapshots/"
 val sonatypeSnapshot = "Sonatype Snapshots Repository" at "https://oss.sonatype.org/content/repositories/snapshots/"
 
-val mainScalaVersion = "3.0.2" // note: Scala 3.1 is not forward compatible - publishing with 3.1 would force users to Scala 3.1
-val secondayScalaVersions = Seq("2.12.15", "2.13.8")
+val mainScalaVersion = "3.1.3" // note: Scala 3.2 is not forward compatible - publishing with 3.2 would force users to Scala 3.2
+val secondayScalaVersions = Seq("2.12.17", "2.13.10")
 
-val kryoVersion = "5.3.0"
-val defaultAkkaVersion = "2.6.18"
+val kryoVersion = "5.4.0"
+val defaultAkkaVersion = "2.6.20"
 val akkaVersion =
   System.getProperty("akka.build.version", defaultAkkaVersion) match {
     case "default" => defaultAkkaVersion
@@ -64,10 +64,10 @@ lazy val typed: Project = Project("akka-kryo-serialization-typed", file("akka-kr
 lazy val coreDeps = Seq(
   "com.esotericsoftware" % "kryo" % kryoVersion,
   ("com.typesafe.akka" %% "akka-actor" % akkaVersion).cross(CrossVersion.for3Use2_13),
-  "org.agrona" % "agrona" % "1.9.0", // should match akka-remote/aeron inherited version
+  "org.agrona" % "agrona" % "1.15.1", // should match akka-remote/aeron inherited version
   "org.lz4" % "lz4-java" % "1.8.0",
   "commons-io" % "commons-io" % "2.11.0" % Test,
-  ("org.scala-lang.modules" %% "scala-collection-compat" % "2.5.0").cross(CrossVersion.for3Use2_13)
+  "org.scala-lang.modules" %% "scala-collection-compat" % "2.9.0"
 )
 lazy val typedDeps = Seq(
   "com.typesafe.akka" %% "akka-actor-typed" % akkaVersion,
@@ -75,8 +75,8 @@ lazy val typedDeps = Seq(
 ).map(_.cross(CrossVersion.for3Use2_13))
 
 lazy val testingDeps = Seq(
-  "org.scalatest" %% "scalatest" % "3.2.10" % Test,
-  "ch.qos.logback" % "logback-classic" % "1.2.6" % Test,
+  "org.scalatest" %% "scalatest" % "3.2.14" % Test,
+  "ch.qos.logback" % "logback-classic" % "1.2.11" % Test,
   ("com.typesafe.akka" %% "akka-testkit" % akkaVersion % Test).cross(CrossVersion.for3Use2_13),
   ("com.typesafe.akka" %% "akka-persistence" % akkaVersion % Test).cross(CrossVersion.for3Use2_13)
 )
