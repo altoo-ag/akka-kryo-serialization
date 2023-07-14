@@ -73,13 +73,13 @@ private[kryo] class KryoSerializerBackend(val kryo: Kryo, val bufferSize: Int, v
   // Implements ByteBufferSerializer
   override def fromBinary(buf: ByteBuffer, manifest: String): AnyRef = {
     val buffer = getInput(buf)
-    val clazz = system.dynamicAccess.getClassFor[AnyRef](manifest)
-    if (includeManifest)
+    if (includeManifest) {
+      val clazz = system.dynamicAccess.getClassFor[AnyRef](manifest)
       clazz match {
         case Success(c) => kryo.readObject(buffer, c).asInstanceOf[AnyRef]
         case _ => throw new RuntimeException("Object of unknown class cannot be deserialized")
       }
-    else
+    } else
       kryo.readClassAndObject(buffer)
   }
 
