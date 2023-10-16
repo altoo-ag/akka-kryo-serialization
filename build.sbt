@@ -32,7 +32,7 @@ lazy val root: Project = project.in(file("."))
     .settings(publish / skip := true)
     .settings(OsgiKeys.privatePackage := Nil)
     .settings(OsgiKeys.exportPackage := Seq("io.altoo.*"))
-    .aggregate(core, typed)
+    .aggregate(core, typed, pekkoCompat)
 
 lazy val core: Project = Project("akka-kryo-serialization", file("akka-kryo-serialization"))
     .settings(moduleSettings)
@@ -58,6 +58,12 @@ lazy val typed: Project = Project("akka-kryo-serialization-typed", file("akka-kr
     .settings(description := "akka-serialization implementation using kryo - extension including serialization for akka-typed")
     .settings(libraryDependencies ++= typedDeps ++ testingDeps)
     .dependsOn(core)
+
+lazy val pekkoCompat: Project = Project("akka-kryo-serialization-pekko-compat", file("akka-kryo-serialization-pekko-compat"))
+  .settings(moduleSettings)
+  .settings(description := "akka-serialization implementation using kryo - extension for improved wire compatibility with Pekko")
+  .settings(libraryDependencies ++= testingDeps)
+  .dependsOn(core, typed)
 
 
 // Dependencies
