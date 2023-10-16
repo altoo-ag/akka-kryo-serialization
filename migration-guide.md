@@ -1,6 +1,26 @@
 akka-kryo-serialization - migration guide
 =========================================
 
+Migration from akka-kryo-serialization to pekko-kryo-serialization
+-----------------------------
+* You should upgrade to akka-kryo-serialization 2.5.x before migrating to pekko-kryo-serialization.
+* To support efforts for live migration from Akka to Pekko, compat modules are available in both Akka and Pekko Kryo Serialization to help with wire compatibility of custom messages containing ActorRefs and ByteStrings.
+  ```
+  # on Pekko
+  libraryDependencies += "io.altoo" %% "pekko-kryo-serialization-akka-compat" % "1.0.1"
+  
+  # on Akka
+  libraryDependencies += "io.altoo" %% "pekko-kryo-serialization-akka-compat" % "2.5.2"
+  ```
+  Then configure (or derive from if using a custom initializer) `AkkaCompatKryoInitializer` on Pekko, and `PekkoCompatKryoInitializer` on Akka.
+  ```
+  # on Pekko
+  pekko-kryo-serialization.kryo-initializer = "io.altoo.pekko.serialization.kryo.compat.AkkaCompatKryoInitializer"
+  
+  # on Akka
+  kka-kryo-serialization.kryo-initializer = "io.altoo.akka.serialization.kryo.compat.PekkoCompatKryoInitializer"
+  ```
+
 Migration from 2.4.x to 2.5.x
 -----------------------------
 * `EnumerationSerializer` has been deprecated with 2.4.2, with 2.5.0 default serializer for `scala.Enumeration` has been switched to `EnumerationNameSerializer`, which is not backwards compatible.  
