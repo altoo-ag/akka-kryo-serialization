@@ -7,7 +7,7 @@ import akka.annotation.InternalApi
 
 import javax.crypto.Cipher
 import javax.crypto.spec.{GCMParameterSpec, SecretKeySpec}
-import net.jpountz.lz4.LZ4Factory
+import net.jpountz.lz4.{LZ4Exception, LZ4Factory}
 
 import scala.collection.mutable
 
@@ -90,10 +90,14 @@ class LZ4KryoCompressor extends Transformer {
   override def toBinary(inputBuff: Array[Byte], outputBuff: ByteBuffer): Unit = {
     val inputSize = inputBuff.length
     val lz4 = lz4factory.fastCompressor
-    lz4.maxCompressedLength(inputSize)
     // encode 32 bit length in the first bytes
     outputBuff.order(ByteOrder.LITTLE_ENDIAN).putInt(inputSize)
-    lz4.compress(ByteBuffer.wrap(inputBuff), outputBuff)
+    try {
+      lz4.compress(ByteBuffer.wrap(inputBuff), outputBuff)
+    } catch {
+      case e: LZ4Exception =>
+        throw new RuntimeException(s"Compression failed for input buffer size: ${inputBuff.length} and output buffer size: ${outputBuff.capacity()}", e)
+    }
   }
 
   override def fromBinary(inputBuff: Array[Byte]): Array[Byte] = {
