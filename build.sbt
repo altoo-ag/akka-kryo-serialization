@@ -7,8 +7,8 @@ val typesafe = "Typesafe Repository" at "https://repo.typesafe.com/typesafe/rele
 val typesafeSnapshot = "Typesafe Snapshots Repository" at "https://repo.typesafe.com/typesafe/snapshots/"
 val sonatypeSnapshot = "Sonatype Snapshots Repository" at "https://oss.sonatype.org/content/repositories/snapshots/"
 
-val mainScalaVersion = "3.1.3" // note: Scala 3.2 is not forward compatible - publishing with 3.2 would force users to Scala 3.2
-val secondayScalaVersions = Seq("2.12.17", "2.13.10")
+val mainScalaVersion = "3.3.1" 
+val secondayScalaVersions = Seq("2.12.18", "2.13.12")
 
 val kryoVersion = "5.4.0"
 val defaultAkkaVersion = "2.6.20"
