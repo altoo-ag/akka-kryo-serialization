@@ -1,8 +1,9 @@
 package io.altoo.akka.serialization.kryo
 
 import akka.actor.{ActorRef, ExtendedActorSystem}
-import com.esotericsoftware.kryo.Serializer
+import com.esotericsoftware.kryo.{ClassResolver, ReferenceResolver, Serializer}
 import com.esotericsoftware.kryo.serializers.FieldSerializer
+import com.esotericsoftware.kryo.util.{DefaultClassResolver, ListReferenceResolver, MapReferenceResolver}
 import io.altoo.akka.serialization.kryo.serializer.akka.{ActorRefSerializer, ByteStringSerializer}
 import io.altoo.akka.serialization.kryo.serializer.scala._
 
@@ -13,6 +14,22 @@ import scala.util.{Failure, Success}
  */
 class DefaultKryoInitializer {
 
+  /**
+   * Can be overridden to provide a custom reference resolver - override only if you know what you are doing!
+   */
+  def createReferenceResolver(settings: KryoSerializationSettings): ReferenceResolver = {
+    if (settings.kryoReferenceMap) new MapReferenceResolver() else new ListReferenceResolver()
+  }
+
+  /**
+   * Can be overridden to provide a custom class resolver - override only if you know what you are doing!
+   */
+  def createClassResolver(settings: KryoSerializationSettings): ClassResolver = {
+    if (settings.idStrategy == "incremental") new KryoClassResolver(settings.implicitRegistrationLogging)
+    else if (settings.resolveSubclasses) new SubclassResolver()
+    else new DefaultClassResolver()
+  }
+  
   /**
    * Can be overridden to set a different field serializer before other serializer are initialized.
    * Note: register custom classes/serializer in `postInit`, otherwise default order might break.
