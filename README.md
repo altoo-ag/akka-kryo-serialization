@@ -1,5 +1,9 @@
 akka-kryo-serialization - kryo-based serializers for Scala and Akka
-=====================================================================
+===================================================================
+
+ℹ️ **project unmaintained - new maintainer needed see [new maintainer needed issue](https://github.com/altoo-ag/akka-kryo-serialization/issues/300)**
+
+
 [![Full test prior to release](https://github.com/altoo-ag/akka-kryo-serialization/actions/workflows/fullTest.yml/badge.svg)](https://github.com/altoo-ag/akka-kryo-serialization/actions/workflows/fullTest.yml)
 [![Latest version](https://index.scala-lang.org/altoo-ag/akka-kryo-serialization/akka-kryo-serialization/latest.svg)](https://index.scala-lang.org/altoo-ag/akka-kryo-serialization/akka-kryo-serialization)
 
